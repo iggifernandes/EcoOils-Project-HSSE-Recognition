@@ -1,4 +1,4 @@
-// Code.gs v1.0.3 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
+// Code.gs v1.0.4 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
 // Deploy: Extensions > Apps Script (on iggifernandes@gmail.com) > paste this file > run setup() once >
 //   Project Settings > Script properties: add GEMINI_API_KEY (free Google AI Studio key) >
 //   Deploy > New deployment > Web app > Execute as: Me, Who has access: Anyone.
@@ -10,7 +10,7 @@ var COLS = ['id','createdAt','week','status','certNo','name','nick','role','ic',
 var EDITABLE = ['status','certNo','name','nick','role','ic','location','eventDate','observation','action','outcome',
   'category','certLang','certDate','certPara','hseNote'];
 var IC_LIST = ['EcoOils','GSB','WEN','KKS','PBS'];
-var VERSION = 'v1.0.3';
+var VERSION = 'v1.0.4';
 
 /* ---------- one-time setup ---------- */
 function setup() {
@@ -39,12 +39,12 @@ function testAI() {
     observation: 'Scrap cable and tools were left around the scaffold base after termination work, a trip hazard.',
     action: 'He stopped, collected all offcuts and tools and cleaned the area before leaving.',
     outcome: 'Walkway clear before the next crew arrived.' }, before: [], after: [] });
-  Logger.log(r.ok ? 'AI OK. Highlight (EN): ' + r.result.improved.en.highlight : 'AI FAILED: ' + r.error);
+  Logger.log(r.ok ? 'AI OK (model ' + r.model + '). Highlight (EN): ' + r.result.improved.en.highlight : 'AI FAILED: ' + r.error);
 }
 
 /* ---------- web app entry points ---------- */
 function doGet(e) {
-  return out_({ ok: true, version: VERSION, aiReady: !!prop_('GEMINI_API_KEY') });
+  return out_({ ok: true, version: VERSION, aiReady: !!prop_('GEMINI_API_KEY'), models: models_() });
 }
 
 function doPost(e) {
@@ -153,6 +153,16 @@ function schema_() {
   }, required: ['generic', 'issues', 'improved'] };
 }
 
+/* AI models, in order of preference. To change them without touching code: Project Settings > Script properties >
+   add GEMINI_MODELS = model1,model2,model3 (comma separated). Models that were busy in the last 2 minutes are tried last. */
+var DEFAULT_MODELS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-flash-latest', 'gemini-flash-lite-latest'];
+function models_() {
+  var p = prop_('GEMINI_MODELS') || prop_('GEMINI_MODEL'), cache = CacheService.getScriptCache();
+  var list = p ? String(p).split(',').map(function (x) { return x.trim(); }).filter(Boolean) : DEFAULT_MODELS, ok = [], busy = [];
+  list.forEach(function (m) { (cache.get('busy_' + m) ? busy : ok).push(m); });
+  return ok.concat(busy);
+}
+
 function aiReview_(r) {
   var key = prop_('GEMINI_API_KEY');
   if (!key) return { ok: false, error: 'AI not configured: add script property GEMINI_API_KEY (Project Settings > Script properties)' };
@@ -173,13 +183,16 @@ function aiReview_(r) {
     return UrlFetchApp.fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent', {
       method: 'post', contentType: 'application/json', muteHttpExceptions: true, headers: { 'x-goog-api-key': key }, payload: payload });
   }
-  // try the main model, then lighter / newer ones when Google says "high demand" (503), "rate limit" (429), server error (500) or unknown model (404)
-  var models = [prop_('GEMINI_MODEL') || 'gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-flash-latest'], res = null, code = 0;
+  // go down the model list; a model that says "high demand" (503), "rate limit" (429), server error (500) or unknown (404) is skipped for a while
+  var models = models_(), res = null, code = 0, used = '', t0 = new Date().getTime(), cache2 = CacheService.getScriptCache();
   for (var mi = 0; mi < models.length; mi++) {
-    res = call_(models[mi], body_(true)); code = res.getResponseCode();
-    if (code === 400) { res = call_(models[mi], body_(false)); code = res.getResponseCode(); } // model does not accept thinkingConfig
+    if (mi > 0 && new Date().getTime() - t0 > 30000) break; // stay inside the app's 45 s limit
+    used = models[mi];
+    res = call_(used, body_(true)); code = res.getResponseCode();
+    if (code === 400) { res = call_(used, body_(false)); code = res.getResponseCode(); } // model does not accept thinkingConfig
     if ([404, 429, 500, 503].indexOf(code) < 0) break;
-    if (code === 503 || code === 429) Utilities.sleep(700);
+    cache2.put('busy_' + used, '1', code === 404 ? 21600 : 120);
+    if (code === 503 || code === 429) Utilities.sleep(500);
   }
   if (code !== 200) {
     var why = ''; try { why = JSON.parse(res.getContentText()).error.message; } catch (e) {}
@@ -189,7 +202,7 @@ function aiReview_(r) {
     var body = JSON.parse(res.getContentText());
     var j = JSON.parse(body.candidates[0].content.parts[0].text);
     j.generic = !!j.generic;
-    return { ok: true, result: j };
+    return { ok: true, result: j, model: used };
   } catch (e) { return { ok: false, error: 'AI returned an unreadable answer' }; }
 }
 
