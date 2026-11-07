@@ -1,4 +1,4 @@
-// Code.gs v1.0.5 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
+// Code.gs v1.0.6 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
 // Deploy: Extensions > Apps Script (on iggifernandes@gmail.com) > paste this file > run setup() once >
 //   Project Settings > Script properties: add GEMINI_API_KEY (free Google AI Studio key) >
 //   Deploy > New deployment > Web app > Execute as: Me, Who has access: Anyone.
@@ -10,7 +10,7 @@ var COLS = ['id','createdAt','week','status','certNo','name','nick','role','ic',
 var EDITABLE = ['status','certNo','name','nick','role','ic','location','eventDate','observation','action','outcome',
   'category','certLang','certDate','certPara','hseNote'];
 var IC_LIST = ['EcoOils','GSB','WEN','KKS','PBS'];
-var VERSION = 'v1.0.5';
+var VERSION = 'v1.0.6';
 
 /* ---------- one-time setup ---------- */
 function setup() {
@@ -44,7 +44,7 @@ function testAI() {
 
 /* ---------- web app entry points ---------- */
 function doGet(e) {
-  return out_({ ok: true, version: VERSION, aiReady: !!prop_('GEMINI_API_KEY'), models: models_() });
+  return out_({ ok: true, version: VERSION, aiReady: !!prop_('GEMINI_API_KEY'), models: models_('full'), quickModels: models_('quick') });
 }
 
 function doPost(e) {
@@ -157,35 +157,49 @@ function schema_() {
 /* AI models, in order of preference. To change them without touching code: Project Settings > Script properties >
    add GEMINI_MODELS = model1,model2,model3 (comma separated). Models that were busy in the last 2 minutes are tried last. */
 var DEFAULT_MODELS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-flash-latest', 'gemini-flash-lite-latest'];
-function models_() {
-  var p = prop_('GEMINI_MODELS') || prop_('GEMINI_MODEL'), cache = CacheService.getScriptCache();
-  var list = p ? String(p).split(',').map(function (x) { return x.trim(); }).filter(Boolean) : DEFAULT_MODELS, ok = [], busy = [];
+var QUICK_MODELS = ['gemini-2.5-flash-lite', 'gemini-2.5-flash', 'gemini-flash-lite-latest', 'gemini-flash-latest']; // lightest first = fastest
+function models_(mode) {
+  var quick = mode === 'quick', cache = CacheService.getScriptCache();
+  var p = quick ? prop_('GEMINI_QUICK_MODELS') : (prop_('GEMINI_MODELS') || prop_('GEMINI_MODEL'));
+  var list = p ? String(p).split(',').map(function (x) { return x.trim(); }).filter(Boolean) : (quick ? QUICK_MODELS : DEFAULT_MODELS), ok = [], busy = [];
   list.forEach(function (m) { (cache.get('busy_' + m) ? busy : ok).push(m); });
   return ok.concat(busy);
+}
+
+/* QUICK REPHRASE: only the three text boxes, same language as written, short output = a few seconds */
+var AI_QUICK = [
+  'You are an HSSE copy editor for a construction site in Indonesia.',
+  'Rephrase the nominator\'s three notes into clear, correct, professional sentences in active voice. Write in the SAME language the nominator used (English, Bahasa Indonesia or Malay). Keep each answer about as long as the original.',
+  'Do not invent facts: no names, numbers, tags, times or events that were not written. If an important detail is missing, add a short question to "issues" (at most 2).',
+  'Reply ONLY with JSON matching the schema.'
+].join('\n');
+function quickSchema_() {
+  return { type: 'OBJECT', properties: { observation: { type: 'STRING' }, action: { type: 'STRING' }, outcome: { type: 'STRING' }, issues: { type: 'ARRAY', items: { type: 'STRING' } } },
+    required: ['observation', 'action', 'outcome', 'issues'] };
 }
 
 function aiReview_(r) {
   var key = prop_('GEMINI_API_KEY');
   if (!key) return { ok: false, error: 'AI not configured: add script property GEMINI_API_KEY (Project Settings > Script properties)' };
-  var f = r.fields || {};
+  var f = r.fields || {}, quick = r.mode === 'quick';
   var cache = CacheService.getScriptCache(), rk = 'airate_' + (s_(r.client, 40) || 'x');
   var n = Number(cache.get(rk) || 0);
-  if (n >= 12) return { ok: false, error: 'Too many AI requests. Try again in a few minutes.' };
+  if (n >= 20) return { ok: false, error: 'Too many AI requests. Try again in a few minutes.' };
   cache.put(rk, String(n + 1), 600);
 
   var text = 'Nominee: ' + s_(f.name, 120) + ' (' + s_(f.role, 120) + ', ' + s_(f.ic, 40) + ')\nLocation: ' + s_(f.location, 120) +
     '\nObservation (hazard found): ' + s_(f.observation) + '\nAction taken: ' + s_(f.action) + '\nOutcome: ' + s_(f.outcome);
   function body_(noThink) {
-    var g = { responseMimeType: 'application/json', responseSchema: schema_(), temperature: 0.5 };
+    var g = { responseMimeType: 'application/json', responseSchema: quick ? quickSchema_() : schema_(), temperature: quick ? 0.3 : 0.5, maxOutputTokens: quick ? 900 : 3500 };
     if (noThink) g.thinkingConfig = { thinkingBudget: 0 }; // no hidden "thinking" time: much faster
-    return JSON.stringify({ systemInstruction: { parts: [{ text: AI_SYSTEM }] }, contents: [{ role: 'user', parts: [{ text: text }] }], generationConfig: g });
+    return JSON.stringify({ systemInstruction: { parts: [{ text: quick ? AI_QUICK : AI_SYSTEM }] }, contents: [{ role: 'user', parts: [{ text: text }] }], generationConfig: g });
   }
   function call_(model, payload) {
     return UrlFetchApp.fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent', {
       method: 'post', contentType: 'application/json', muteHttpExceptions: true, headers: { 'x-goog-api-key': key }, payload: payload });
   }
   // go down the model list; a model that says "high demand" (503), "rate limit" (429), server error (500) or unknown (404) is skipped for a while
-  var models = models_(), res = null, code = 0, used = '', t0 = new Date().getTime(), cache2 = CacheService.getScriptCache();
+  var models = models_(quick ? 'quick' : 'full'), res = null, code = 0, used = '', t0 = new Date().getTime(), cache2 = CacheService.getScriptCache();
   for (var mi = 0; mi < models.length; mi++) {
     if (mi > 0 && new Date().getTime() - t0 > 30000) break; // stay inside the app's 45 s limit
     used = models[mi];
@@ -202,8 +216,8 @@ function aiReview_(r) {
   try {
     var body = JSON.parse(res.getContentText());
     var j = JSON.parse(body.candidates[0].content.parts[0].text);
-    j.generic = !!j.generic;
-    return { ok: true, result: j, model: used };
+    if (!quick) j.generic = !!j.generic;
+    return { ok: true, result: j, model: used, mode: quick ? 'quick' : 'full' };
   } catch (e) { return { ok: false, error: 'AI returned an unreadable answer' }; }
 }
 
