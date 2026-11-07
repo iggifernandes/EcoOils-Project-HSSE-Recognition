@@ -1,4 +1,4 @@
-// Code.gs v1.0.1 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
+// Code.gs v1.0.2 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
 // Deploy: Extensions > Apps Script (on iggifernandes@gmail.com) > paste this file > run setup() once >
 //   Project Settings > Script properties: add GEMINI_API_KEY (free Google AI Studio key) >
 //   Deploy > New deployment > Web app > Execute as: Me, Who has access: Anyone.
@@ -10,7 +10,7 @@ var COLS = ['id','createdAt','week','status','certNo','name','nick','role','ic',
 var EDITABLE = ['status','certNo','name','nick','role','ic','location','eventDate','observation','action','outcome',
   'category','certLang','certDate','certPara','hseNote'];
 var IC_LIST = ['EcoOils','GSB','WEN','KKS','PBS'];
-var VERSION = 'v1.0.1';
+var VERSION = 'v1.0.2';
 
 /* ---------- one-time setup ---------- */
 function setup() {
@@ -173,23 +173,25 @@ function aiReview_(r) {
   var text = 'Nominee: ' + s_(f.name, 120) + ' (' + s_(f.role, 120) + ', ' + s_(f.ic, 40) + ')\nLocation: ' + s_(f.location, 120) +
     '\nObservation (hazard found): ' + s_(f.observation) + '\nAction taken: ' + s_(f.action) + '\nOutcome: ' + s_(f.outcome);
   var parts = [{ text: text }];
-  var imgs = [].concat((r.before || []).slice(0, 2).map(function (u) { return ['BEFORE photo', u]; }),
-                       (r.after || []).slice(0, 2).map(function (u) { return ['AFTER photo', u]; }));
+  var imgs = [].concat((r.before || []).slice(0, 1).map(function (u) { return ['BEFORE photo', u]; }),
+                       (r.after || []).slice(0, 1).map(function (u) { return ['AFTER photo', u]; }));
   imgs.forEach(function (pair) {
     var m = /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+\/=]+)$/.exec(String(pair[1] || ''));
     if (m && m[2].length < 1500000) { parts.push({ text: pair[0] + ':' }); parts.push({ inline_data: { mime_type: m[1], data: m[2] } }); }
   });
-  var payload = JSON.stringify({
-    systemInstruction: { parts: [{ text: AI_SYSTEM }] },
-    contents: [{ role: 'user', parts: parts }],
-    generationConfig: { responseMimeType: 'application/json', responseSchema: schema_(), temperature: 0.2 }
-  });
+  function body_(noThink) {
+    var g = { responseMimeType: 'application/json', responseSchema: schema_(), temperature: 0.2 };
+    if (noThink) g.thinkingConfig = { thinkingBudget: 0 }; // no hidden "thinking" time: much faster
+    return JSON.stringify({ systemInstruction: { parts: [{ text: AI_SYSTEM }] }, contents: [{ role: 'user', parts: parts }], generationConfig: g });
+  }
+  function call_(model, payload) {
+    return UrlFetchApp.fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent', {
+      method: 'post', contentType: 'application/json', muteHttpExceptions: true, headers: { 'x-goog-api-key': key }, payload: payload });
+  }
   var models = [prop_('GEMINI_MODEL') || 'gemini-2.5-flash', 'gemini-flash-latest'], res = null;
   for (var mi = 0; mi < models.length; mi++) {
-    res = UrlFetchApp.fetch('https://generativelanguage.googleapis.com/v1beta/models/' + models[mi] + ':generateContent', {
-      method: 'post', contentType: 'application/json', muteHttpExceptions: true,
-      headers: { 'x-goog-api-key': key }, payload: payload
-    });
+    res = call_(models[mi], body_(true));
+    if (res.getResponseCode() === 400) res = call_(models[mi], body_(false)); // model does not accept thinkingConfig
     if (res.getResponseCode() !== 404) break; // model name retired: try the next one
   }
   if (res.getResponseCode() !== 200) {
