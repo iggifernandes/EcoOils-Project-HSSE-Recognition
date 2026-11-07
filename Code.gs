@@ -1,4 +1,4 @@
-// Code.gs v1.0.2 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
+// Code.gs v1.0.3 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
 // Deploy: Extensions > Apps Script (on iggifernandes@gmail.com) > paste this file > run setup() once >
 //   Project Settings > Script properties: add GEMINI_API_KEY (free Google AI Studio key) >
 //   Deploy > New deployment > Web app > Execute as: Me, Who has access: Anyone.
@@ -10,7 +10,7 @@ var COLS = ['id','createdAt','week','status','certNo','name','nick','role','ic',
 var EDITABLE = ['status','certNo','name','nick','role','ic','location','eventDate','observation','action','outcome',
   'category','certLang','certDate','certPara','hseNote'];
 var IC_LIST = ['EcoOils','GSB','WEN','KKS','PBS'];
-var VERSION = 'v1.0.2';
+var VERSION = 'v1.0.3';
 
 /* ---------- one-time setup ---------- */
 function setup() {
@@ -39,7 +39,7 @@ function testAI() {
     observation: 'Scrap cable and tools were left around the scaffold base after termination work, a trip hazard.',
     action: 'He stopped, collected all offcuts and tools and cleaned the area before leaving.',
     outcome: 'Walkway clear before the next crew arrived.' }, before: [], after: [] });
-  Logger.log(r.ok ? 'AI OK. Score ' + r.result.score + ', verdict ' + r.result.verdict : 'AI FAILED: ' + r.error);
+  Logger.log(r.ok ? 'AI OK. Highlight (EN): ' + r.result.improved.en.highlight : 'AI FAILED: ' + r.error);
 }
 
 /* ---------- web app entry points ---------- */
@@ -132,19 +132,14 @@ function submit_(r) {
   } finally { lock.releaseLock(); }
 }
 
-/* ---------- Gemini review ---------- */
+/* ---------- Gemini wording helper (OPTIONAL: the nomination quality check runs in the app, no AI needed) ---------- */
 var AI_SYSTEM = [
-  'You are an HSSE reviewer for the EcoOils Mentari/Project construction site (Sei Mangkei, North Sumatra, Indonesia).',
-  'You judge crew recognition nominations for the EcoOils HSSE Bulletin. A nomination is STRONG only if it shows ALL of:',
-  '1) a specific hazard / unsafe condition / improvement opportunity that the nominee identified;',
-  '2) ownership: the nominee personally intervened;',
-  '3) the condition was corrected or a potential incident was prevented (a concrete action, not an intention);',
-  '4) a clear, tangible positive outcome for site safety.',
-  'Generic praise ("strong safety commitment", "exemplary", "always follows rules") is NOT sufficient: mark generic=true and score <= 4.',
-  'If photos are provided, check they plausibly show a BEFORE condition and an AFTER condition of the same situation (photos_show_before_after: yes/unclear/no).',
-  'Never invent facts. Improve wording only from what the nominator wrote. If something is missing, list it in "issues" as a question the nominator must answer.',
-  'Write "improved" texts in clear, concise, professional safety language: observation (what was found), action (what the person did), outcome (the result), highlight (one sentence, max 25 words, naming the intervention).',
-  'Provide improved texts in English (en) and Bahasa Indonesia (id). Keep names, tag numbers and locations unchanged.',
+  'You are a wording editor for HSSE recognition nominations at the EcoOils Project site (Sei Mangkei, North Sumatra, Indonesia).',
+  'You ONLY improve the wording, phrasing and level of detail of the text the nominator wrote. You never look at photos, never give a score and never decide whether the nomination is good.',
+  'Never invent facts. Use only what the nominator wrote. Keep names, tag numbers and locations unchanged.',
+  'If the text is generic praise ("strong safety commitment") set generic=true. If a reader would still need to know something (what exactly was wrong, what the person did, what changed), add a short question for the nominator to "issues".',
+  'Write clear, concise, professional safety language. Output: observation (what was found), action (what the person did), outcome (the result), highlight (one sentence, max 25 words, naming the intervention).',
+  'Provide the improved texts in English (en) and Bahasa Indonesia (id).',
   'Reply ONLY with JSON matching the schema.'
 ].join('\n');
 
@@ -152,13 +147,10 @@ function schema_() {
   var tri = { type: 'OBJECT', properties: { observation: { type: 'STRING' }, action: { type: 'STRING' }, outcome: { type: 'STRING' }, highlight: { type: 'STRING' } },
     required: ['observation', 'action', 'outcome', 'highlight'] };
   return { type: 'OBJECT', properties: {
-    score: { type: 'INTEGER' }, verdict: { type: 'STRING', enum: ['strong', 'needs_work', 'weak'] }, generic: { type: 'BOOLEAN' },
-    criteria: { type: 'OBJECT', properties: { hazard_identified: { type: 'BOOLEAN' }, ownership: { type: 'BOOLEAN' }, corrected: { type: 'BOOLEAN' }, outcome: { type: 'BOOLEAN' },
-      photos_show_before_after: { type: 'STRING', enum: ['yes', 'unclear', 'no', 'not_provided'] } },
-      required: ['hazard_identified', 'ownership', 'corrected', 'outcome', 'photos_show_before_after'] },
+    generic: { type: 'BOOLEAN' },
     issues: { type: 'ARRAY', items: { type: 'STRING' } },
     improved: { type: 'OBJECT', properties: { en: tri, id: tri }, required: ['en', 'id'] }
-  }, required: ['score', 'verdict', 'generic', 'criteria', 'issues', 'improved'] };
+  }, required: ['generic', 'issues', 'improved'] };
 }
 
 function aiReview_(r) {
@@ -167,41 +159,36 @@ function aiReview_(r) {
   var f = r.fields || {};
   var cache = CacheService.getScriptCache(), rk = 'airate_' + (s_(r.client, 40) || 'x');
   var n = Number(cache.get(rk) || 0);
-  if (n >= 12) return { ok: false, error: 'Too many AI checks. Try again in a few minutes.' };
+  if (n >= 12) return { ok: false, error: 'Too many AI requests. Try again in a few minutes.' };
   cache.put(rk, String(n + 1), 600);
 
   var text = 'Nominee: ' + s_(f.name, 120) + ' (' + s_(f.role, 120) + ', ' + s_(f.ic, 40) + ')\nLocation: ' + s_(f.location, 120) +
     '\nObservation (hazard found): ' + s_(f.observation) + '\nAction taken: ' + s_(f.action) + '\nOutcome: ' + s_(f.outcome);
-  var parts = [{ text: text }];
-  var imgs = [].concat((r.before || []).slice(0, 1).map(function (u) { return ['BEFORE photo', u]; }),
-                       (r.after || []).slice(0, 1).map(function (u) { return ['AFTER photo', u]; }));
-  imgs.forEach(function (pair) {
-    var m = /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+\/=]+)$/.exec(String(pair[1] || ''));
-    if (m && m[2].length < 1500000) { parts.push({ text: pair[0] + ':' }); parts.push({ inline_data: { mime_type: m[1], data: m[2] } }); }
-  });
   function body_(noThink) {
     var g = { responseMimeType: 'application/json', responseSchema: schema_(), temperature: 0.2 };
     if (noThink) g.thinkingConfig = { thinkingBudget: 0 }; // no hidden "thinking" time: much faster
-    return JSON.stringify({ systemInstruction: { parts: [{ text: AI_SYSTEM }] }, contents: [{ role: 'user', parts: parts }], generationConfig: g });
+    return JSON.stringify({ systemInstruction: { parts: [{ text: AI_SYSTEM }] }, contents: [{ role: 'user', parts: [{ text: text }] }], generationConfig: g });
   }
   function call_(model, payload) {
     return UrlFetchApp.fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent', {
       method: 'post', contentType: 'application/json', muteHttpExceptions: true, headers: { 'x-goog-api-key': key }, payload: payload });
   }
-  var models = [prop_('GEMINI_MODEL') || 'gemini-2.5-flash', 'gemini-flash-latest'], res = null;
+  // try the main model, then lighter / newer ones when Google says "high demand" (503), "rate limit" (429), server error (500) or unknown model (404)
+  var models = [prop_('GEMINI_MODEL') || 'gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-flash-latest'], res = null, code = 0;
   for (var mi = 0; mi < models.length; mi++) {
-    res = call_(models[mi], body_(true));
-    if (res.getResponseCode() === 400) res = call_(models[mi], body_(false)); // model does not accept thinkingConfig
-    if (res.getResponseCode() !== 404) break; // model name retired: try the next one
+    res = call_(models[mi], body_(true)); code = res.getResponseCode();
+    if (code === 400) { res = call_(models[mi], body_(false)); code = res.getResponseCode(); } // model does not accept thinkingConfig
+    if ([404, 429, 500, 503].indexOf(code) < 0) break;
+    if (code === 503 || code === 429) Utilities.sleep(700);
   }
-  if (res.getResponseCode() !== 200) {
+  if (code !== 200) {
     var why = ''; try { why = JSON.parse(res.getContentText()).error.message; } catch (e) {}
-    return { ok: false, error: 'AI service error (' + res.getResponseCode() + ')' + (why ? ': ' + String(why).slice(0, 160) : '') };
+    return { ok: false, error: 'AI service error (' + code + ')' + (why ? ': ' + String(why).slice(0, 160) : '') };
   }
   try {
     var body = JSON.parse(res.getContentText());
     var j = JSON.parse(body.candidates[0].content.parts[0].text);
-    j.score = Math.max(0, Math.min(10, Number(j.score) || 0));
+    j.generic = !!j.generic;
     return { ok: true, result: j };
   } catch (e) { return { ok: false, error: 'AI returned an unreadable answer' }; }
 }
