@@ -188,7 +188,7 @@ table.wk td.zero{color:#aaa}table.wk td.cur.zero{background:var(--errbg);color:#
 
   <div class="card"><h2 data-i="n.review"></h2>
    <div id="rules"></div><div id="qc"></div>
-   <div class="row" style="margin-top:12px"><button class="btn pri" id="btnFix" data-i="btn.fix"></button><button class="btn yel" id="btnQuick" data-i="btn.quick"></button><button class="btn" id="btnAI" data-i="btn.ai"></button><span class="hint" id="aiHint" data-i="ai.hint"></span></div>
+   <div class="row" style="margin-top:12px"><button class="btn pri" id="btnFix" data-i="btn.fix"></button><button class="btn yel" id="btnQuick" data-i="btn.quick"></button><span class="hint" id="aiHint" data-i="ai.hint"></span></div>
    <div id="aiOut"></div>
    <div class="row end" style="margin-top:12px"><button class="btn pri" id="btnSubmit" disabled data-i="btn.submit"></button></div>
    <div id="gate" class="hint" style="text-align:right"></div>
@@ -298,11 +298,11 @@ table.wk td.zero{color:#aaa}table.wk td.cur.zero{background:var(--errbg);color:#
 <div id="peek" hidden><img alt=""></div>
 <div id="toast" class="toast" hidden></div>
 
-<script src="textfix.js?v=2.5.0"></script>
+<script src="textfix.js?v=2.5.1"></script>
 <script>
 /* ---------- constants (edit here) ---------- */
 const API_URL = 'https://script.google.com/macros/s/AKfycbx2wdQ_TGsu6Kfj8xk8Tjz8vuqvzdKTuKKlLZFb214dai5J32Kw781Z1DOZ9Amd3GNV/exec';
-const VERSION = 'v2.5.0', VERDATE = '2026-11-07';
+const VERSION = 'v2.5.1', VERDATE = '2026-11-07';
 const ICS = ['GSB','WEN','KKS','PBS'];
 const COMPANIES = ['EcoOils', ...ICS];
 const LOCS = ["ADMINISTRATION BUILDING", "BLOCK 6 B SOUTH EAST CORNER", "BLOCK 6B", "BLOCK 6B EAST GATE", "BOILER / CHIMNEY AREA", "CONTROL ROOM, MCC ROOM", "COOLING TOWER", "DDE TREATMENT PLANT (DTP)", "DIESEL TANK", "DIRTY COOLING TOWER", "DRY AND LIQUID CHEMICAL STORAGE", "ECOOILS WARE HOUSE", "EFFLUENT TREATMENT PLANT (ETP)", "ELECTRICAL SUBSTATION (PLN)", "EXTRACTION PLANT", "FA PLANT", "FIRE WATER PUMP HOUSE", "FIRE WATER TANK", "GSB OFFICE", "HEXANE AND DIESEL RECEIVING BAY", "HEXANE TANK", "KKS OFFICE", "LOADING/UNLOADING AREA (PUMP HOUSE)", "MCC BUILDING", "NORTH-WEST CORNER BLOCK 6A", "OFFICE VEHICLE PARKING AREA", "OIL POLISHING PLANT", "PBS OFFICE", "PIPE RACK", "PRE TREATMENT UNIT (PTU)", "RAW WATER PIT", "SCHEDULED & DOMESTIC WASTE SHED", "SECURITY BUILDING", "SECURITY POST", "SILO", "TANK FARM", "TRUCK PARKING AREA", "VAPOR ABSORPTION MACHINE (VAM) SHED", "WAREHOUSE", "WAREHOUSE BLOCK B", "WASTE WATER TREATMENT PLANT (WWTP)", "WATER TANK", "WATER TREATMENT PLANT (WTP) AND WATER TANKS", "WEIGHT BRIDGE", "WEN OFFICE", "WORKSHOP AREA"];
@@ -350,7 +350,7 @@ const D = {
 'btn.fix':['Instant fix (works offline)','Perbaikan instan (tanpa internet)','Pembetulan segera (tanpa internet)'],'a.fix':['Instant fix','Perbaikan instan','Pembetulan segera'],
 'btn.quick':['Quick rephrase (AI)','Rephrase cepat (AI)','Tulis semula pantas (AI)'],
 'btn.ai':['Full rewrite + story (AI, slower)','Tulis ulang lengkap + cerita (AI, lebih lama)','Tulis semula penuh + cerita (AI, lebih lama)'],
-'ai.hint':['Instant fix works offline in a second: it corrects spelling, spacing, punctuation, capitals and informal words. The two AI buttons are optional and can improve the wording further. Photos are never sent.','Perbaikan instan bekerja tanpa internet dalam sedetik: memperbaiki ejaan, spasi, tanda baca, huruf kapital dan kata tidak baku. Dua tombol AI bersifat opsional dan dapat memperbaiki kalimat lebih jauh. Foto tidak pernah dikirim.','Pembetulan segera berfungsi tanpa internet dalam sesaat: membetulkan ejaan, jarak, tanda baca, huruf besar dan perkataan tidak formal. Dua butang AI adalah pilihan dan boleh memperbaiki ayat lebih lanjut. Gambar tidak pernah dihantar.'],
+'ai.hint':['Instant fix works offline in a second: it corrects spelling, spacing, punctuation, capitals and informal words. Quick rephrase (AI) is optional and can improve the wording further. Photos are never sent.','Perbaikan instan bekerja tanpa internet dalam sedetik: memperbaiki ejaan, spasi, tanda baca, huruf kapital dan kata tidak baku. Rephrase cepat (AI) bersifat opsional dan dapat memperbaiki kalimat lebih jauh. Foto tidak pernah dikirim.','Pembetulan segera berfungsi tanpa internet dalam sesaat: membetulkan ejaan, jarak, tanda baca, huruf besar dan perkataan tidak formal. Tulis semula pantas (AI) adalah pilihan dan boleh memperbaiki ayat lebih lanjut. Gambar tidak pernah dihantar.'],
 'done.title':['Nomination received','Nominasi diterima','Pencalonan diterima'],
 'a.login':['HSSE admin sign-in','Masuk admin HSSE','Log masuk admin HSSE'],'a.email':['Email','Email','Emel'],'a.pin':['PIN','PIN','PIN'],'a.loginBtn':['Sign in','Masuk','Log masuk'],'a.forgot':['Forgot PIN / set PIN','Lupa PIN / atur PIN','Lupa PIN / tetapkan PIN'],
 'a.resetInfo':['A one-time code is emailed to the registered HSSE admin address. PINs can only be set this way.','Kode sekali pakai dikirim ke email admin HSSE terdaftar. PIN hanya bisa diatur dengan cara ini.','Kod sekali guna dihantar ke emel admin HSSE berdaftar. PIN hanya boleh ditetapkan dengan cara ini.'],
@@ -382,7 +382,7 @@ const M = {
  crit:{hazard_identified:['Hazard identified','Bahaya ditemukan','Bahaya dikenal pasti'],ownership:['Ownership','Tanggung jawab','Pemilikan'],corrected:['Corrected / prevented','Diperbaiki / dicegah','Dibetulkan / dicegah'],outcome:['Clear outcome','Hasil jelas','Hasil jelas'],spec:['Specific detail','Detail spesifik','Butiran khusus'],photos:['Before and After photos','Foto Sebelum dan Sesudah','Gambar Sebelum dan Selepas']},
  tip:{hazard_identified:['Describe the specific hazard: what exactly was wrong, where, and what could have happened.','Jelaskan bahaya yang spesifik: apa tepatnya yang salah, di mana, dan apa yang bisa terjadi.','Terangkan bahaya khusus: apa sebenarnya yang salah, di mana, dan apa yang boleh berlaku.'],ownership:['Say what the person did themselves, with action words (stopped, reported, fixed, installed, removed…).','Tulis apa yang dilakukan orang itu sendiri, dengan kata kerja (menghentikan, melaporkan, memperbaiki, memasang…).','Nyatakan apa yang dilakukan sendiri, dengan kata kerja (menghentikan, melaporkan, membaiki, memasang…).'],corrected:['Say how the condition was corrected or the incident prevented.','Tulis bagaimana kondisi diperbaiki atau insiden dicegah.','Nyatakan bagaimana keadaan dibetulkan atau insiden dicegah.'],outcome:['Describe the result: what is safer now, or what was prevented.','Jelaskan hasilnya: apa yang lebih aman sekarang, atau apa yang dicegah.','Terangkan hasilnya: apa yang lebih selamat sekarang, atau apa yang dicegah.'],spec:['Add more detail: location, equipment or tag number, how many.','Tambahkan detail: lokasi, peralatan atau nomor tag, jumlah.','Tambah butiran: lokasi, peralatan atau nombor tag, bilangan.']},
  rSame:['The Before and After photos are the same picture.','Foto Sebelum dan Sesudah adalah gambar yang sama.','Gambar Sebelum dan Selepas adalah gambar yang sama.'],
- fixDone:['Instant fix made {n} correction(s). Check the result below, then use it.','Perbaikan instan membuat {n} koreksi. Periksa hasilnya di bawah, lalu pakai.','Pembetulan segera membuat {n} pembetulan. Semak hasil di bawah, kemudian guna.'], fixNone:['Nothing to correct: spelling, spacing and punctuation already look fine. For stronger wording, try the AI buttons.','Tidak ada yang perlu dikoreksi: ejaan, spasi dan tanda baca sudah baik. Untuk kalimat lebih kuat, coba tombol AI.','Tiada yang perlu dibetulkan: ejaan, jarak dan tanda baca sudah baik. Untuk ayat lebih kuat, cuba butang AI.'],
+ fixDone:['Instant fix made {n} correction(s). Check the result below, then use it.','Perbaikan instan membuat {n} koreksi. Periksa hasilnya di bawah, lalu pakai.','Pembetulan segera membuat {n} pembetulan. Semak hasil di bawah, kemudian guna.'], fixNone:['Nothing to correct: spelling, spacing and punctuation already look fine. For stronger wording, try Quick rephrase.','Tidak ada yang perlu dikoreksi: ejaan, spasi dan tanda baca sudah baik. Untuk kalimat lebih kuat, coba Rephrase cepat.','Tiada yang perlu dibetulkan: ejaan, jarak dan tanda baca sudah baik. Untuk ayat lebih kuat, cuba Tulis semula pantas.'],
  aiOff:['AI wording help is not available right now. You can still submit: the quality check above does not need AI.','Bantuan kalimat AI sedang tidak tersedia. Anda tetap bisa mengirim: pemeriksaan kualitas di atas tidak memerlukan AI.','Bantuan ayat AI tidak tersedia sekarang. Anda masih boleh hantar: semakan kualiti di atas tidak memerlukan AI.'],
  photoCheck:['Photos show before and after','Foto menunjukkan sebelum dan sesudah','Gambar menunjukkan sebelum dan selepas'],
  yes:['yes','ya','ya'],unclear:['unclear','kurang jelas','kurang jelas'],no:['no','tidak','tidak'],not_provided:['not provided','tidak ada','tiada'],
@@ -579,7 +579,7 @@ function runFix(){
 }
 async function runAI(mode){
   const v = vals(); if (!v.observation || !v.action || !v.outcome) { toast(m('rReq'), true); return; }
-  const quick = mode === 'quick', bq = $('#btnQuick'), bf = $('#btnAI'), pressed = quick ? bq : bf;
+  const quick = mode === 'quick', bq = $('#btnQuick'), bf = {}, pressed = bq;
   bq.disabled = bf.disabled = true; pressed.textContent = quick ? m('aiQuick') : m('aiBusy');
   try {
     let cid = localStorage.getItem('rec_cid'); if (!cid) { cid = Math.random().toString(36).slice(2); localStorage.setItem('rec_cid', cid); }
@@ -589,7 +589,7 @@ async function runAI(mode){
     if (e.message === 'NOAPI') { $('#noapi').hidden = false; toast(t('api.missing'), true); }
     else { aiState.result = null; aiState.down = true; console.warn('AI:', e.message); toast(m('aiOff'), true); }
   }
-  bq.disabled = bf.disabled = false; bq.textContent = t('btn.quick'); bf.textContent = t('btn.ai'); renderAI(); renderGate();
+  bq.disabled = bf.disabled = false; bq.textContent = t('btn.quick'); renderAI(); renderGate();
 }
 function renderAI(){
   const o = $('#aiOut'), r = aiState.result; if (!r) { o.innerHTML = ''; return; }
@@ -787,7 +787,7 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#f_loc').addEventListener('change', () => { $('#f_loc2').hidden = $('#f_loc').value !== '__other'; });
   $('#f_ic').addEventListener('change', () => { $('#f_ic2').hidden = $('#f_ic').value !== 'OTHER'; });
   $('#f_cc').onchange = () => { const o = $('#f_cc').value === 'OTHER'; $('#f_cc2').hidden = !o; $('#ccNote').hidden = !o; };
-  $('#btnFix').onclick = runFix; $('#btnAI').onclick = () => runAI('full'); $('#btnQuick').onclick = () => runAI('quick'); $('#btnSubmit').onclick = submitNom; $('#btnNew').onclick = resetForm;
+  $('#btnFix').onclick = runFix; $('#btnQuick').onclick = () => runAI('quick'); $('#btnSubmit').onclick = submitNom; $('#btnNew').onclick = resetForm;
   renderPhotoBoxes(); renderRules(); renderGate();
   /* admin */
   $('#l_email').value = localStorage.getItem('rec_email') || '';
