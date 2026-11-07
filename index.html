@@ -305,7 +305,7 @@ table.wk td.zero{color:#aaa}table.wk td.cur.zero{background:var(--errbg);color:#
 <script>
 /* ---------- constants (edit here) ---------- */
 const API_URL = 'https://script.google.com/macros/s/AKfycbx2wdQ_TGsu6Kfj8xk8Tjz8vuqvzdKTuKKlLZFb214dai5J32Kw781Z1DOZ9Amd3GNV/exec';
-const VERSION = 'v2.7.0', VERDATE = '2026-11-07';
+const VERSION = 'v2.7.1', VERDATE = '2026-11-07';
 const ICS = ['GSB','WEN','KKS','PBS'];
 const COMPANIES = ['EcoOils', ...ICS];
 const LOCS = ["ADMINISTRATION BUILDING", "BLOCK 6 B SOUTH EAST CORNER", "BLOCK 6B", "BLOCK 6B EAST GATE", "BOILER / CHIMNEY AREA", "CONTROL ROOM, MCC ROOM", "COOLING TOWER", "DDE TREATMENT PLANT (DTP)", "DIESEL TANK", "DIRTY COOLING TOWER", "DRY AND LIQUID CHEMICAL STORAGE", "ECOOILS WARE HOUSE", "EFFLUENT TREATMENT PLANT (ETP)", "ELECTRICAL SUBSTATION (PLN)", "EXTRACTION PLANT", "FA PLANT", "FIRE WATER PUMP HOUSE", "FIRE WATER TANK", "GSB OFFICE", "HEXANE AND DIESEL RECEIVING BAY", "HEXANE TANK", "KKS OFFICE", "LOADING/UNLOADING AREA (PUMP HOUSE)", "MCC BUILDING", "NORTH-WEST CORNER BLOCK 6A", "OFFICE VEHICLE PARKING AREA", "OIL POLISHING PLANT", "PBS OFFICE", "PIPE RACK", "PRE TREATMENT UNIT (PTU)", "RAW WATER PIT", "SCHEDULED & DOMESTIC WASTE SHED", "SECURITY BUILDING", "SECURITY POST", "SILO", "TANK FARM", "TRUCK PARKING AREA", "VAPOR ABSORPTION MACHINE (VAM) SHED", "WAREHOUSE", "WAREHOUSE BLOCK B", "WASTE WATER TREATMENT PLANT (WWTP)", "WATER TANK", "WATER TREATMENT PLANT (WTP) AND WATER TANKS", "WEIGHT BRIDGE", "WEN OFFICE", "WORKSHOP AREA"];
@@ -724,7 +724,7 @@ function selectRow(id, keep){
   cur.certDate = $('#e_cdate').value; cur.certLang = $('#e_lang').value;
   $('#e_para').value = r.certPara || genPara(cur, cur.certLang); cur.certPara = $('#e_para').value;
   $('#edNom').textContent = m('nomBy') + ': ' + [r.nomName, r.nomRole, r.nomIC, r.nomPhone].filter(Boolean).join(' · ');
-  const ai = r.aiScore !== '' ? `<span class="score ${r.aiScore >= 8 ? 'hi' : r.aiScore >= 6 ? 'mid' : 'lo'}" style="width:40px;height:40px;min-width:40px;font-size:17px">${esc(r.aiScore)}</span> <span class="hint">${esc(r.aiVerdict)}</span>` : '';
+  const ai = r.aiScore !== '' ? `<span class="score ${r.aiScore >= 8 ? 'hi' : r.aiScore >= 6 ? 'mid' : 'lo'}" style="width:40px;height:40px;min-width:40px;font-size:17px">${esc(r.aiScore)}</span> <span class="hint">${esc(M.verdict[r.aiVerdict] ? m('verdict', r.aiVerdict) : r.aiVerdict)}</span>` : '';
   const imp0 = improvedOf(r), sto = ['en', 'id'].filter(k => imp0[k] && imp0[k].story).map(k => `<div class="box info"><b>${k.toUpperCase()}</b> ${esc(imp0[k].story)}</div>`).join('');
   $('#edAI').innerHTML = ai + (sto ? `<div class="hint" style="margin-top:8px">${esc(m('story'))}</div>${sto}` : '');
   if (!keep) { loadThumbs(r.id, '#ed_before', String(r.beforePhotos).split(',').filter(Boolean)); loadThumbs(r.id, '#ed_after', String(r.afterPhotos).split(',').filter(Boolean)); }
