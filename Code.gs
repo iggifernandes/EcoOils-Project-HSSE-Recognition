@@ -1,4 +1,4 @@
-// Code.gs v1.0.6 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
+// Code.gs v1.0.7 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
 // Deploy: Extensions > Apps Script (on iggifernandes@gmail.com) > paste this file > run setup() once >
 //   Project Settings > Script properties: add GEMINI_API_KEY (free Google AI Studio key) >
 //   Deploy > New deployment > Web app > Execute as: Me, Who has access: Anyone.
@@ -6,11 +6,11 @@
 var SHEET_NAME = 'Nominations';
 var COLS = ['id','createdAt','week','status','certNo','name','nick','role','ic','location','eventDate',
   'observation','action','outcome','category','nomName','nomRole','nomIC','nomPhone',
-  'beforePhotos','afterPhotos','aiScore','aiVerdict','aiJson','certLang','certDate','certPara','hseNote','updatedAt','source'];
+  'beforePhotos','afterPhotos','aiScore','aiVerdict','aiJson','certLang','certDate','certPara','hseNote','updatedAt','source','level'];
 var EDITABLE = ['status','certNo','name','nick','role','ic','location','eventDate','observation','action','outcome',
-  'category','certLang','certDate','certPara','hseNote'];
+  'category','certLang','certDate','certPara','hseNote','level'];
 var IC_LIST = ['EcoOils','GSB','WEN','KKS','PBS'];
-var VERSION = 'v1.0.6';
+var VERSION = 'v1.0.7';
 
 /* ---------- one-time setup ---------- */
 function setup() {
@@ -73,7 +73,12 @@ function out_(o) {
   return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);
 }
 function prop_(k) { return PropertiesService.getScriptProperties().getProperty(k); }
-function sheet_() { return SpreadsheetApp.openById(prop_('SHEET_ID')).getSheetByName(SHEET_NAME); }
+function sheet_() {
+  var sh = SpreadsheetApp.openById(prop_('SHEET_ID')).getSheetByName(SHEET_NAME);
+  // upgrade older sheets: add any new column headers (e.g. 'level') without touching existing data
+  if (sh && sh.getLastColumn() < COLS.length) sh.getRange(1, 1, 1, COLS.length).setValues([COLS]).setFontWeight('bold');
+  return sh;
+}
 function s_(v, max) { return String(v == null ? '' : v).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '').trim().slice(0, max || 2000); }
 
 /* ---------- submit ---------- */
@@ -125,7 +130,7 @@ function submit_(r) {
       nomPhone: s_(f.nomPhone, 40), beforePhotos: b.join(','), afterPhotos: a.join(','),
       aiScore: typeof ai.score === 'number' ? ai.score : '', aiVerdict: s_(ai.verdict, 20),
       aiJson: ai.improved ? JSON.stringify(ai.improved).slice(0, 45000) : '',
-      certLang: 'id', certDate: '', certPara: '', hseNote: '', updatedAt: now.toISOString(), source: s_(r.source || 'web', 20)
+      level: (['crew','sup','hsse'].indexOf(s_(f.level)) >= 0 ? s_(f.level) : 'crew'), certLang: 'id', certDate: '', certPara: '', hseNote: '', updatedAt: now.toISOString(), source: s_(r.source || 'web', 20)
     };
     sheet_().appendRow(COLS.map(function (c) { return row[c] == null ? '' : row[c]; }));
     return { ok: true, id: id };
