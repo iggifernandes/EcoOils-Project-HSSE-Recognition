@@ -1,4 +1,4 @@
-// Code.gs v1.0.8 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
+// Code.gs v1.0.9 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
 // Deploy: Extensions > Apps Script (on iggifernandes@gmail.com) > paste this file > run setup() once >
 //   Project Settings > Script properties: add GEMINI_API_KEY (free Google AI Studio key) >
 //   Deploy > New deployment > Web app > Execute as: Me, Who has access: Anyone.
@@ -8,9 +8,9 @@ var COLS = ['id','createdAt','week','status','certNo','name','nick','role','ic',
   'observation','action','outcome','category','nomName','nomRole','nomIC','nomPhone',
   'beforePhotos','afterPhotos','aiScore','aiVerdict','aiJson','certLang','certDate','certPara','hseNote','updatedAt','source','level'];
 var EDITABLE = ['status','certNo','name','nick','role','ic','location','eventDate','observation','action','outcome',
-  'category','certLang','certDate','certPara','hseNote','level'];
+  'category','certLang','certDate','certPara','hseNote','level','aiJson'];
 var IC_LIST = ['EcoOils','GSB','WEN','KKS','PBS'];
-var VERSION = 'v1.0.8';
+var VERSION = 'v1.0.9';
 
 /* ---------- one-time setup ---------- */
 function setup() {
@@ -173,6 +173,15 @@ function models_(mode) {
 }
 
 /* QUICK REPHRASE: only the three text boxes, same language as written, short output = a few seconds */
+function trSchema_() {
+  return { type: 'OBJECT', properties: { observation: { type: 'STRING' }, action: { type: 'STRING' }, outcome: { type: 'STRING' } }, required: ['observation', 'action', 'outcome'] };
+}
+var AI_TRANS = [
+  'You are a professional translator for HSSE documents at a construction site in Indonesia.',
+  'Translate the three notes (observation, action, outcome) into {LANG}. Keep the meaning exactly. Use clear, correct, professional wording.',
+  'Do not add, remove or invent any facts, names, numbers or tags. Keep acronyms (PPE, PTW, JHA, LOTO, DTP, etc.) and proper names unchanged. If a note is already in {LANG}, only fix grammar.',
+  'Reply ONLY with JSON matching the schema.'
+].join('\n');
 var AI_QUICK = [
   'You are an HSSE copy editor for a construction site in Indonesia.',
   'Rephrase the nominator\'s three notes into clear, correct, professional sentences in active voice. Write in the SAME language the nominator used (English, Bahasa Indonesia or Malay). Keep each answer about as long as the original.',
@@ -187,7 +196,8 @@ function quickSchema_() {
 function aiReview_(r) {
   var key = prop_('GEMINI_API_KEY');
   if (!key) return { ok: false, error: 'AI not configured: add script property GEMINI_API_KEY (Project Settings > Script properties)' };
-  var f = r.fields || {}, quick = r.mode === 'quick';
+  var f = r.fields || {}, tr = r.mode === 'translate', quick = r.mode === 'quick' || tr;
+  var target = { en: 'English', id: 'Bahasa Indonesia', ms: 'Bahasa Melayu (Malay)' }[s_(r.target, 4)] || 'English';
   var cache = CacheService.getScriptCache(), rk = 'airate_' + (s_(r.client, 40) || 'x');
   var n = Number(cache.get(rk) || 0);
   if (n >= 20) return { ok: false, error: 'Too many AI requests. Try again in a few minutes.' };
@@ -196,9 +206,9 @@ function aiReview_(r) {
   var text = 'Nominee: ' + s_(f.name, 120) + ' (' + s_(f.role, 120) + ', ' + s_(f.ic, 40) + ')\nLocation: ' + s_(f.location, 120) +
     '\nObservation (hazard found): ' + s_(f.observation) + '\nAction taken: ' + s_(f.action) + '\nOutcome: ' + s_(f.outcome);
   function body_(noThink) {
-    var g = { responseMimeType: 'application/json', responseSchema: quick ? quickSchema_() : schema_(), temperature: quick ? 0.3 : 0.5, maxOutputTokens: quick ? 900 : 3500 };
+    var g = { responseMimeType: 'application/json', responseSchema: tr ? trSchema_() : (quick ? quickSchema_() : schema_()), temperature: quick ? 0.3 : 0.5, maxOutputTokens: tr ? 2000 : (quick ? 900 : 3500) };
     if (noThink) g.thinkingConfig = { thinkingBudget: 0 }; // no hidden "thinking" time: much faster
-    return JSON.stringify({ systemInstruction: { parts: [{ text: quick ? AI_QUICK : AI_SYSTEM }] }, contents: [{ role: 'user', parts: [{ text: text }] }], generationConfig: g });
+    return JSON.stringify({ systemInstruction: { parts: [{ text: tr ? AI_TRANS.replace('{LANG}', target) : (quick ? AI_QUICK : AI_SYSTEM) }] }, contents: [{ role: 'user', parts: [{ text: text }] }], generationConfig: g });
   }
   function call_(model, payload) {
     return UrlFetchApp.fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent', {
@@ -223,7 +233,7 @@ function aiReview_(r) {
     var body = JSON.parse(res.getContentText());
     var j = JSON.parse(body.candidates[0].content.parts[0].text);
     if (!quick) j.generic = !!j.generic;
-    return { ok: true, result: j, model: used, mode: quick ? 'quick' : 'full' };
+    return { ok: true, result: j, model: used, mode: tr ? 'translate' : (quick ? 'quick' : 'full') };
   } catch (e) { return { ok: false, error: 'AI returned an unreadable answer' }; }
 }
 
@@ -340,7 +350,7 @@ function update_(r) {
     var cur = sh.getRange(row, 1, 1, COLS.length).getValues()[0], rec = {};
     COLS.forEach(function (c, i) { rec[c] = cur[i]; });
     var patch = r.patch || {};
-    EDITABLE.forEach(function (k) { if (patch[k] !== undefined) rec[k] = s_(patch[k], k === 'certPara' ? 4000 : 2000); });
+    EDITABLE.forEach(function (k) { if (patch[k] !== undefined) rec[k] = s_(patch[k], k === 'aiJson' ? 45000 : (k === 'certPara' ? 4000 : 2000)); });
     if (['Pending', 'Approved', 'Issued', 'Rejected'].indexOf(rec.status) < 0) throw new Error('Bad status');
     if ((rec.status === 'Approved' || rec.status === 'Issued') && !rec.certNo) {
       var all = sh.getRange(2, COLS.indexOf('certNo') + 1, n - 1, 1).getValues().filter(function (x) { return x[0]; }).length;
