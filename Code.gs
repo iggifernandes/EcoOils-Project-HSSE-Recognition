@@ -1,4 +1,4 @@
-// Code.gs v1.0.7 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
+// Code.gs v1.0.8 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
 // Deploy: Extensions > Apps Script (on iggifernandes@gmail.com) > paste this file > run setup() once >
 //   Project Settings > Script properties: add GEMINI_API_KEY (free Google AI Studio key) >
 //   Deploy > New deployment > Web app > Execute as: Me, Who has access: Anyone.
@@ -10,7 +10,7 @@ var COLS = ['id','createdAt','week','status','certNo','name','nick','role','ic',
 var EDITABLE = ['status','certNo','name','nick','role','ic','location','eventDate','observation','action','outcome',
   'category','certLang','certDate','certPara','hseNote','level'];
 var IC_LIST = ['EcoOils','GSB','WEN','KKS','PBS'];
-var VERSION = 'v1.0.7';
+var VERSION = 'v1.0.8';
 
 /* ---------- one-time setup ---------- */
 function setup() {
@@ -62,6 +62,7 @@ function doPost(e) {
       case 'list': requireAdmin_(req); return out_({ ok: true, rows: readAll_() });
       case 'photo': requireAdmin_(req); return out_(photo_(req));
       case 'update': requireAdmin_(req); return out_(update_(req));
+      case 'delete': requireAdmin_(req); return out_(delete_(req));
       default: return out_({ ok: false, error: 'Unknown action' });
     }
   } catch (err) {
@@ -305,6 +306,26 @@ function photo_(r) {
   if (!ok) throw new Error('Not allowed');
   var b = f.getBlob();
   return { ok: true, uri: 'data:' + b.getContentType() + ';base64,' + Utilities.base64Encode(b.getBytes()) };
+}
+
+/* Delete nominations (admin only). Rows are removed from the sheet; their photos go to the Drive trash (recoverable for 30 days). */
+function delete_(r) {
+  var ids = (r.ids || []).map(function (x) { return String(x); });
+  if (!ids.length || ids.length > 200) throw new Error('Nothing to delete');
+  var lock = LockService.getScriptLock(); lock.waitLock(20000);
+  try {
+    var sh = sheet_(), n = sh.getLastRow(), done = 0;
+    if (n < 2) return { ok: true, deleted: 0 };
+    var data = sh.getRange(2, 1, n - 1, COLS.length).getValues(), ib = COLS.indexOf('beforePhotos'), ia = COLS.indexOf('afterPhotos');
+    for (var i = data.length - 1; i >= 0; i--) {
+      if (ids.indexOf(String(data[i][0])) < 0) continue;
+      String(data[i][ib] + ',' + data[i][ia]).split(',').forEach(function (f) {
+        f = f.trim(); if (f) { try { DriveApp.getFileById(f).setTrashed(true); } catch (e) {} }
+      });
+      sh.deleteRow(i + 2); done++;
+    }
+    return { ok: true, deleted: done };
+  } finally { lock.releaseLock(); }
 }
 
 function update_(r) {

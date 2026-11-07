@@ -234,6 +234,7 @@ table.wk td.zero{color:#aaa}table.wk td.cur.zero{background:var(--errbg);color:#
       <button class="btn pri sm" id="btnPrintCerts" data-i="a.printCerts"></button>
       <button class="btn sm" id="btnPrintCards" data-i="a.printCards"></button>
       <button class="btn ghost sm" id="btnCsv" data-i="a.csv"></button>
+      <button class="btn ghost danger sm" id="btnDelSel" data-i="a.delSel"></button>
     </div>
     <div class="hint" id="selInfo" style="margin-top:6px"></div>
     <ul class="list" id="nomList"></ul>
@@ -244,6 +245,7 @@ table.wk td.zero{color:#aaa}table.wk td.cur.zero{background:var(--errbg);color:#
     <div id="edBody" hidden>
      <div class="card">
       <div class="row" style="justify-content:space-between"><h2 style="margin:0" id="edTitle"></h2><span id="edStatus"></span></div>
+      <div id="edScore"></div>
       <div id="edAI"></div>
       <div class="grid" style="margin-top:8px">
        <label class="f"><span data-i="f.name"></span><input id="e_name"></label>
@@ -276,6 +278,7 @@ table.wk td.zero{color:#aaa}table.wk td.cur.zero{background:var(--errbg);color:#
        <button class="btn" id="btnPrintCard" data-i="a.printCard"></button>
        <button class="btn" id="btnIssued" data-i="a.issued"></button>
        <button class="btn ghost danger" id="btnReject" data-i="a.reject"></button>
+       <button class="btn ghost danger" id="btnDel" data-i="a.del"></button>
       </div>
      </div>
      <div class="card"><div class="row" style="justify-content:space-between;margin-bottom:8px"><h2 style="margin:0" data-i="a.preview"></h2>
@@ -305,7 +308,7 @@ table.wk td.zero{color:#aaa}table.wk td.cur.zero{background:var(--errbg);color:#
 <script>
 /* ---------- constants (edit here) ---------- */
 const API_URL = 'https://script.google.com/macros/s/AKfycbx2wdQ_TGsu6Kfj8xk8Tjz8vuqvzdKTuKKlLZFb214dai5J32Kw781Z1DOZ9Amd3GNV/exec';
-const VERSION = 'v2.7.1', VERDATE = '2026-11-07';
+const VERSION = 'v2.9.0', VERDATE = '2026-11-07';
 const ICS = ['GSB','WEN','KKS','PBS'];
 const COMPANIES = ['EcoOils', ...ICS];
 const LOCS = ["ADMINISTRATION BUILDING", "BLOCK 6 B SOUTH EAST CORNER", "BLOCK 6B", "BLOCK 6B EAST GATE", "BOILER / CHIMNEY AREA", "CONTROL ROOM, MCC ROOM", "COOLING TOWER", "DDE TREATMENT PLANT (DTP)", "DIESEL TANK", "DIRTY COOLING TOWER", "DRY AND LIQUID CHEMICAL STORAGE", "ECOOILS WARE HOUSE", "EFFLUENT TREATMENT PLANT (ETP)", "ELECTRICAL SUBSTATION (PLN)", "EXTRACTION PLANT", "FA PLANT", "FIRE WATER PUMP HOUSE", "FIRE WATER TANK", "GSB OFFICE", "HEXANE AND DIESEL RECEIVING BAY", "HEXANE TANK", "KKS OFFICE", "LOADING/UNLOADING AREA (PUMP HOUSE)", "MCC BUILDING", "NORTH-WEST CORNER BLOCK 6A", "OFFICE VEHICLE PARKING AREA", "OIL POLISHING PLANT", "PBS OFFICE", "PIPE RACK", "PRE TREATMENT UNIT (PTU)", "RAW WATER PIT", "SCHEDULED & DOMESTIC WASTE SHED", "SECURITY BUILDING", "SECURITY POST", "SILO", "TANK FARM", "TRUCK PARKING AREA", "VAPOR ABSORPTION MACHINE (VAM) SHED", "WAREHOUSE", "WAREHOUSE BLOCK B", "WASTE WATER TREATMENT PLANT (WWTP)", "WATER TANK", "WATER TREATMENT PLANT (WTP) AND WATER TANKS", "WEIGHT BRIDGE", "WEN OFFICE", "WORKSHOP AREA"];
@@ -334,7 +337,7 @@ const D = {
 'n.notEnough':['Not enough:','Belum cukup:','Tidak mencukupi:'],
 'n.example':['“Exemplary safety standard” or “strong safety commitment”. Good example: “Found a scaffold with a missing toe board over a walkway, stopped work, fitted the board and re-tagged it before anyone passed under.”','“Standar keselamatan teladan” atau “komitmen keselamatan tinggi”. Contoh baik: “Menemukan scaffold tanpa toe board di atas jalur jalan, menghentikan pekerjaan, memasang toe board dan memasang tag ulang sebelum ada yang lewat.”','“Standard keselamatan teladan” atau “komitmen keselamatan tinggi”. Contoh baik: “Mendapati perancah tanpa toe board di atas laluan, menghentikan kerja, memasang papan dan menanda semula sebelum sesiapa lalu.”'],
 'n.nominee':['Who are you recognising?','Siapa yang diberi penghargaan?','Siapa yang diiktiraf?'],
-'f.name':['Full name','Nama lengkap','Nama penuh'],'f.nick':['Nickname (optional)','Nama panggilan (opsional)','Nama panggilan (pilihan)'],'f.role':['Position','Jabatan','Jawatan'],'ph.otherPos':['Type the position','Tulis jabatan','Taip jawatan'],'f.level':['Nominee level','Tingkat nominasi','Tahap pencalonan'],'a.level':['Level','Tingkat','Tahap'],'f.ic':['Company','Perusahaan','Syarikat'],
+'f.name':['Full name','Nama lengkap','Nama penuh'],'f.nick':['Nickname (optional)','Nama panggilan (opsional)','Nama panggilan (pilihan)'],'f.role':['Position','Jabatan','Jawatan'],'ph.otherPos':['Type the position','Tulis jabatan','Taip jawatan'],'a.del':['Delete','Hapus','Padam'],'a.delSel':['Delete selected','Hapus yang dipilih','Padam yang dipilih'],'f.level':['Nominee level','Tingkat nominasi','Tahap pencalonan'],'a.level':['Level','Tingkat','Tahap'],'f.ic':['Company','Perusahaan','Syarikat'],
 'ph.otherLoc':['Type the location','Ketik lokasi','Taip lokasi'],'ph.otherCo':['Type the company name','Ketik nama perusahaan','Taip nama syarikat'],
 'f.location':['Location','Lokasi','Lokasi'],'f.date':['Date of the intervention','Tanggal intervensi','Tarikh intervensi'],'f.category':['Category','Kategori','Kategori'],
 'n.what':['What happened','Apa yang terjadi','Apa yang berlaku'],
@@ -390,6 +393,10 @@ const M = {
  fixDone:['Instant fix made {n} correction(s). Check the result below, then use it.','Perbaikan instan membuat {n} koreksi. Periksa hasilnya di bawah, lalu pakai.','Pembetulan segera membuat {n} pembetulan. Semak hasil di bawah, kemudian guna.'], fixNone:['Nothing to correct: spelling, spacing and punctuation already look fine. For stronger wording, try Quick rephrase.','Tidak ada yang perlu dikoreksi: ejaan, spasi dan tanda baca sudah baik. Untuk kalimat lebih kuat, coba Rephrase cepat.','Tiada yang perlu dibetulkan: ejaan, jarak dan tanda baca sudah baik. Untuk ayat lebih kuat, cuba Tulis semula pantas.'],
  lv:{crew:['Crew / Worker','Kru / Pekerja','Kru / Pekerja'],sup:['Supervisor / Foreman','Supervisor / Mandor','Penyelia / Mandur'],hsse:['HSSE Officer / Manager','Petugas / Manajer HSSE','Pegawai / Pengurus HSSE']},
  lvNote:['Supervisors and HSSE are expected to find hazards. This nomination can only be approved if the person went clearly beyond their normal duty. Say how in the Action field.','Supervisor dan HSSE memang bertugas menemukan bahaya. Nominasi ini hanya dapat disetujui bila orang tersebut jelas melampaui tugas normalnya. Jelaskan caranya di kolom Tindakan.','Penyelia dan HSSE memang bertugas mengesan bahaya. Pencalonan ini hanya boleh diluluskan jika individu itu jelas melangkaui tugas biasa. Terangkan caranya dalam ruangan Tindakan.'],
+ autoScore:['Automatic score from relevance and strength (updates as you edit)','Skor otomatis dari relevansi dan kekuatan (diperbarui saat Anda mengedit)','Skor automatik daripada kerelevanan dan kekuatan (dikemas kini semasa anda menyunting)'],
+ recApprove:['Suggestion: strong and relevant, approve.','Saran: kuat dan relevan, setujui.','Cadangan: kuat dan relevan, luluskan.'],recEdit:['Suggestion: acceptable. Tighten the wording (Instant fix) or ask for more detail before approving.','Saran: cukup. Rapikan kalimat (Perbaikan instan) atau minta detail lebih banyak sebelum menyetujui.','Cadangan: boleh diterima. Kemaskan ayat (Pembetulan segera) atau minta butiran lebih sebelum meluluskan.'],recReject:['Suggestion: too weak. Reject or send back for a specific intervention.','Saran: terlalu lemah. Tolak atau kembalikan untuk intervensi yang spesifik.','Cadangan: terlalu lemah. Tolak atau pulangkan untuk intervensi yang khusus.'],recBeyond:['Suggestion: acceptable score, but check it really goes beyond their normal duty before approving.','Saran: skor cukup, tetapi pastikan benar-benar melampaui tugas normalnya sebelum menyetujui.','Cadangan: skor boleh diterima, tetapi pastikan benar-benar melangkaui tugas biasa sebelum meluluskan.'],
+ beyondOk:['Beyond-duty: the text shows action beyond normal duty.','Melampaui tugas: teks menunjukkan tindakan di luar tugas normal.','Melangkaui tugas: teks menunjukkan tindakan di luar tugas biasa.'],beyondNo:['Beyond-duty: not shown. Supervisor/HSSE nominees are expected to find hazards, so the text must show action beyond normal duty.','Melampaui tugas: tidak terlihat. Supervisor/HSSE memang bertugas menemukan bahaya, jadi teks harus menunjukkan tindakan di luar tugas normal.','Melangkaui tugas: tidak kelihatan. Penyelia/HSSE memang bertugas mengesan bahaya, jadi teks mesti menunjukkan tindakan di luar tugas biasa.'],
+ delConfirm:['Delete {n} nomination(s) permanently? Photos go to the Drive trash. This cannot be undone here.','Hapus {n} nominasi secara permanen? Foto masuk ke tempat sampah Drive. Tidak dapat dibatalkan di sini.','Padam {n} pencalonan secara kekal? Gambar masuk ke tong sampah Drive. Tidak boleh dibatalkan di sini.'],delDone:['Deleted {n}.','{n} dihapus.','{n} dipadam.'],delNone:['Tick one or more nominations in the list first.','Centang satu atau lebih nominasi di daftar dulu.','Tanda satu atau lebih pencalonan dalam senarai dahulu.'],
  aiOff:['AI wording help is not available right now. You can still submit: the quality check above does not need AI.','Bantuan kalimat AI sedang tidak tersedia. Anda tetap bisa mengirim: pemeriksaan kualitas di atas tidak memerlukan AI.','Bantuan ayat AI tidak tersedia sekarang. Anda masih boleh hantar: semakan kualiti di atas tidak memerlukan AI.'],
  photoCheck:['Photos show before and after','Foto menunjukkan sebelum dan sesudah','Gambar menunjukkan sebelum dan selepas'],
  yes:['yes','ya','ya'],unclear:['unclear','kurang jelas','kurang jelas'],no:['no','tidak','tidak'],not_provided:['not provided','tidak ada','tiada'],
@@ -534,8 +541,10 @@ function rulesErrors(){
   return e;
 }
 /* Instant quality check, runs in the browser: no AI, no network. It checks that the nomination tells the whole story. */
-function analyze(){
-  const v = vals(), o = v.observation, a = v.action, u = v.outcome, all = o + ' ' + a + ' ' + u;
+const BEYOND = /(stop work|stop[- ]work authority|stopped (the |a |an |their |his |her )?(work|job|task|crew|operation|activity|lift|excavation)|halted|beyond|outside (his|her|their|the)|not (his|her|their|in (his|her|their)) (area|scope|duty|job)|volunteer|own initiative|on (his|her) own|unprompted|without being (asked|told)|proactive|inisiatif|sendiri|di luar|melampaui|tanpa diminta|tanpa disuruh|menghentikan|hentikan|stop kerja|luar tugas|inisiatif sendiri|atas inisiatif)/i;
+function analyze(){ const v = vals(); return scoreNom(v.observation, v.action, v.outcome, !!(PB.before.length && PB.after.length && PB.before[0].full !== PB.after[0].full), v.level); }
+function scoreNom(o, a, u, photos, level){
+  const all = o + ' ' + a + ' ' + u;
   const crit = {
     hazard_identified: o.length >= 60 && RX.hazard.test(o),
     ownership: a.length >= 50 && RX.act.test(a),
@@ -543,13 +552,13 @@ function analyze(){
     outcome: u.length >= 25 && RX.res.test(u)
   };
   const spec = all.length >= 180;
-  const photos = !!(PB.before.length && PB.after.length && PB.before[0].full !== PB.after[0].full);
   const generic = GENERIC.test(all) && all.length < 400;
   let score = (crit.hazard_identified ? 2 : 0) + (crit.ownership ? 2 : 0) + (crit.corrected ? 2 : 0) + (crit.outcome ? 2 : 0) + (spec ? 1 : 0) + (photos ? 1 : 0);
   if (generic) score = Math.max(0, score - 3);
   const tips = []; if (generic) tips.push('generic');
   ['hazard_identified', 'ownership', 'corrected', 'outcome'].forEach(k => { if (!crit[k]) tips.push(k); }); if (!spec) tips.push('spec');
-  return {score, verdict: score >= 8 ? 'strong' : score >= 6 ? 'needs_work' : 'weak', crit, spec, photos, generic, tips};
+  const beyond = (!level || level === 'crew') ? null : BEYOND.test(all);
+  return {score, verdict: score >= 8 ? 'strong' : score >= 6 ? 'needs_work' : 'weak', crit, spec, photos, generic, tips, beyond};
 }
 function renderQC(){
   const el = $('#qc'); if (!el) return;
@@ -724,7 +733,7 @@ function selectRow(id, keep){
   cur.certDate = $('#e_cdate').value; cur.certLang = $('#e_lang').value;
   $('#e_para').value = r.certPara || genPara(cur, cur.certLang); cur.certPara = $('#e_para').value;
   $('#edNom').textContent = m('nomBy') + ': ' + [r.nomName, r.nomRole, r.nomIC, r.nomPhone].filter(Boolean).join(' · ');
-  const ai = r.aiScore !== '' ? `<span class="score ${r.aiScore >= 8 ? 'hi' : r.aiScore >= 6 ? 'mid' : 'lo'}" style="width:40px;height:40px;min-width:40px;font-size:17px">${esc(r.aiScore)}</span> <span class="hint">${esc(M.verdict[r.aiVerdict] ? m('verdict', r.aiVerdict) : r.aiVerdict)}</span>` : '';
+  const ai = '';
   const imp0 = improvedOf(r), sto = ['en', 'id'].filter(k => imp0[k] && imp0[k].story).map(k => `<div class="box info"><b>${k.toUpperCase()}</b> ${esc(imp0[k].story)}</div>`).join('');
   $('#edAI').innerHTML = ai + (sto ? `<div class="hint" style="margin-top:8px">${esc(m('story'))}</div>${sto}` : '');
   if (!keep) { loadThumbs(r.id, '#ed_before', String(r.beforePhotos).split(',').filter(Boolean)); loadThumbs(r.id, '#ed_after', String(r.afterPhotos).split(',').filter(Boolean)); }
@@ -737,7 +746,19 @@ function readEditor(){
   return cur;
 }
 let pvT;
+function renderScore(){
+  const el = $('#edScore'); if (!el || !cur) return; const n = readEditor();
+  const bp = String(n.beforePhotos || '').split(',').filter(Boolean), ap = String(n.afterPhotos || '').split(',').filter(Boolean);
+  const q = scoreNom(n.observation || '', n.action || '', n.outcome || '', !!(bp.length && ap.length && bp[0] !== ap[0]), n.level);
+  const cls = q.score >= 8 ? 'hi' : q.score >= 6 ? 'mid' : 'lo', tick = (ok, k) => `<span>${ok ? '✓' : '✗'} ${esc(m('crit', k))}</span>`;
+  const rec = (q.beyond === false && q.score >= 6) ? 'recBeyond' : q.score >= 8 ? 'recApprove' : q.score >= 6 ? 'recEdit' : 'recReject';
+  const bey = q.beyond === null ? '' : `<div class="box ${q.beyond ? 'info' : 'warn'}" style="margin-top:6px">${esc(m(q.beyond ? 'beyondOk' : 'beyondNo'))}</div>`;
+  el.innerHTML = `<div class="row" style="margin:6px 0"><span class="score ${cls}" style="width:40px;height:40px;min-width:40px;font-size:17px">${q.score}</span><div><b>${esc(m('verdict', q.verdict))}</b><div class="hint">${esc(m('autoScore'))}</div></div></div>
+   <div class="crit">${tick(q.crit.hazard_identified, 'hazard_identified')}${tick(q.crit.ownership, 'ownership')}${tick(q.crit.corrected, 'corrected')}${tick(q.crit.outcome, 'outcome')}${tick(q.spec, 'spec')}${tick(q.photos, 'photos')}</div>${bey}
+   <div class="box ${rec === 'recApprove' ? 'info' : 'warn'}" style="margin-top:6px"><b>${esc(m(rec))}</b></div>`;
+}
 function renderPreview(){
+  renderScore();
   clearTimeout(pvT); pvT = setTimeout(async () => {
     const n = readEditor(); if (!n) return; $('#paraCnt').textContent = n.certPara.length + ' / ~420';
     const st = $('#pvStage'), wrap = $('#pvWrap');
@@ -818,6 +839,13 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#btnRegen').onclick = () => { if (cur) { $('#e_para').value = genPara(readEditor(), $('#e_lang').value); renderPreview(); } };
   $$('#pvTabs button').forEach(b => b.onclick = () => { PVMODE = b.dataset.p; $$('#pvTabs button').forEach(x => x.classList.toggle('on', x === b)); renderPreview(); });
   window.addEventListener('resize', renderPreview);
+  async function delIds(ids){
+    if (!ids.length) { toast(m('delNone'), true); return; }
+    if (!confirm(m('delConfirm').replace('{n}', ids.length))) return;
+    try { const j = await admApi({action:'delete', ids}); ids.forEach(id => SEL.delete(id)); if (cur && ids.includes(cur.id)) { cur = null; $('#edBody').hidden = true; $('#edEmpty').hidden = false; } await loadRows(); toast(m('delDone').replace('{n}', j.deleted)); } catch (e) { toast(e.message, true); }
+  }
+  $('#btnDelSel').onclick = () => delIds([...SEL]);
+  $('#btnDel').onclick = () => { if (cur) delIds([cur.id]); };
   $('#btnSave').onclick = () => saveRow().catch(e => toast(e.message, true));
   $('#btnApprove').onclick = () => saveRow({status:'Approved'}).catch(e => toast(e.message, true));
   $('#btnReject').onclick = () => saveRow({status:'Rejected'}).catch(e => toast(e.message, true));
