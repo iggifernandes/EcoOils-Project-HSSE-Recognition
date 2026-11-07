@@ -1,4 +1,4 @@
-// Code.gs v1.0.4 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
+// Code.gs v1.0.5 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
 // Deploy: Extensions > Apps Script (on iggifernandes@gmail.com) > paste this file > run setup() once >
 //   Project Settings > Script properties: add GEMINI_API_KEY (free Google AI Studio key) >
 //   Deploy > New deployment > Web app > Execute as: Me, Who has access: Anyone.
@@ -10,7 +10,7 @@ var COLS = ['id','createdAt','week','status','certNo','name','nick','role','ic',
 var EDITABLE = ['status','certNo','name','nick','role','ic','location','eventDate','observation','action','outcome',
   'category','certLang','certDate','certPara','hseNote'];
 var IC_LIST = ['EcoOils','GSB','WEN','KKS','PBS'];
-var VERSION = 'v1.0.4';
+var VERSION = 'v1.0.5';
 
 /* ---------- one-time setup ---------- */
 function setup() {
@@ -134,18 +134,19 @@ function submit_(r) {
 
 /* ---------- Gemini wording helper (OPTIONAL: the nomination quality check runs in the app, no AI needed) ---------- */
 var AI_SYSTEM = [
-  'You are a wording editor for HSSE recognition nominations at the EcoOils Project site (Sei Mangkei, North Sumatra, Indonesia).',
-  'You ONLY improve the wording, phrasing and level of detail of the text the nominator wrote. You never look at photos, never give a score and never decide whether the nomination is good.',
-  'Never invent facts. Use only what the nominator wrote. Keep names, tag numbers and locations unchanged.',
-  'If the text is generic praise ("strong safety commitment") set generic=true. If a reader would still need to know something (what exactly was wrong, what the person did, what changed), add a short question for the nominator to "issues".',
-  'Write clear, concise, professional safety language. Output: observation (what was found), action (what the person did), outcome (the result), highlight (one sentence, max 25 words, naming the intervention).',
-  'Provide the improved texts in English (en) and Bahasa Indonesia (id).',
+  'You are a senior HSSE communications writer for the EcoOils Project site (Sei Mangkei, North Sumatra, Indonesia). You turn a nominator\'s rough notes into bulletin-quality writing for the EcoOils HSSE Bulletin and recognition certificates.',
+  'You REWRITE, you do not just correct. Improve structure, flow and impact: strong active verbs, concrete safety terms (hazard, unsafe condition, trip hazard, line of fire, barricade, isolate, stop work, housekeeping and similar) where they fit what was written, and a respectful, positive tone that honours the person.',
+  'You may explain why the situation mattered in general terms (for example that a trip hazard can cause a fall injury), and you may reorder and expand the nominator\'s points into complete, well-built sentences.',
+  'You must NOT invent specific facts: no names, numbers, times, equipment or tag numbers, quantities, injuries or events that the nominator did not state. If a detail a reader would want is missing, write the sentence without it and add a short question for the nominator to "issues".',
+  'You never look at photos, never give a score and never decide whether the nomination is good. Set generic=true only for generic praise ("strong safety commitment").',
+  'For each language give: observation (what was found and why it mattered), action (what the person did, step by step, active voice), outcome (the result and the benefit to site safety), highlight (one sentence, max 25 words, naming the intervention), story (3 to 4 sentences, third person, bulletin-ready, starting with the person\'s first name and recognising the intervention).',
+  'Provide English (en) and Bahasa Indonesia (id). The Bahasa Indonesia must read naturally to Indonesian crew, not like a literal translation. Keep names, tag numbers and locations exactly as written.',
   'Reply ONLY with JSON matching the schema.'
 ].join('\n');
 
 function schema_() {
-  var tri = { type: 'OBJECT', properties: { observation: { type: 'STRING' }, action: { type: 'STRING' }, outcome: { type: 'STRING' }, highlight: { type: 'STRING' } },
-    required: ['observation', 'action', 'outcome', 'highlight'] };
+  var tri = { type: 'OBJECT', properties: { observation: { type: 'STRING' }, action: { type: 'STRING' }, outcome: { type: 'STRING' }, highlight: { type: 'STRING' }, story: { type: 'STRING' } },
+    required: ['observation', 'action', 'outcome', 'highlight', 'story'] };
   return { type: 'OBJECT', properties: {
     generic: { type: 'BOOLEAN' },
     issues: { type: 'ARRAY', items: { type: 'STRING' } },
@@ -175,7 +176,7 @@ function aiReview_(r) {
   var text = 'Nominee: ' + s_(f.name, 120) + ' (' + s_(f.role, 120) + ', ' + s_(f.ic, 40) + ')\nLocation: ' + s_(f.location, 120) +
     '\nObservation (hazard found): ' + s_(f.observation) + '\nAction taken: ' + s_(f.action) + '\nOutcome: ' + s_(f.outcome);
   function body_(noThink) {
-    var g = { responseMimeType: 'application/json', responseSchema: schema_(), temperature: 0.2 };
+    var g = { responseMimeType: 'application/json', responseSchema: schema_(), temperature: 0.5 };
     if (noThink) g.thinkingConfig = { thinkingBudget: 0 }; // no hidden "thinking" time: much faster
     return JSON.stringify({ systemInstruction: { parts: [{ text: AI_SYSTEM }] }, contents: [{ role: 'user', parts: [{ text: text }] }], generationConfig: g });
   }
