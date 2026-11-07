@@ -1,4 +1,4 @@
-// Code.gs v1.0.0 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
+// Code.gs v1.0.1 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
 // Deploy: Extensions > Apps Script (on iggifernandes@gmail.com) > paste this file > run setup() once >
 //   Project Settings > Script properties: add GEMINI_API_KEY (free Google AI Studio key) >
 //   Deploy > New deployment > Web app > Execute as: Me, Who has access: Anyone.
@@ -9,8 +9,8 @@ var COLS = ['id','createdAt','week','status','certNo','name','nick','role','ic',
   'beforePhotos','afterPhotos','aiScore','aiVerdict','aiJson','certLang','certDate','certPara','hseNote','updatedAt','source'];
 var EDITABLE = ['status','certNo','name','nick','role','ic','location','eventDate','observation','action','outcome',
   'category','certLang','certDate','certPara','hseNote'];
-var IC_LIST = ['GSB','WEN','KKS','PBS'];
-var VERSION = 'v1.0.0';
+var IC_LIST = ['EcoOils','GSB','WEN','KKS','PBS'];
+var VERSION = 'v1.0.1';
 
 /* ---------- one-time setup ---------- */
 function setup() {
@@ -30,6 +30,16 @@ function setup() {
   if (!p.getProperty('PIN_SALT')) p.setProperty('PIN_SALT', Utilities.getUuid());
   Logger.log('Sheet: ' + ss.getUrl());
   Logger.log('Now add GEMINI_API_KEY under Project Settings > Script properties, then deploy as a Web app.');
+}
+
+/* Run this from the editor (select testAI > Run) to check the Gemini key. Read the result under View > Logs. */
+function testAI() {
+  Logger.log('GEMINI_API_KEY present: ' + !!prop_('GEMINI_API_KEY'));
+  var r = aiReview_({ client: 'test', fields: { name: 'Test', role: 'Technician', ic: 'WEN', location: 'DTP',
+    observation: 'Scrap cable and tools were left around the scaffold base after termination work, a trip hazard.',
+    action: 'He stopped, collected all offcuts and tools and cleaned the area before leaving.',
+    outcome: 'Walkway clear before the next crew arrived.' }, before: [], after: [] });
+  Logger.log(r.ok ? 'AI OK. Score ' + r.result.score + ', verdict ' + r.result.verdict : 'AI FAILED: ' + r.error);
 }
 
 /* ---------- web app entry points ---------- */
@@ -153,7 +163,7 @@ function schema_() {
 
 function aiReview_(r) {
   var key = prop_('GEMINI_API_KEY');
-  if (!key) return { ok: false, error: 'AI not configured' };
+  if (!key) return { ok: false, error: 'AI not configured: add script property GEMINI_API_KEY (Project Settings > Script properties)' };
   var f = r.fields || {};
   var cache = CacheService.getScriptCache(), rk = 'airate_' + (s_(r.client, 40) || 'x');
   var n = Number(cache.get(rk) || 0);
@@ -169,17 +179,23 @@ function aiReview_(r) {
     var m = /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+\/=]+)$/.exec(String(pair[1] || ''));
     if (m && m[2].length < 1500000) { parts.push({ text: pair[0] + ':' }); parts.push({ inline_data: { mime_type: m[1], data: m[2] } }); }
   });
-  var model = prop_('GEMINI_MODEL') || 'gemini-2.5-flash';
-  var res = UrlFetchApp.fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent', {
-    method: 'post', contentType: 'application/json', muteHttpExceptions: true,
-    headers: { 'x-goog-api-key': key },
-    payload: JSON.stringify({
-      systemInstruction: { parts: [{ text: AI_SYSTEM }] },
-      contents: [{ role: 'user', parts: parts }],
-      generationConfig: { responseMimeType: 'application/json', responseSchema: schema_(), temperature: 0.2 }
-    })
+  var payload = JSON.stringify({
+    systemInstruction: { parts: [{ text: AI_SYSTEM }] },
+    contents: [{ role: 'user', parts: parts }],
+    generationConfig: { responseMimeType: 'application/json', responseSchema: schema_(), temperature: 0.2 }
   });
-  if (res.getResponseCode() !== 200) return { ok: false, error: 'AI service error (' + res.getResponseCode() + ')' };
+  var models = [prop_('GEMINI_MODEL') || 'gemini-2.5-flash', 'gemini-flash-latest'], res = null;
+  for (var mi = 0; mi < models.length; mi++) {
+    res = UrlFetchApp.fetch('https://generativelanguage.googleapis.com/v1beta/models/' + models[mi] + ':generateContent', {
+      method: 'post', contentType: 'application/json', muteHttpExceptions: true,
+      headers: { 'x-goog-api-key': key }, payload: payload
+    });
+    if (res.getResponseCode() !== 404) break; // model name retired: try the next one
+  }
+  if (res.getResponseCode() !== 200) {
+    var why = ''; try { why = JSON.parse(res.getContentText()).error.message; } catch (e) {}
+    return { ok: false, error: 'AI service error (' + res.getResponseCode() + ')' + (why ? ': ' + String(why).slice(0, 160) : '') };
+  }
   try {
     var body = JSON.parse(res.getContentText());
     var j = JSON.parse(body.candidates[0].content.parts[0].text);
