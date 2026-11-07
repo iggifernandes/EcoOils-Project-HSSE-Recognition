@@ -1,4 +1,4 @@
-// Code.gs v1.0.9 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
+// Code.gs v1.1.0 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
 // Deploy: Extensions > Apps Script (on iggifernandes@gmail.com) > paste this file > run setup() once >
 //   Project Settings > Script properties: add GEMINI_API_KEY (free Google AI Studio key) >
 //   Deploy > New deployment > Web app > Execute as: Me, Who has access: Anyone.
@@ -10,7 +10,144 @@ var COLS = ['id','createdAt','week','status','certNo','name','nick','role','ic',
 var EDITABLE = ['status','certNo','name','nick','role','ic','location','eventDate','observation','action','outcome',
   'category','certLang','certDate','certPara','hseNote','level','aiJson'];
 var IC_LIST = ['EcoOils','GSB','WEN','KKS','PBS'];
-var VERSION = 'v1.0.9';
+var VERSION = 'v1.1.0';
+
+/* ---------- Rewards: voucher stock and reward distribution (admin only) ---------- */
+var RW_NAME = 'Rewards';
+var RW_COLS = ['id','createdAt','date','ic','name','category','items','amount','remarks','nominationId','serials','photos','status','issuedBy','updatedAt'];
+var ST_NAME = 'Stock';
+var ST_COLS = ['id','createdAt','date','type','denom','qty','custodian','ref','expiry','serials','photos','remarks','updatedAt'];
+var DATE_COLS = ['date','expiry'];
+
+function tab_(name, cols) {
+  var ss = SpreadsheetApp.openById(prop_('SHEET_ID')), sh = ss.getSheetByName(name);
+  if (!sh) sh = ss.insertSheet(name);
+  if (sh.getLastRow() === 0 || sh.getLastColumn() < cols.length) {
+    sh.getRange(1, 1, 1, cols.length).setValues([cols]).setFontWeight('bold'); sh.setFrozenRows(1);
+    cols.forEach(function (k, i) { if (DATE_COLS.indexOf(k) >= 0 || k === 'serials' || k === 'items') sh.getRange(2, i + 1, 2000, 1).setNumberFormat('@'); });
+  }
+  return sh;
+}
+function readTab_(name, cols) {
+  var sh = tab_(name, cols), n = sh.getLastRow();
+  if (n < 2) return [];
+  var tz = SpreadsheetApp.openById(prop_('SHEET_ID')).getSpreadsheetTimeZone();
+  return sh.getRange(2, 1, n - 1, cols.length).getValues().map(function (v) {
+    var o = {}; cols.forEach(function (k, i) {
+      var x = v[i];
+      if (x instanceof Date) x = DATE_COLS.indexOf(k) >= 0 ? Utilities.formatDate(x, tz, 'yyyy-MM-dd') : x.toISOString();
+      o[k] = x;
+    });
+    return o;
+  }).filter(function (o) { return o.id; });
+}
+function findRow_(sh, id) {
+  var n = sh.getLastRow(); if (n < 2) return -1;
+  var ids = sh.getRange(2, 1, n - 1, 1).getValues();
+  for (var i = 0; i < ids.length; i++) if (String(ids[i][0]) === String(id)) return i + 2;
+  return -1;
+}
+function newId_(prefix) { return prefix + '-' + Utilities.formatDate(new Date(), 'Asia/Jakarta', 'yyyyMMdd') + '-' + Utilities.getUuid().slice(0, 4).toUpperCase(); }
+function isoDate_(v) { var t = s_(v, 10); if (!/^\d{4}-\d{2}-\d{2}$/.test(t)) throw new Error('Bad date'); return t; }
+function itemsClean_(items) {
+  var o = {}, total = 0;
+  Object.keys(items || {}).forEach(function (k) {
+    var n = Math.floor(Number(items[k]));
+    if (/^\d{4,7}$/.test(k) && n > 0 && n <= 1000) { o[k] = n; total += Number(k) * n; }
+  });
+  return { items: o, amount: total };
+}
+function rwList_() { return { ok: true, rewards: readTab_(RW_NAME, RW_COLS), stock: readTab_(ST_NAME, ST_COLS) }; }
+function folderPhotos_(uris, prefix) { return uris && uris.length ? savePhotos_(uris, DriveApp.getFolderById(prop_('FOLDER_ID')), prefix) : []; }
+function trash_(ids) { ids.forEach(function (f) { f = String(f).trim(); if (f) { try { DriveApp.getFileById(f).setTrashed(true); } catch (e) {} } }); }
+
+function rwSave_(r) {
+  var f = r.reward || {}, ic = itemsClean_(f.items);
+  if (!s_(f.name) || !s_(f.category)) throw new Error('Missing name or category');
+  if (ic.amount <= 0) throw new Error('Choose at least one voucher');
+  var date = isoDate_(f.date);
+  var lock = LockService.getScriptLock(); lock.waitLock(20000);
+  try {
+    var sh = tab_(RW_NAME, RW_COLS), now = new Date().toISOString(), row = f.id ? findRow_(sh, f.id) : -1, rec = {};
+    if (f.id && row < 0) throw new Error('Not found');
+    var id = f.id || newId_('RW');
+    if (row > 0) { var cur = sh.getRange(row, 1, 1, RW_COLS.length).getValues()[0]; RW_COLS.forEach(function (k, i) { rec[k] = cur[i]; }); }
+    var keep = (f.keepPhotos || []).map(String), old = String(rec.photos || '').split(',').filter(Boolean);
+    trash_(old.filter(function (x) { return keep.indexOf(x) < 0; }));
+    var kept = old.filter(function (x) { return keep.indexOf(x) >= 0; });
+    var added = folderPhotos_((f.newPhotos || []).slice(0, Math.max(0, 3 - kept.length)), id + '-reward');
+    var o = {
+      id: id, createdAt: rec.createdAt || now, date: date, ic: s_(f.ic, 40), name: s_(f.name, 160), category: s_(f.category, 120),
+      items: JSON.stringify(ic.items), amount: ic.amount, remarks: s_(f.remarks, 600), nominationId: s_(f.nominationId, 40),
+      serials: s_(f.serials, 3000), photos: kept.concat(added).join(','), status: 'Issued', issuedBy: rec.issuedBy || s_(r.email || '', 80), updatedAt: now
+    };
+    var vals = RW_COLS.map(function (k) { return o[k] == null ? '' : o[k]; });
+    if (row > 0) sh.getRange(row, 1, 1, RW_COLS.length).setValues([vals]); else sh.appendRow(vals);
+    return { ok: true, reward: o };
+  } finally { lock.releaseLock(); }
+}
+
+function stSave_(r) {
+  var f = r.row || {}, type = s_(f.type, 6);
+  if (['OPEN', 'IN', 'OUT', 'ADJ'].indexOf(type) < 0) throw new Error('Bad type');
+  var denom = Math.floor(Number(f.denom)), qty = Math.floor(Number(f.qty));
+  if (!(denom >= 1000 && denom <= 9999999)) throw new Error('Bad denomination');
+  if (!qty || (type !== 'ADJ' && qty < 0) || Math.abs(qty) > 100000) throw new Error('Bad quantity');
+  var date = isoDate_(f.date), expiry = s_(f.expiry, 10); if (expiry) isoDate_(expiry);
+  var lock = LockService.getScriptLock(); lock.waitLock(20000);
+  try {
+    var sh = tab_(ST_NAME, ST_COLS), now = new Date().toISOString(), row = f.id ? findRow_(sh, f.id) : -1, rec = {};
+    if (f.id && row < 0) throw new Error('Not found');
+    var id = f.id || newId_('ST');
+    if (row > 0) { var cur = sh.getRange(row, 1, 1, ST_COLS.length).getValues()[0]; ST_COLS.forEach(function (k, i) { rec[k] = cur[i]; }); }
+    var keep = (f.keepPhotos || []).map(String), old = String(rec.photos || '').split(',').filter(Boolean);
+    trash_(old.filter(function (x) { return keep.indexOf(x) < 0; }));
+    var kept = old.filter(function (x) { return keep.indexOf(x) >= 0; });
+    var added = folderPhotos_((f.newPhotos || []).slice(0, Math.max(0, 3 - kept.length)), id + '-stock');
+    var o = { id: id, createdAt: rec.createdAt || now, date: date, type: type, denom: denom, qty: qty, custodian: s_(f.custodian, 80), ref: s_(f.ref, 160),
+      expiry: expiry, serials: s_(f.serials, 3000), photos: kept.concat(added).join(','), remarks: s_(f.remarks, 600), updatedAt: now };
+    var vals = ST_COLS.map(function (k) { return o[k] == null ? '' : o[k]; });
+    if (row > 0) sh.getRange(row, 1, 1, ST_COLS.length).setValues([vals]); else sh.appendRow(vals);
+    return { ok: true, row: o };
+  } finally { lock.releaseLock(); }
+}
+
+function rowsDelete_(name, cols, ids, photoCols) {
+  ids = (ids || []).map(String); if (!ids.length || ids.length > 300) throw new Error('Nothing to delete');
+  var lock = LockService.getScriptLock(); lock.waitLock(20000);
+  try {
+    var sh = tab_(name, cols), n = sh.getLastRow(), done = 0; if (n < 2) return { ok: true, deleted: 0 };
+    var data = sh.getRange(2, 1, n - 1, cols.length).getValues();
+    for (var i = data.length - 1; i >= 0; i--) {
+      if (ids.indexOf(String(data[i][0])) < 0) continue;
+      photoCols.forEach(function (pc) { trash_(String(data[i][cols.indexOf(pc)] || '').split(',')); });
+      sh.deleteRow(i + 2); done++;
+    }
+    return { ok: true, deleted: done };
+  } finally { lock.releaseLock(); }
+}
+
+// bulk import of past reward records (date, ic, name, amount, remarks). Skips rows already present.
+function rwImport_(r) {
+  var rows = r.rows || []; if (!rows.length || rows.length > 400) throw new Error('Send 1 to 400 rows');
+  var lock = LockService.getScriptLock(); lock.waitLock(30000);
+  try {
+    var sh = tab_(RW_NAME, RW_COLS), have = {}, added = 0, skipped = 0, now = new Date().toISOString(), out = [];
+    readTab_(RW_NAME, RW_COLS).forEach(function (x) { have[[x.date, x.ic, x.name, x.amount, x.remarks].join('|')] = 1; });
+    rows.forEach(function (f) {
+      var date = s_(f.date, 10); if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) { skipped++; return; }
+      var amount = Math.max(0, Math.floor(Number(f.amount) || 0)), items = {}, left = amount;
+      [100000, 50000].forEach(function (d) { var n = Math.floor(left / d); if (n) { items[d] = n; left -= n * d; } });
+      var o = { id: newId_('RW'), createdAt: now, date: date, ic: s_(f.ic, 40), name: s_(f.name, 160), category: s_(f.category || 'Imported', 120),
+        items: JSON.stringify(items), amount: amount - left, remarks: s_(f.remarks, 600), nominationId: '', serials: '', photos: '', status: 'Issued', issuedBy: 'import', updatedAt: now };
+      var key = [o.date, o.ic, o.name, o.amount, o.remarks].join('|');
+      if (have[key]) { skipped++; return; }
+      have[key] = 1; out.push(RW_COLS.map(function (k) { return o[k] == null ? '' : o[k]; })); added++;
+    });
+    if (out.length) sh.getRange(sh.getLastRow() + 1, 1, out.length, RW_COLS.length).setValues(out);
+    return { ok: true, added: added, skipped: skipped };
+  } finally { lock.releaseLock(); }
+}
 
 /* ---------- one-time setup ---------- */
 function setup() {
@@ -23,6 +160,7 @@ function setup() {
     sh.getRange(1, 1, 1, COLS.length).setValues([COLS]).setFontWeight('bold');
     sh.setFrozenRows(1);
   }
+  tab_(RW_NAME, RW_COLS); tab_(ST_NAME, ST_COLS);
   if (!p.getProperty('FOLDER_ID')) {
     p.setProperty('FOLDER_ID', DriveApp.createFolder('EcoOils Project - Recognition photos').getId());
   }
@@ -63,6 +201,12 @@ function doPost(e) {
       case 'photo': requireAdmin_(req); return out_(photo_(req));
       case 'update': requireAdmin_(req); return out_(update_(req));
       case 'delete': requireAdmin_(req); return out_(delete_(req));
+      case 'rwList': requireAdmin_(req); return out_(rwList_());
+      case 'rwSave': req.email = requireAdmin_(req); return out_(rwSave_(req));
+      case 'rwDelete': requireAdmin_(req); return out_(rowsDelete_(RW_NAME, RW_COLS, req.ids, ['photos']));
+      case 'rwImport': requireAdmin_(req); return out_(rwImport_(req));
+      case 'stSave': requireAdmin_(req); return out_(stSave_(req));
+      case 'stDelete': requireAdmin_(req); return out_(rowsDelete_(ST_NAME, ST_COLS, req.ids, ['photos']));
       default: return out_({ ok: false, error: 'Unknown action' });
     }
   } catch (err) {

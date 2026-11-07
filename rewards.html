@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>EcoOils Rewards</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,300;0,400;0,500;0,600;0,700&display=swap" rel="stylesheet">
+<style>
+
+:root{--ink:#231f20;--mut:#6e6b6c;--line:#dcdcdc;--bg:#f6f6f5;--card:#fff;--green:#44a276;--gdark:#025b40;--glight:#5cb41f;--navy:#002060;--yellow:#fbce07;--red:#dd1d21;--warn:#8a5a00;--warnbg:#fff4d6;--errbg:#fde8e8;--ok:#1d6b2a;--okbg:#e6f4dc}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{margin:0}
+body{font:400 15px/1.45 Jost,system-ui,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+button,input,select,textarea{font:inherit;color:inherit}
+header.eh{background:#fff;padding:10px 16px 6px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;border-bottom:1px solid var(--line)}
+header.eh .logo{height:48px;width:auto;max-width:58%;display:block}
+.eh-r{display:flex;flex-direction:column;align-items:flex-end;margin-left:auto}
+.eh-v{font-size:12px;letter-spacing:.08em;color:var(--mut);line-height:1.2;padding-top:2px;font-variant-numeric:tabular-nums}
+.eh-d{font-size:11px;letter-spacing:.06em;color:#aaa;line-height:1.2;padding-top:2px}
+.lang{display:flex}.lang button{background:none;border:0;border-bottom:3px solid transparent;min-width:44px;min-height:40px;padding:0 8px;font:400 15px/1 Jost,sans-serif;letter-spacing:.06em;color:var(--mut);cursor:pointer}
+.lang button.on{color:var(--ink);font-weight:600;border-bottom-color:var(--green)}
+.titlebar{padding:18px 16px 4px;max-width:1180px;margin:0 auto}
+h1.pt{margin:0;font:300 24px/1.2 Jost,sans-serif;text-transform:uppercase;letter-spacing:.22em;color:#6e6b6c}
+.sub{color:var(--mut);font-size:13px;letter-spacing:.06em;margin-top:2px}
+nav.tabs{display:flex;gap:2px;max-width:1180px;margin:8px auto 0;padding:0 10px;border-bottom:1px solid var(--line);overflow:auto}
+nav.tabs button{background:none;border:0;border-bottom:3px solid transparent;padding:10px 14px;min-height:44px;color:var(--mut);letter-spacing:.06em;cursor:pointer;white-space:nowrap}
+nav.tabs button.on{color:var(--ink);font-weight:600;border-bottom-color:var(--green)}
+main{max-width:1180px;margin:0 auto;padding:16px 12px 80px}
+.tab{display:none}.tab.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:14px}
+.card h2{margin:0 0 10px;font:600 13px/1.2 Jost,sans-serif;text-transform:uppercase;letter-spacing:.14em;color:var(--gdark)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px}.grid .w{grid-column:1/-1}
+@media(max-width:620px){.grid{grid-template-columns:1fr}}
+label.f{display:flex;flex-direction:column;gap:3px;font-size:13px;color:var(--mut)}
+label.f b{color:var(--red);font-weight:600}
+input,select,textarea{width:100%;padding:9px 10px;border:1px solid #c9c9c9;border-radius:8px;background:#fff;color:var(--ink);font-size:15px}
+textarea{resize:vertical;min-height:84px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--green);outline-offset:0;border-color:var(--green)}
+button.btn{background:#fff;border:1px solid #bdbdbd;border-radius:8px;padding:9px 14px;cursor:pointer;min-height:40px}
+button.btn:hover{border-color:var(--gdark)}
+button.btn.pri{background:var(--gdark);border-color:var(--gdark);color:#fff}
+button.btn.yel{background:var(--yellow);border-color:var(--yellow);color:#231f20;font-weight:600}
+button.btn.ghost{background:transparent}button.btn.danger{color:var(--red)}
+button.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.row.end{justify-content:flex-end}
+.hint{font-size:12.5px;color:var(--mut)}
+.box{border-radius:8px;padding:10px 12px;font-size:14px;margin:8px 0}
+.box.info{background:#eef6f1;border:1px solid #cfe5d8}.box.warn{background:var(--warnbg);color:var(--warn)}.box.err{background:var(--errbg);color:#8d1c1c}.box.ok{background:var(--okbg);color:var(--ok)}
+.box ul{margin:4px 0 0 18px;padding:0}
+.crit{display:grid;grid-template-columns:repeat(2,1fr);gap:6px 14px;margin-top:6px}.crit span{font-size:14px}
+@media(max-width:620px){.crit{grid-template-columns:1fr}}
+.dz{border:2px dashed #b9c9c0;border-radius:10px;min-height:110px;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--mut);cursor:pointer;padding:10px;background:#fafcfb}
+.dz.over{border-color:var(--green);background:#eef6f1}
+.thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.th{position:relative;width:104px;height:104px;border-radius:8px;overflow:hidden;border:1px solid var(--line);cursor:zoom-in}
+.th img{width:100%;height:100%;object-fit:cover;display:block}
+.th button{position:absolute;top:3px;right:3px;width:24px;height:24px;border-radius:50%;border:0;background:rgba(0,0,0,.65);color:#fff;cursor:pointer;line-height:1}
+.th.add{display:flex;align-items:center;justify-content:center;border:2px dashed #b9c9c0;font-size:34px;color:var(--mut);cursor:pointer;background:#fafcfb}
+.score{display:inline-flex;align-items:center;justify-content:center;min-width:46px;height:46px;border-radius:50%;font-weight:700;font-size:20px;color:#fff}
+.score.hi{background:var(--glight)}.score.mid{background:#e5a100}.score.lo{background:var(--red)}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:620px){.cmp{grid-template-columns:1fr}}
+.cmp div{border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:14px;background:#fff}
+.cmp small{display:block;color:var(--mut);letter-spacing:.08em;text-transform:uppercase;font-size:11px}
+#peek{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:90;display:flex;align-items:center;justify-content:center;padding:16px;cursor:zoom-out}
+#peek img{max-width:100%;max-height:100%;border-radius:6px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;background:#231f20;color:#fff;padding:10px 16px;border-radius:9px;z-index:80;max-width:92vw}
+.toast.err{background:var(--red)}
+.pill{display:inline-block;font-size:11px;padding:1px 9px;border-radius:99px;border:1px solid var(--line);letter-spacing:.04em}
+.pill.Pending{background:#fff4d6;color:#7a4b00}.pill.Approved{background:#e3f4d6;color:#245c0f}.pill.Issued{background:#dbe9ff;color:#143c86}.pill.Rejected{background:#f2e1e1;color:#7a1f1f}
+.adm{display:grid;grid-template-columns:320px 1fr;gap:14px;align-items:start}
+@media(max-width:1000px){.adm{grid-template-columns:1fr}}
+.list{max-height:70vh;overflow:auto;margin:8px 0 0;padding:0;list-style:none}
+.list li{display:flex;gap:8px;padding:9px 6px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:6px}
+.list li:hover{background:#f1f7f3}.list li.on{background:#e3f0e8}
+.list input[type=checkbox]{width:auto;margin-top:4px}
+.list .n{font-weight:600}.list .s{font-size:12.5px;color:var(--mut)}
+.seg{display:inline-flex;border:1px solid #bdbdbd;border-radius:8px;overflow:hidden}.seg button{border:0;background:#fff;padding:7px 14px;cursor:pointer}.seg button.on{background:var(--gdark);color:#fff}
+.pv{width:100%;overflow:hidden;border:1px solid var(--line);border-radius:6px;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+.pv .stage{transform-origin:top left}
+table.wk{border-collapse:collapse;width:100%;font-size:14px}table.wk th,table.wk td{border:1px solid var(--line);padding:7px 9px;text-align:center}table.wk th{background:#f1f1ef;font-weight:500}
+table.wk td.zero{color:#aaa}table.wk td.cur.zero{background:var(--errbg);color:#8d1c1c;font-weight:600}table.wk td.cur{background:var(--okbg)}
+.issuedbar{position:fixed;left:0;right:0;bottom:0;background:var(--gdark);color:#fff;padding:10px 14px;display:flex;gap:10px;align-items:center;justify-content:center;z-index:70;flex-wrap:wrap}
+.issuedbar .btn{color:#231f20}
+.ph{display:flex;gap:8px}.ph select{width:auto;max-width:44%}
+.hp{position:absolute;left:-9999px;height:0;overflow:hidden}
+
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.kpi small{display:block;color:var(--mut);letter-spacing:.1em;text-transform:uppercase;font-size:11px}
+.kpi b{display:block;font:500 24px/1.2 Jost,sans-serif;color:var(--gdark);margin-top:2px}
+.kpi span{font-size:12.5px;color:var(--mut)}
+.kpi.low b{color:var(--red)}
+table.t{border-collapse:collapse;width:100%;font-size:14px}table.t th,table.t td{border-bottom:1px solid var(--line);padding:7px 8px;text-align:left;vertical-align:top}
+table.t th{background:#f1f1ef;font-weight:500;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut)}
+table.t td.n,table.t th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+table.t tr.clk{cursor:pointer}table.t tr.clk:hover{background:#f1f7f3}
+.tw{overflow:auto}
+.bar{height:8px;border-radius:4px;background:var(--glight);min-width:2px}
+.den{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.den label{display:flex;flex-direction:column;gap:3px;font-size:13px;color:var(--mut)}
+.amt{font:500 22px/1 Jost,sans-serif;color:var(--gdark)}
+.pillt{display:inline-block;font-size:11px;padding:1px 9px;border-radius:99px;background:#eef6f1;border:1px solid #cfe5d8;white-space:nowrap}
+.pillt.OUT{background:#f6e6e6;border-color:#e6c8c8}.pillt.ADJ{background:#fff4d6;border-color:#ecd9a3}.pillt.OPEN{background:#dbe9ff;border-color:#b7cdf0}
+</style>
+</head>
+<body>
+<header class="eh">
+  <svg class="logo" id="logo" viewBox="0 0 281 114" role="img" aria-label="EcoOils Project" style="height:48px;width:auto;max-width:58%"><image href="wordmark.png" x="0" y="0" width="281" height="78"/><text x="0" y="106" textLength="281" lengthAdjust="spacing" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="30" fill="#ffc402">PROJECT</text></svg>
+  <div class="eh-r"><div class="eh-v" id="ver"></div>
+    <div class="lang" id="lang"><button data-l="en" class="on">EN</button><button data-l="id">ID</button><button data-l="ms">MS</button></div>
+    <div class="eh-d" id="verdate"></div></div>
+</header>
+<div class="titlebar"><h1 class="pt" data-i="app.title"></h1><div class="sub">Sei Mangkei · <span data-i="app.admin"></span></div></div>
+
+<main>
+<div id="noapi" class="box warn" hidden>
+  <b data-i="api.missing"></b>
+  <div class="row" style="margin-top:6px"><input id="apiUrl" placeholder="https://script.google.com/macros/s/…/exec" style="flex:1;min-width:220px"><button class="btn" id="apiSave" data-i="btn.save"></button></div>
+</div>
+
+<!-- sign-in -->
+<div id="loginWrap" class="card" style="max-width:460px">
+  <h2 data-i="a.login"></h2>
+  <div id="loginBox">
+   <label class="f"><span data-i="a.email"></span><input id="l_email" type="email" autocomplete="username"></label>
+   <label class="f" style="margin-top:8px"><span data-i="a.pin"></span><input id="l_pin" type="password" inputmode="numeric" maxlength="12" autocomplete="current-password"></label>
+   <div class="row" style="margin-top:10px"><button class="btn pri" id="btnLogin" data-i="a.loginBtn"></button><button class="btn ghost" id="btnForgot" data-i="a.forgot"></button></div>
+  </div>
+  <div id="resetBox" hidden>
+   <p class="hint" data-i="a.resetInfo"></p>
+   <div class="row"><button class="btn" id="btnSendCode" data-i="a.sendCode"></button></div>
+   <label class="f" style="margin-top:8px"><span data-i="a.code"></span><input id="r_code" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></label>
+   <label class="f" style="margin-top:8px"><span data-i="a.newPin"></span><input id="r_pin" type="password" inputmode="numeric" maxlength="12" autocomplete="new-password"></label>
+   <label class="f" style="margin-top:8px"><span data-i="a.newPin2"></span><input id="r_pin2" type="password" inputmode="numeric" maxlength="12" autocomplete="new-password"></label>
+   <div class="row" style="margin-top:10px"><button class="btn pri" id="btnSetPin" data-i="a.setPin"></button><button class="btn ghost" id="btnBack" data-i="btn.back"></button></div>
+  </div>
+</div>
+
+<div id="app" hidden>
+ <nav class="tabs" id="tabs" style="margin:0 0 12px;padding:0">
+  <button data-t="dash" class="on" data-i="tab.dash"></button><button data-t="give" data-i="tab.give"></button><button data-t="rec" data-i="tab.rec"></button><button data-t="stock" data-i="tab.stock"></button><button data-t="imp" data-i="tab.imp"></button>
+  <span style="flex:1"></span><button id="btnRefresh" data-i="btn.refresh"></button><button id="btnLogout" data-i="a.logout"></button>
+ </nav>
+
+ <!-- ============ DASHBOARD ============ -->
+ <section id="tab-dash" class="tab on">
+  <div id="openWarn"></div>
+  <div class="kpis" id="kpis"></div>
+  <div class="card"><h2 data-i="d.expiry"></h2><div id="expiry"></div></div>
+  <div class="grid">
+   <div class="card"><h2 data-i="d.byIc"></h2><div class="tw" id="byIc"></div></div>
+   <div class="card"><h2 data-i="d.byCat"></h2><div class="tw" id="byCat"></div></div>
+   <div class="card w"><h2 data-i="d.weeks"></h2><div class="tw" id="byWeek"></div></div>
+  </div>
+ </section>
+
+ <!-- ============ GIVE REWARD ============ -->
+ <section id="tab-give" class="tab">
+  <div class="card">
+   <h2 id="gTitle" data-i="g.title"></h2>
+   <div id="gEditBar" class="box info" hidden><span id="gEditTxt"></span> <button class="btn ghost sm" id="gCancel" data-i="btn.cancel"></button></div>
+   <div class="grid">
+    <label class="f"><span><span data-i="f.date"></span> <b>*</b></span><input id="g_date" type="date"></label>
+    <label class="f"><span data-i="f.nom"></span><select id="g_nom"></select></label>
+    <label class="f"><span><span data-i="f.name"></span> <b>*</b></span><input id="g_name" maxlength="160" autocomplete="off"></label>
+    <label class="f"><span data-i="f.company"></span><select id="g_ic"></select><input id="g_ic2" maxlength="40" style="margin-top:6px" data-ph="ph.company" hidden></label>
+    <label class="f"><span><span data-i="f.cat"></span> <b>*</b></span><select id="g_cat"></select><input id="g_cat2" maxlength="120" style="margin-top:6px" data-ph="ph.cat" hidden></label>
+    <label class="f w"><span data-i="f.remarks"></span><textarea id="g_rem" rows="2" maxlength="600"></textarea></label>
+   </div>
+   <h2 style="margin-top:14px" data-i="g.vouchers"></h2>
+   <div class="den" id="denBox"></div>
+   <div class="row" style="margin-top:10px"><span class="hint" data-i="g.total"></span> <span class="amt" id="g_amt">Rp 0</span></div>
+   <div id="g_stockWarn"></div>
+   <label class="f w" style="margin-top:10px"><span data-i="f.serials"></span><textarea id="g_ser" rows="2" maxlength="3000"></textarea></label>
+   <h2 style="margin-top:14px" data-i="g.photos"></h2>
+   <div class="hint" data-i="g.photosHint"></div>
+   <div id="pb_give"></div>
+   <div class="row end" style="margin-top:14px"><button class="btn pri" id="gSave" data-i="btn.saveReward"></button></div>
+  </div>
+ </section>
+
+ <!-- ============ RECORDS ============ -->
+ <section id="tab-rec" class="tab">
+  <div class="card">
+   <div class="row" style="margin-bottom:10px">
+    <input id="q_text" style="flex:1;min-width:160px;width:auto" data-ph="ph.search">
+    <select id="q_ic" style="width:auto"></select><select id="q_cat" style="width:auto"></select><input id="q_month" type="month" style="width:auto">
+    <button class="btn ghost sm" id="q_clear" data-i="btn.clear"></button>
+   </div>
+   <div class="row" style="margin-bottom:8px;justify-content:space-between"><span class="hint" id="recInfo"></span>
+    <span class="row"><button class="btn sm" id="btnCsv" data-i="btn.csv"></button><button class="btn ghost danger sm" id="btnDelSel" data-i="btn.delSel"></button></span></div>
+   <div class="tw" id="recTable"></div>
+  </div>
+ </section>
+
+ <!-- ============ STOCK ============ -->
+ <section id="tab-stock" class="tab">
+  <div class="card">
+   <h2 id="sTitle" data-i="s.title"></h2>
+   <p class="hint" data-i="s.help"></p>
+   <div id="sEditBar" class="box info" hidden><span id="sEditTxt"></span> <button class="btn ghost sm" id="sCancel" data-i="btn.cancel"></button></div>
+   <div class="grid">
+    <label class="f"><span><span data-i="f.date"></span> <b>*</b></span><input id="s_date" type="date"></label>
+    <label class="f"><span><span data-i="s.type"></span> <b>*</b></span><select id="s_type"></select></label>
+    <label class="f"><span><span data-i="s.denom"></span> <b>*</b></span><select id="s_denom"></select></label>
+    <label class="f"><span><span data-i="s.qty"></span> <b>*</b></span><input id="s_qty" type="number" step="1" inputmode="numeric"></label>
+    <label class="f"><span data-i="s.cust"></span><input id="s_cust" maxlength="80"></label>
+    <label class="f"><span data-i="s.ref"></span><input id="s_ref" maxlength="160" data-ph="ph.ref"></label>
+    <label class="f"><span data-i="s.expiry"></span><input id="s_exp" type="date"></label>
+    <label class="f w"><span data-i="f.serials"></span><textarea id="s_ser" rows="2" maxlength="3000"></textarea></label>
+    <label class="f w"><span data-i="f.remarks"></span><input id="s_rem" maxlength="600"></label>
+   </div>
+   <h2 style="margin-top:14px" data-i="s.photos"></h2>
+   <div id="pb_stock"></div>
+   <div class="row end" style="margin-top:14px"><button class="btn pri" id="sSave" data-i="btn.saveStock"></button></div>
+  </div>
+  <div class="card"><h2 data-i="s.onhand"></h2><div id="onhand"></div></div>
+  <div class="card"><h2 data-i="s.ledger"></h2><div class="tw" id="ledger"></div></div>
+ </section>
+
+ <!-- ============ IMPORT ============ -->
+ <section id="tab-imp" class="tab">
+  <div class="card">
+   <h2 data-i="i.title"></h2>
+   <p class="hint" data-i="i.help"></p>
+   <input id="i_file" type="file" accept=".csv,text/csv,text/plain">
+   <textarea id="i_text" rows="6" style="margin-top:8px" data-ph="ph.csv"></textarea>
+   <div id="i_prev" class="hint" style="margin-top:6px"></div>
+   <div class="row" style="margin-top:10px"><button class="btn pri" id="i_go" data-i="btn.import" disabled></button></div>
+  </div>
+ </section>
+</div>
+</main>
+<div id="peek" hidden><img alt=""></div>
+<div id="toast" class="toast" hidden></div>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbx2wdQ_TGsu6Kfj8xk8Tjz8vuqvzdKTuKKlLZFb214dai5J32Kw781Z1DOZ9Amd3GNV/exec';
+const VERSION = 'v1.0.0', VERDATE = '2026-11-07';
+const COMPANIES = ['EcoOils','GSB','WEN','KKS','PBS'];
+const DENOMS = [100000, 50000];   /* edit here to add a voucher denomination */
+const CATS = ['Best Observation for the Week','PTW Award','Spot quiz','Team or task achievement','Safety Day activity','Management walkthrough'];
+const STYPES = ['OPEN','IN','OUT','ADJ'];
+let LANG = localStorage.getItem('rec_lang') || 'en'; if (!['en','id','ms'].includes(LANG)) LANG = 'en';
+const LI = () => ({en:0,id:1,ms:2}[LANG] || 0);
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const IDR = n => 'Rp ' + Math.round(Number(n) || 0).toLocaleString('id-ID');
+const todayISO = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+
+/* ---------- text (EN / ID / MS) ---------- */
+const D = {
+'app.title':['Rewards and vouchers','Hadiah dan voucher','Ganjaran dan baucar'],'app.admin':['Admin only','Khusus admin','Admin sahaja'],
+'api.missing':['The backend link is not set. Paste the Apps Script web app URL:','Tautan backend belum diatur. Tempel URL web app Apps Script:','Pautan backend belum ditetapkan. Tampal URL web app Apps Script:'],
+'btn.save':['Save','Simpan','Simpan'],'btn.back':['Back','Kembali','Kembali'],'btn.refresh':['Refresh','Muat ulang','Muat semula'],'btn.cancel':['Cancel editing','Batal mengedit','Batal sunting'],
+'btn.clear':['Clear filters','Hapus filter','Kosongkan penapis'],'btn.csv':['Download CSV','Unduh CSV','Muat turun CSV'],'btn.delSel':['Delete selected','Hapus yang dipilih','Padam yang dipilih'],
+'btn.saveReward':['Save reward','Simpan hadiah','Simpan ganjaran'],'btn.saveStock':['Save stock entry','Simpan catatan stok','Simpan catatan stok'],'btn.import':['Import records','Impor catatan','Import rekod'],
+'a.login':['HSSE admin sign-in','Masuk admin HSSE','Log masuk admin HSSE'],'a.email':['Email','Email','Emel'],'a.pin':['PIN','PIN','PIN'],'a.loginBtn':['Sign in','Masuk','Log masuk'],'a.forgot':['Forgot PIN / first time','Lupa PIN / pertama kali','Lupa PIN / kali pertama'],
+'a.resetInfo':['A one-time code is emailed to the registered HSSE admin address. PINs can only be set this way.','Kode sekali pakai dikirim ke email admin HSSE terdaftar. PIN hanya dapat diatur dengan cara ini.','Kod sekali guna dihantar ke emel admin HSSE berdaftar. PIN hanya boleh ditetapkan dengan cara ini.'],
+'a.sendCode':['Email me a code','Kirim kode ke email','Emel kod kepada saya'],'a.code':['6-digit code','Kode 6 digit','Kod 6 digit'],'a.newPin':['New PIN (6 to 12 digits)','PIN baru (6 sampai 12 digit)','PIN baharu (6 hingga 12 digit)'],'a.newPin2':['Repeat new PIN','Ulangi PIN baru','Ulang PIN baharu'],'a.setPin':['Set PIN','Atur PIN','Tetapkan PIN'],'a.logout':['Sign out','Keluar','Log keluar'],
+'tab.dash':['Dashboard','Dasbor','Papan pemuka'],'tab.give':['Give reward','Beri hadiah','Beri ganjaran'],'tab.rec':['Records','Catatan','Rekod'],'tab.stock':['Voucher stock','Stok voucher','Stok baucar'],'tab.imp':['Import','Impor','Import'],
+'d.expiry':['Voucher expiry','Kedaluwarsa voucher','Tamat tempoh baucar'],'d.byIc':['Given by company','Diberikan per perusahaan','Diberi mengikut syarikat'],'d.byCat':['Given by reason','Diberikan per alasan','Diberi mengikut sebab'],'d.weeks':['Last 8 weeks','8 minggu terakhir','8 minggu terakhir'],
+'g.title':['Give a reward','Beri hadiah','Beri ganjaran'],'g.vouchers':['Vouchers given','Voucher diberikan','Baucar diberi'],'g.total':['Total value:','Total nilai:','Jumlah nilai:'],'g.photos':['Photos','Foto','Foto'],
+'g.photosHint':['Photo of the crew receiving the reward (up to 3). Drag and drop, or tap +.','Foto kru menerima hadiah (maksimal 3). Seret dan lepas, atau ketuk +.','Foto krew menerima ganjaran (maksimum 3). Seret dan lepas, atau ketik +.'],
+'f.date':['Date','Tanggal','Tarikh'],'f.nom':['Link to a nomination (optional)','Tautkan ke nominasi (opsional)','Pautkan kepada pencalonan (pilihan)'],'f.name':['Name (person or team)','Nama (orang atau tim)','Nama (individu atau pasukan)'],'f.company':['Company','Perusahaan','Syarikat'],
+'f.cat':['Reason / category','Alasan / kategori','Sebab / kategori'],'f.remarks':['Remarks','Catatan','Catatan'],'f.serials':['Voucher serial numbers (optional)','Nomor seri voucher (opsional)','Nombor siri baucar (pilihan)'],
+'ph.company':['Type the company','Tulis perusahaan','Taip syarikat'],'ph.cat':['Type the reason','Tulis alasan','Taip sebab'],'ph.search':['Search name, remarks…','Cari nama, catatan…','Cari nama, catatan…'],'ph.ref':['Batch or who requested it','Batch atau peminta','Kelompok atau peminta'],'ph.csv':['…or paste CSV text here','…atau tempel teks CSV di sini','…atau tampal teks CSV di sini'],
+'p.drop':['Drop photos here or tap to choose','Letakkan foto di sini atau ketuk untuk memilih','Letak foto di sini atau ketik untuk memilih'],
+'s.title':['Voucher stock entry','Catatan stok voucher','Catatan stok baucar'],'s.help':['Count the vouchers in hand and add an Opening count first. After that add stock received, returned or expired. Rewards you give are deducted automatically.','Hitung voucher yang ada dan tambahkan Hitungan awal dulu. Setelah itu catat stok masuk, dikembalikan atau kedaluwarsa. Hadiah yang diberikan dikurangi otomatis.','Kira baucar di tangan dan tambah Kiraan awal dahulu. Selepas itu catat stok diterima, dipulangkan atau tamat tempoh. Ganjaran yang diberi ditolak secara automatik.'],
+'s.type':['Entry type','Jenis catatan','Jenis catatan'],'s.denom':['Denomination','Pecahan','Denominasi'],'s.qty':['Number of vouchers','Jumlah voucher','Bilangan baucar'],'s.cust':['Held by','Dipegang oleh','Dipegang oleh'],'s.ref':['Reference','Referensi','Rujukan'],'s.expiry':['Expiry date','Tanggal kedaluwarsa','Tarikh tamat'],'s.photos':['Photos (receipt or vouchers)','Foto (struk atau voucher)','Foto (resit atau baucar)'],
+'s.onhand':['Vouchers on hand','Voucher yang ada','Baucar di tangan'],'s.ledger':['Stock ledger','Buku stok','Lejar stok'],
+'ty.OPEN':['Opening count','Hitungan awal','Kiraan awal'],'ty.IN':['Stock in (received / bought)','Stok masuk (diterima / dibeli)','Stok masuk (diterima / dibeli)'],'ty.OUT':['Stock out (returned / expired / lost)','Stok keluar (dikembalikan / kedaluwarsa / hilang)','Stok keluar (dipulangkan / tamat / hilang)'],'ty.ADJ':['Correction (+ or −)','Koreksi (+ atau −)','Pembetulan (+ atau −)'],
+'ty.s.OPEN':['Opening count','Hitungan awal','Kiraan awal'],'ty.s.IN':['Stock in','Stok masuk','Stok masuk'],'ty.s.OUT':['Stock out','Stok keluar','Stok keluar'],'ty.s.ADJ':['Correction','Koreksi','Pembetulan'],
+'i.title':['Import past records','Impor catatan lama','Import rekod lama'],'i.help':['Upload a CSV with the columns Date (yyyy-mm-dd), IC, Name, Amount, Remarks. Rows already in the app are skipped, so it is safe to import twice. Imported records dated after your opening count are deducted from stock. Older ones are history only.','Unggah CSV dengan kolom Date (yyyy-mm-dd), IC, Name, Amount, Remarks. Baris yang sudah ada dilewati, jadi aman diimpor dua kali. Catatan impor bertanggal setelah hitungan awal mengurangi stok. Yang lebih lama hanya riwayat.','Muat naik CSV dengan lajur Date (yyyy-mm-dd), IC, Name, Amount, Remarks. Baris yang sudah ada dilangkau, jadi selamat diimport dua kali. Rekod import bertarikh selepas kiraan awal menolak stok. Yang lebih lama hanya sejarah.'],
+};
+const M = {
+ rows:['{n} rows ready to import ({s} skipped: no date or amount).','{n} baris siap diimpor ({s} dilewati: tanpa tanggal atau jumlah).','{n} baris sedia diimport ({s} dilangkau: tiada tarikh atau jumlah).'],
+ imported:['Imported {a}. Already there: {s}.','Diimpor {a}. Sudah ada: {s}.','Diimport {a}. Sudah ada: {s}.'],
+ saved:['Saved.','Tersimpan.','Disimpan.'],deleted:['Deleted {n}.','{n} dihapus.','{n} dipadam.'],
+ delConfirm:['Delete {n} record(s) permanently? Photos go to the Drive trash.','Hapus {n} catatan secara permanen? Foto masuk ke tempat sampah Drive.','Padam {n} rekod secara kekal? Foto masuk ke tong sampah Drive.'],
+ tickFirst:['Tick one or more rows first.','Centang satu atau lebih baris dulu.','Tandakan satu atau lebih baris dahulu.'],
+ needName:['Enter the name, the reason and at least one voucher.','Isi nama, alasan dan minimal satu voucher.','Isi nama, sebab dan sekurang-kurangnya satu baucar.'],
+ needStock:['Enter date, denomination and a number.','Isi tanggal, pecahan dan jumlah.','Isi tarikh, denominasi dan bilangan.'],
+ editing:['Editing {id}','Mengedit {id}','Menyunting {id}'],
+ noOpen:['No opening count yet. Go to Voucher stock and add an Opening count of the vouchers you hold now, otherwise the balance is wrong.','Belum ada hitungan awal. Buka Stok voucher dan tambahkan Hitungan awal voucher yang Anda pegang sekarang, kalau tidak saldo salah.','Belum ada kiraan awal. Pergi ke Stok baucar dan tambah Kiraan awal baucar yang anda pegang sekarang, jika tidak baki salah.'],
+ over:['Not enough in stock: {d} on hand {h}, you are giving {g}.','Stok tidak cukup: {d} tersedia {h}, Anda memberi {g}.','Stok tidak mencukupi: {d} ada {h}, anda memberi {g}.'],
+ onHand:['On hand','Tersedia','Di tangan'],vch:['vouchers','voucher','baucar'],issuedAll:['Given (all records)','Diberikan (semua catatan)','Diberi (semua rekod)'],issuedMonth:['Given this month','Diberikan bulan ini','Diberi bulan ini'],
+ recCount:['{n} records','{n} catatan','{n} rekod'],countAsOf:['Counted on {d}','Dihitung pada {d}','Dikira pada {d}'],
+ none:['Nothing yet.','Belum ada.','Belum ada.'],
+ days:['{n} days left','{n} hari lagi','{n} hari lagi'],expired:['expired','kedaluwarsa','tamat tempoh'],noExp:['No expiry dates recorded. Add the expiry date when you enter stock.','Belum ada tanggal kedaluwarsa. Isi tanggal kedaluwarsa saat mencatat stok.','Tiada tarikh tamat direkodkan. Isi tarikh tamat semasa merekod stok.'],
+ other:['Other…','Lainnya…','Lain-lain…'],all:['All companies','Semua perusahaan','Semua syarikat'],allCat:['All reasons','Semua alasan','Semua sebab'],
+ th:{date:['Date','Tanggal','Tarikh'],ic:['Company','Perusahaan','Syarikat'],name:['Name','Nama','Nama'],cat:['Reason','Alasan','Sebab'],vch:['Vouchers','Voucher','Baucar'],amt:['Amount','Jumlah','Jumlah'],ph:['Photos','Foto','Foto'],cnt:['Count','Jumlah','Bilangan'],week:['Week','Minggu','Minggu'],type:['Type','Jenis','Jenis'],den:['Denom.','Pecahan','Denom.'],qty:['Qty','Jml','Bil.'],ref:['Reference','Referensi','Rujukan'],held:['Held by','Dipegang','Dipegang'],exp:['Expiry','Kedaluwarsa','Tamat'],total:['Total','Total','Jumlah']},
+ noneNom:['— none —','— tidak ada —','— tiada —'],
+ loginNeeded:['Session expired. Sign in again.','Sesi berakhir. Masuk lagi.','Sesi tamat. Log masuk semula.'],codeSent:['Code sent to the admin email.','Kode dikirim ke email admin.','Kod dihantar ke emel admin.'],pinMismatch:['PINs do not match','PIN tidak cocok','PIN tidak sepadan'],pinSet:['PIN set. You can sign in now.','PIN diatur. Silakan masuk.','PIN ditetapkan. Anda boleh log masuk.'],
+};
+const t = k => { const a = D[k]; return a ? (a[LI()] || a[0]) : k; };
+const m = (k, sub, vars) => { let a = sub && typeof sub === 'string' ? M[k][sub] : M[k]; if (!sub || typeof sub !== 'string') vars = sub; let s = a[LI()] || a[0]; if (vars) for (const x in vars) s = s.replace('{' + x + '}', vars[x]); return s; };
+const tc = (c, id) => (M.th[c] || [c])[LI()] || c;
+
+/* ---------- api ---------- */
+let toastT, TOKEN = sessionStorage.getItem('rec_tok') || '';
+function toast(msg, err){ const e = $('#toast'); e.textContent = msg; e.className = 'toast' + (err ? ' err' : ''); e.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => e.hidden = true, 4500); }
+function apiUrl(){ return API_URL || localStorage.getItem('rec_api') || new URLSearchParams(location.search).get('api') || ''; }
+async function api(body, ms){
+  const u = apiUrl(); if (!u) throw new Error('NOAPI');
+  const ac = new AbortController(), tm = ms ? setTimeout(() => ac.abort(), ms) : 0;
+  try { const r = await fetch(u, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(body), signal:ac.signal}); const j = await r.json(); if (!j.ok) throw new Error(j.error || 'Error'); return j; }
+  finally { clearTimeout(tm); }
+}
+function admApi(body, ms){ body.token = TOKEN; return api(body, ms || 60000).catch(e => { if (e.message === 'SESSION') { logoutUI(); toast(m('loginNeeded'), true); } throw e; }); }
+function logoutUI(){ TOKEN = ''; sessionStorage.removeItem('rec_tok'); $('#loginWrap').hidden = false; $('#app').hidden = true; }
+
+/* ---------- photos: drag and drop, + button, in-page peek ---------- */
+function readImg(file, max, q){
+  return new Promise((res, rej) => { const fr = new FileReader();
+    fr.onload = () => { const im = new Image(); im.onload = () => { const s = Math.min(1, max / Math.max(im.width, im.height)), w = Math.round(im.width * s), h = Math.round(im.height * s);
+      const c = document.createElement('canvas'); c.width = w; c.height = h; c.getContext('2d').drawImage(im, 0, 0, w, h); res(c.toDataURL('image/jpeg', q)); }; im.onerror = rej; im.src = fr.result; };
+    fr.onerror = rej; fr.readAsDataURL(file); });
+}
+function peek(src){ const p = $('#peek'); p.querySelector('img').src = src; p.hidden = false; }
+$('#peek').addEventListener('click', () => $('#peek').hidden = true);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') $('#peek').hidden = true; });
+const PHC = {};
+async function photoUri(id){ if (PHC[id]) return PHC[id]; const j = await admApi({action:'photo', fileId:id}); PHC[id] = j.uri; return j.uri; }
+function makePhotoBox(root){
+  const box = {items: [], root};   /* item: {id} existing, or {uri} new */
+  function wire(el){
+    const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*'; inp.multiple = true; inp.hidden = true; el.appendChild(inp);
+    el.addEventListener('click', e => { if (e.target === inp) return; inp.click(); });
+    inp.addEventListener('change', () => { add(inp.files); inp.value = ''; });
+    el.addEventListener('dragover', e => { e.preventDefault(); el.classList.add('over'); }); el.addEventListener('dragleave', () => el.classList.remove('over'));
+    el.addEventListener('drop', e => { e.preventDefault(); el.classList.remove('over'); add(e.dataTransfer.files); });
+  }
+  async function add(files){
+    for (const f of [...files]) { if (box.items.length >= 3) break; if (!/^image\//.test(f.type)) continue;
+      try { box.items.push({uri: await readImg(f, 1280, .8)}); } catch (e) { toast('Photo error', true); } }
+    render();
+  }
+  function render(){
+    root.innerHTML = '';
+    if (!box.items.length) { const dz = document.createElement('div'); dz.className = 'dz'; dz.textContent = t('p.drop'); root.appendChild(dz); wire(dz); return; }
+    const th = document.createElement('div'); th.className = 'thumbs';
+    box.items.forEach((it, i) => { const d = document.createElement('div'); d.className = 'th'; d.innerHTML = '<img alt=""><button type="button" aria-label="remove">×</button>'; const img = d.querySelector('img');
+      if (it.uri) img.src = it.uri; else photoUri(it.id).then(u => { img.src = u; }).catch(() => { d.append('!'); });
+      img.onclick = () => peek(img.src); d.querySelector('button').onclick = e => { e.stopPropagation(); box.items.splice(i, 1); render(); }; th.appendChild(d); });
+    if (box.items.length < 3) { const a = document.createElement('div'); a.className = 'th add'; a.textContent = '+'; th.appendChild(a); wire(a); }
+    root.appendChild(th);
+  }
+  box.render = render; box.clear = () => { box.items = []; render(); };
+  box.set = ids => { box.items = String(ids || '').split(',').filter(Boolean).map(id => ({id})); render(); };
+  box.payload = () => ({keepPhotos: box.items.filter(x => x.id).map(x => x.id), newPhotos: box.items.filter(x => x.uri).map(x => x.uri)});
+  return box;
+}
+let gPB, sPB;
+
+/* ---------- data and maths ---------- */
+let DATA = {rewards: [], stock: []}, NOMS = [];
+const itemsOf = r => { try { return JSON.parse(r.items || '{}'); } catch (e) { return {}; } };
+const vchText = r => { const it = itemsOf(r); return Object.keys(it).sort((a, b) => b - a).map(k => it[k] + ' × ' + (Number(k) / 1000) + 'k').join(' + ') || '—'; };
+function stockCalc(){
+  const opens = DATA.stock.filter(r => r.type === 'OPEN'), openDate = opens.length ? opens.map(r => r.date).sort().pop() : '', on = {};
+  DENOMS.forEach(d => on[d] = 0);
+  const add = (d, q) => { d = Number(d); on[d] = (on[d] || 0) + q; };
+  opens.filter(r => r.date === openDate).forEach(r => add(r.denom, Number(r.qty)));
+  DATA.stock.forEach(r => { if (r.type === 'OPEN' || (openDate && r.date <= openDate)) return; const q = Number(r.qty); add(r.denom, r.type === 'OUT' ? -q : q); });
+  DATA.rewards.forEach(r => { if (openDate && r.date <= openDate) return; const it = itemsOf(r); for (const k in it) add(k, -Number(it[k])); });
+  return {on, openDate, value: Object.keys(on).reduce((s, d) => s + Number(d) * on[d], 0)};
+}
+function isoWeekKey(iso){ const d = new Date(iso + 'T12:00:00'); const t0 = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const day = t0.getUTCDay() || 7; t0.setUTCDate(t0.getUTCDate() + 4 - day); const y0 = new Date(Date.UTC(t0.getUTCFullYear(), 0, 1)); return t0.getUTCFullYear() + '-W' + String(Math.ceil(((t0 - y0) / 864e5 + 1) / 7)).padStart(2, '0'); }
+const sum = (a, f) => a.reduce((s, x) => s + (Number(f(x)) || 0), 0);
+
+/* ---------- dashboard ---------- */
+function renderDash(){
+  const sc = stockCalc(), R = DATA.rewards, month = todayISO().slice(0, 7);
+  $('#openWarn').innerHTML = sc.openDate ? '' : `<div class="box warn">${esc(m('noOpen'))}</div>`;
+  const denK = Object.keys(sc.on).sort((a, b) => b - a).map(d => `${sc.on[d]} × ${Number(d) / 1000}k`).join(' · ');
+  const low = sc.value < 0 || Object.values(sc.on).some(v => v < 0);
+  $('#kpis').innerHTML = `<div class="kpi ${low ? 'low' : ''}"><small>${esc(m('onHand'))}</small><b>${IDR(sc.value)}</b><span>${esc(denK)}${sc.openDate ? ' · ' + esc(m('countAsOf', {d: sc.openDate})) : ''}</span></div>
+   <div class="kpi"><small>${esc(m('issuedAll'))}</small><b>${IDR(sum(R, r => r.amount))}</b><span>${esc(m('recCount', {n: R.length}))}</span></div>
+   <div class="kpi"><small>${esc(m('issuedMonth'))}</small><b>${IDR(sum(R.filter(r => String(r.date).slice(0, 7) === month), r => r.amount))}</b><span>${esc(m('recCount', {n: R.filter(r => String(r.date).slice(0, 7) === month).length}))}</span></div>`;
+  const exps = DATA.stock.filter(r => r.expiry && (r.type === 'IN' || r.type === 'OPEN')).sort((a, b) => a.expiry.localeCompare(b.expiry));
+  const now = new Date(todayISO() + 'T12:00:00');
+  $('#expiry').innerHTML = exps.length ? `<table class="t"><tr><th>${tc('exp')}</th><th>${tc('den')}</th><th class="n">${tc('qty')}</th><th>${tc('ref')}</th><th></th></tr>` + exps.map(r => { const dl = Math.round((new Date(r.expiry + 'T12:00:00') - now) / 864e5), bad = dl < 0 ? 'err' : dl <= 90 ? 'warn' : '';
+    return `<tr><td>${esc(r.expiry)}</td><td>${Number(r.denom) / 1000}k</td><td class="n">${esc(r.qty)}</td><td>${esc(r.ref)}</td><td>${dl < 0 ? `<span class="pillt OUT">${esc(m('expired'))}</span>` : `<span class="pillt ${dl <= 90 ? 'ADJ' : ''}">${esc(m('days', {n: dl}))}</span>`}</td></tr>`; }).join('') + '</table>' : `<div class="hint">${esc(m('noExp'))}</div>`;
+  const grp = (key) => { const g = {}; R.forEach(r => { const k = (key(r) || '—').trim() || '—'; (g[k] = g[k] || {n: 0, a: 0}); g[k].n++; g[k].a += Number(r.amount) || 0; }); return Object.entries(g).sort((a, b) => b[1].a - a[1].a); };
+  const tbl = rows => rows.length ? `<table class="t"><tr><th></th><th class="n">${tc('cnt')}</th><th class="n">${tc('amt')}</th></tr>${rows.map(([k, v]) => `<tr><td>${esc(k)}</td><td class="n">${v.n}</td><td class="n">${IDR(v.a)}</td></tr>`).join('')}</table>` : `<div class="hint">${esc(m('none'))}</div>`;
+  $('#byIc').innerHTML = tbl(grp(r => r.ic)); $('#byCat').innerHTML = tbl(grp(r => r.category));
+  const wk = {}; R.forEach(r => { if (!r.date) return; const k = isoWeekKey(r.date); (wk[k] = wk[k] || {n: 0, a: 0}); wk[k].n++; wk[k].a += Number(r.amount) || 0; });
+  const keys = Object.keys(wk).sort().slice(-8).reverse(), mx = Math.max(1, ...keys.map(k => wk[k].a));
+  $('#byWeek').innerHTML = keys.length ? `<table class="t"><tr><th>${tc('week')}</th><th class="n">${tc('cnt')}</th><th class="n">${tc('amt')}</th><th style="width:40%"></th></tr>${keys.map(k => `<tr><td>${k}</td><td class="n">${wk[k].n}</td><td class="n">${IDR(wk[k].a)}</td><td><div class="bar" style="width:${Math.round(wk[k].a / mx * 100)}%"></div></td></tr>`).join('')}</table>` : `<div class="hint">${esc(m('none'))}</div>`;
+}
+
+/* ---------- give reward ---------- */
+let EDIT_RW = null;
+function fillSelects(){
+  const keep = id => { const e = $(id); return e ? e.value : ''; };
+  const set = (id, opts, v) => { const e = $(id); if (!e) return; e.innerHTML = opts.map(o => `<option value="${esc(o[0])}">${esc(o[1])}</option>`).join(''); if (v !== undefined && [...e.options].some(o => o.value === v)) e.value = v; };
+  set('#g_ic', [['', '—'], ...COMPANIES.map(x => [x, x]), ['__other', m('other')]], keep('#g_ic'));
+  set('#g_cat', [['', '—'], ...CATS.map(x => [x, x]), ['__other', m('other')]], keep('#g_cat'));
+  set('#g_nom', [['', m('noneNom')], ...NOMS.map(n => [n.id, `${n.name} · ${n.ic} · ${String(n.eventDate).slice(0, 10)}`])], keep('#g_nom'));
+  set('#q_ic', [['', m('all')], ...COMPANIES.map(x => [x, x])], keep('#q_ic'));
+  set('#q_cat', [['', m('allCat')], ...CATS.map(x => [x, x])], keep('#q_cat'));
+  set('#s_type', STYPES.map(x => [x, t('ty.' + x)]), keep('#s_type') || 'OPEN');
+  set('#s_denom', DENOMS.map(d => [String(d), IDR(d)]), keep('#s_denom'));
+  const box = $('#denBox'); if (!box.children.length) box.innerHTML = DENOMS.map(d => `<label>${IDR(d)}<input type="number" min="0" max="1000" step="1" inputmode="numeric" id="den_${d}" value="0"></label>`).join('');
+}
+function giveItems(){ const it = {}; DENOMS.forEach(d => { const n = Math.max(0, Math.floor(Number($('#den_' + d).value) || 0)); if (n) it[d] = n; }); return it; }
+function renderGiveAmt(){
+  const it = giveItems(), amt = Object.keys(it).reduce((s, d) => s + Number(d) * it[d], 0); $('#g_amt').textContent = IDR(amt);
+  const sc = stockCalc(), prev = EDIT_RW ? itemsOf(DATA.rewards.find(r => r.id === EDIT_RW) || {}) : {}, w = [];
+  if (sc.openDate) Object.keys(it).forEach(d => { const have = (sc.on[d] || 0) + (prev[d] ? Number(prev[d]) : 0); if (it[d] > have) w.push(m('over', {d: IDR(d), h: have, g: it[d]})); });
+  $('#g_stockWarn').innerHTML = w.map(x => `<div class="box warn">${esc(x)}</div>`).join('');
+}
+function resetGive(){
+  EDIT_RW = null; $('#gEditBar').hidden = true; ['g_name', 'g_ic2', 'g_cat2', 'g_rem', 'g_ser'].forEach(i => $('#' + i).value = '');
+  $('#g_date').value = todayISO(); $('#g_ic').value = ''; $('#g_cat').value = ''; $('#g_nom').value = ''; $('#g_ic2').hidden = true; $('#g_cat2').hidden = true;
+  DENOMS.forEach(d => $('#den_' + d).value = 0); gPB.clear(); renderGiveAmt();
+}
+function editReward(id){
+  const r = DATA.rewards.find(x => x.id === id); if (!r) return; resetGive(); EDIT_RW = id;
+  $('#g_date').value = r.date; $('#g_name').value = r.name; $('#g_rem').value = r.remarks || ''; $('#g_ser').value = r.serials || '';
+  const setSel = (sel, inp, v) => { if (!v) return; if ([...$(sel).options].some(o => o.value === v)) $(sel).value = v; else { $(sel).value = '__other'; $(inp).hidden = false; $(inp).value = v; } };
+  setSel('#g_ic', '#g_ic2', r.ic); setSel('#g_cat', '#g_cat2', r.category); $('#g_nom').value = r.nominationId || '';
+  const it = itemsOf(r); DENOMS.forEach(d => $('#den_' + d).value = it[d] || 0);
+  gPB.set(r.photos); $('#gEditBar').hidden = false; $('#gEditTxt').textContent = m('editing', {id}); renderGiveAmt(); showTab('give');
+}
+async function saveReward(){
+  const ic = $('#g_ic').value === '__other' ? $('#g_ic2').value.trim() : $('#g_ic').value, cat = $('#g_cat').value === '__other' ? $('#g_cat2').value.trim() : $('#g_cat').value, it = giveItems();
+  if (!$('#g_name').value.trim() || !cat || !Object.keys(it).length) { toast(m('needName'), true); return; }
+  const b = $('#gSave'); b.disabled = true;
+  try {
+    await admApi({action:'rwSave', reward:Object.assign({id:EDIT_RW || undefined, date:$('#g_date').value, ic, name:$('#g_name').value.trim(), category:cat, items:it, remarks:$('#g_rem').value.trim(), nominationId:$('#g_nom').value, serials:$('#g_ser').value.trim()}, gPB.payload())});
+    toast(m('saved')); resetGive(); await load(); showTab('rec');
+  } catch (e) { toast(e.message, true); }
+  b.disabled = false;
+}
+
+/* ---------- records ---------- */
+const SEL = new Set();
+function filtered(){
+  const q = $('#q_text').value.trim().toLowerCase(), ic = $('#q_ic').value, cat = $('#q_cat').value, mo = $('#q_month').value;
+  return DATA.rewards.filter(r => (!ic || r.ic === ic) && (!cat || r.category === cat) && (!mo || String(r.date).slice(0, 7) === mo) && (!q || (r.name + ' ' + r.remarks + ' ' + r.category + ' ' + r.ic).toLowerCase().includes(q)))
+    .sort((a, b) => String(b.date).localeCompare(String(a.date)) || String(b.createdAt).localeCompare(String(a.createdAt)));
+}
+function renderRec(){
+  const rows = filtered(); $('#recInfo').textContent = m('recCount', {n: rows.length}) + ' · ' + IDR(sum(rows, r => r.amount));
+  $('#recTable').innerHTML = rows.length ? `<table class="t"><tr><th></th><th>${tc('date')}</th><th>${tc('ic')}</th><th>${tc('name')}</th><th>${tc('cat')}</th><th>${tc('vch')}</th><th class="n">${tc('amt')}</th><th>${tc('ph')}</th></tr>` +
+    rows.map(r => `<tr class="clk" data-id="${esc(r.id)}"><td><input type="checkbox" ${SEL.has(r.id) ? 'checked' : ''}></td><td>${esc(r.date)}</td><td>${esc(r.ic)}</td><td>${esc(r.name)}${r.remarks ? `<div class="hint">${esc(r.remarks)}</div>` : ''}</td><td>${esc(r.category)}</td><td>${esc(vchText(r))}</td><td class="n">${IDR(r.amount)}</td><td>${String(r.photos || '').split(',').filter(Boolean).length ? '📷 ' + String(r.photos).split(',').filter(Boolean).length : ''}</td></tr>`).join('') + '</table>' : `<div class="hint">${esc(m('none'))}</div>`;
+  $$('#recTable tr.clk').forEach(tr => tr.onclick = e => { const id = tr.dataset.id; if (e.target.type === 'checkbox') { e.target.checked ? SEL.add(id) : SEL.delete(id); } else editReward(id); });
+}
+function csvCell(v){ v = String(v == null ? '' : v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
+function exportCsv(){
+  const rows = filtered().slice().sort((a, b) => String(a.date).localeCompare(String(b.date)));
+  const out = [['Sr#', 'Date', 'IC', 'Name', 'Amount', 'Remarks', 'Reason', 'Vouchers', 'Nomination']].concat(rows.map((r, i) => [i + 1, r.date, r.ic, r.name, r.amount, r.remarks, r.category, vchText(r), r.nominationId]));
+  const blob = new Blob(['﻿' + out.map(r => r.map(csvCell).join(',')).join('\r\n')], {type:'text/csv'}), a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = 'EcoOils-reward-records-' + todayISO() + '.csv'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+async function delRewards(){
+  const ids = [...SEL]; if (!ids.length) { toast(m('tickFirst'), true); return; }
+  if (!confirm(m('delConfirm', {n: ids.length}))) return;
+  try { const j = await admApi({action:'rwDelete', ids}); ids.forEach(i => SEL.delete(i)); await load(); toast(m('deleted', {n: j.deleted})); } catch (e) { toast(e.message, true); }
+}
+
+/* ---------- stock ---------- */
+let EDIT_ST = null;
+function resetStock(){ EDIT_ST = null; $('#sEditBar').hidden = true; $('#s_date').value = todayISO(); $('#s_qty').value = ''; ['s_ref', 's_exp', 's_ser', 's_rem'].forEach(i => $('#' + i).value = ''); $('#s_cust').value = 'HSSE (Iggy)'; sPB.clear(); }
+function editStock(id){
+  const r = DATA.stock.find(x => x.id === id); if (!r) return; resetStock(); EDIT_ST = id;
+  $('#s_date').value = r.date; $('#s_type').value = r.type; $('#s_denom').value = String(r.denom); $('#s_qty').value = r.qty; $('#s_cust').value = r.custodian || ''; $('#s_ref').value = r.ref || ''; $('#s_exp').value = r.expiry || ''; $('#s_ser').value = r.serials || ''; $('#s_rem').value = r.remarks || '';
+  sPB.set(r.photos); $('#sEditBar').hidden = false; $('#sEditTxt').textContent = m('editing', {id}); window.scrollTo(0, 0);
+}
+async function saveStock(){
+  const qty = Number($('#s_qty').value); if (!$('#s_date').value || !qty) { toast(m('needStock'), true); return; }
+  const b = $('#sSave'); b.disabled = true;
+  try {
+    await admApi({action:'stSave', row:Object.assign({id:EDIT_ST || undefined, date:$('#s_date').value, type:$('#s_type').value, denom:Number($('#s_denom').value), qty, custodian:$('#s_cust').value.trim(), ref:$('#s_ref').value.trim(), expiry:$('#s_exp').value, serials:$('#s_ser').value.trim(), remarks:$('#s_rem').value.trim()}, sPB.payload())});
+    toast(m('saved')); resetStock(); await load();
+  } catch (e) { toast(e.message, true); }
+  b.disabled = false;
+}
+function renderStock(){
+  const sc = stockCalc();
+  $('#onhand').innerHTML = `<div class="kpis" style="margin:0">${Object.keys(sc.on).sort((a, b) => b - a).map(d => `<div class="kpi ${sc.on[d] < 0 ? 'low' : ''}"><small>${IDR(d)}</small><b>${sc.on[d]}</b><span>${IDR(sc.on[d] * d)}</span></div>`).join('')}<div class="kpi ${sc.value < 0 ? 'low' : ''}"><small>${esc(m('th', 'total'))}</small><b>${IDR(sc.value)}</b><span>${sc.openDate ? esc(m('countAsOf', {d: sc.openDate})) : ''}</span></div></div>${sc.openDate ? '' : `<div class="box warn">${esc(m('noOpen'))}</div>`}`;
+  const rows = DATA.stock.slice().sort((a, b) => String(b.date).localeCompare(String(a.date)) || String(b.createdAt).localeCompare(String(a.createdAt)));
+  $('#ledger').innerHTML = rows.length ? `<table class="t"><tr><th>${tc('date')}</th><th>${tc('type')}</th><th>${tc('den')}</th><th class="n">${tc('qty')}</th><th>${tc('held')}</th><th>${tc('ref')}</th><th>${tc('exp')}</th><th>${tc('ph')}</th><th></th></tr>` +
+    rows.map(r => `<tr class="clk" data-id="${esc(r.id)}"><td>${esc(r.date)}</td><td><span class="pillt ${esc(r.type)}">${esc(t('ty.s.' + r.type))}</span></td><td>${Number(r.denom) / 1000}k</td><td class="n">${esc(r.qty)}</td><td>${esc(r.custodian)}</td><td>${esc(r.ref)}${r.remarks ? `<div class="hint">${esc(r.remarks)}</div>` : ''}</td><td>${esc(r.expiry)}</td><td>${String(r.photos || '').split(',').filter(Boolean).length ? '📷 ' + String(r.photos).split(',').filter(Boolean).length : ''}</td><td><button class="btn ghost danger sm" data-del="${esc(r.id)}">×</button></td></tr>`).join('') + '</table>' : `<div class="hint">${esc(m('none'))}</div>`;
+  $$('#ledger tr.clk').forEach(tr => tr.onclick = e => { if (e.target.dataset.del) return; editStock(tr.dataset.id); });
+  $$('#ledger [data-del]').forEach(b => b.onclick = async e => { e.stopPropagation(); if (!confirm(m('delConfirm', {n: 1}))) return; try { await admApi({action:'stDelete', ids:[b.dataset.del]}); await load(); toast(m('deleted', {n: 1})); } catch (er) { toast(er.message, true); } });
+}
+
+/* ---------- import ---------- */
+function parseCsv(text){
+  text = String(text || '').replace(/^﻿/, ''); const rows = []; let row = [], cur = '', q = false;
+  for (let i = 0; i < text.length; i++) { const c = text[i];
+    if (q) { if (c === '"') { if (text[i + 1] === '"') { cur += '"'; i++; } else q = false; } else cur += c; }
+    else if (c === '"') q = true; else if (c === ',') { row.push(cur); cur = ''; } else if (c === '\n' || c === '\r') { if (c === '\r' && text[i + 1] === '\n') i++; row.push(cur); rows.push(row); row = []; cur = ''; } else cur += c; }
+  if (cur || row.length) { row.push(cur); rows.push(row); }
+  return rows.filter(r => r.some(x => String(x).trim()));
+}
+let IMPORT_ROWS = [];
+function prepImport(){
+  const rows = parseCsv($('#i_text').value); IMPORT_ROWS = []; if (rows.length < 2) { $('#i_prev').textContent = ''; $('#i_go').disabled = true; return; }
+  const h = rows[0].map(x => String(x).trim().toLowerCase()), ix = k => h.findIndex(x => x.startsWith(k));
+  const c = {date: ix('date'), ic: ix('ic'), name: ix('name'), amount: ix('amount'), remarks: ix('remarks'), cat: ix('reason')}; let skipped = 0;
+  rows.slice(1).forEach(r => {
+    const get = i => i < 0 ? '' : String(r[i] == null ? '' : r[i]).trim(), date = get(c.date).slice(0, 10), amount = Number(get(c.amount).replace(/[^\d]/g, '')) || 0, name = get(c.name);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !amount || !name) { skipped++; return; }
+    let remarks = get(c.remarks), cat = get(c.cat); if (!cat) { if (CATS.includes(remarks)) { cat = remarks; remarks = ''; } else cat = 'Other'; }
+    IMPORT_ROWS.push({date, ic: get(c.ic).replace(/^NA$/i, ''), name, amount, remarks, category: cat});
+  });
+  $('#i_prev').textContent = m('rows', {n: IMPORT_ROWS.length, s: skipped}); $('#i_go').disabled = !IMPORT_ROWS.length;
+}
+async function doImport(){
+  const b = $('#i_go'); b.disabled = true; let a = 0, s = 0;
+  try { for (let i = 0; i < IMPORT_ROWS.length; i += 150) { const j = await admApi({action:'rwImport', rows: IMPORT_ROWS.slice(i, i + 150)}, 90000); a += j.added; s += j.skipped; }
+    toast(m('imported', {a, s})); $('#i_text').value = ''; $('#i_file').value = ''; prepImport(); await load(); } catch (e) { toast(e.message, true); b.disabled = false; }
+}
+
+/* ---------- shell ---------- */
+function showTab(k){ $$('#tabs button[data-t]').forEach(b => b.classList.toggle('on', b.dataset.t === k)); $$('.tab').forEach(s => s.classList.toggle('on', s.id === 'tab-' + k)); if (k === 'give' && !EDIT_RW) renderGiveAmt(); }
+function renderAll(){ fillSelects(); renderDash(); renderRec(); renderStock(); renderGiveAmt(); }
+async function load(){
+  const j = await admApi({action:'rwList'}); DATA = {rewards: j.rewards || [], stock: j.stock || []};
+  try { const n = await admApi({action:'list'}); NOMS = (n.rows || []).filter(r => r.status === 'Approved' || r.status === 'Issued').sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt))); } catch (e) { NOMS = []; }
+  renderAll();
+}
+function applyLang(){
+  document.documentElement.lang = LANG; $$('[data-i]').forEach(e => e.textContent = t(e.dataset.i)); $$('[data-ph]').forEach(e => e.placeholder = t(e.dataset.ph));
+  $$('#lang button').forEach(b => b.classList.toggle('on', b.dataset.l === LANG)); $('#ver').textContent = VERSION; $('#verdate').textContent = VERSION + ' · ' + VERDATE;
+  if (gPB) { gPB.render(); sPB.render(); } if (!$('#app').hidden) renderAll(); else fillSelects();
+}
+async function doLogin(){
+  try { const j = await api({action:'login', email:$('#l_email').value, pin:$('#l_pin').value}); TOKEN = j.token; sessionStorage.setItem('rec_tok', TOKEN); localStorage.setItem('rec_email', j.email); $('#l_pin').value = ''; await enter(); }
+  catch (e) { if (e.message === 'NOAPI') $('#noapi').hidden = false; toast(e.message, true); }
+}
+async function enter(){ $('#loginWrap').hidden = true; $('#app').hidden = false; try { await load(); } catch (e) { if (e.message !== 'SESSION') toast(e.message, true); } }
+function init(){
+  document.title = 'EcoOils Rewards'; $('#l_email').value = localStorage.getItem('rec_email') || '';
+  gPB = makePhotoBox($('#pb_give')); sPB = makePhotoBox($('#pb_stock')); fillSelects(); applyLang(); resetGive(); resetStock();
+  $$('#lang button').forEach(b => b.onclick = () => { LANG = b.dataset.l; localStorage.setItem('rec_lang', LANG); applyLang(); });
+  $$('#tabs button[data-t]').forEach(b => b.onclick = () => showTab(b.dataset.t));
+  $('#btnLogin').onclick = doLogin; $('#l_pin').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+  $('#btnForgot').onclick = () => { $('#loginBox').hidden = true; $('#resetBox').hidden = false; }; $('#btnBack').onclick = () => { $('#resetBox').hidden = true; $('#loginBox').hidden = false; };
+  $('#btnSendCode').onclick = async () => { try { await api({action:'requestReset', email:$('#l_email').value}); toast(m('codeSent')); } catch (e) { if (e.message === 'NOAPI') $('#noapi').hidden = false; toast(e.message, true); } };
+  $('#btnSetPin').onclick = async () => { if ($('#r_pin').value !== $('#r_pin2').value) { toast(m('pinMismatch'), true); return; }
+    try { await api({action:'setPin', email:$('#l_email').value, code:$('#r_code').value, pin:$('#r_pin').value}); toast(m('pinSet')); $('#r_code').value = $('#r_pin').value = $('#r_pin2').value = ''; $('#btnBack').click(); } catch (e) { toast(e.message, true); } };
+  $('#btnLogout').onclick = async () => { try { await api({action:'logout', token:TOKEN}); } catch (e) {} logoutUI(); };
+  $('#btnRefresh').onclick = () => load().then(() => toast(m('saved'))).catch(e => toast(e.message, true));
+  $('#apiSave').onclick = () => { localStorage.setItem('rec_api', $('#apiUrl').value.trim()); location.reload(); };
+  $('#g_ic').onchange = () => { $('#g_ic2').hidden = $('#g_ic').value !== '__other'; }; $('#g_cat').onchange = () => { $('#g_cat2').hidden = $('#g_cat').value !== '__other'; };
+  $('#g_nom').onchange = () => { const n = NOMS.find(x => x.id === $('#g_nom').value); if (!n) return; $('#g_name').value = n.name; if ([...$('#g_ic').options].some(o => o.value === n.ic)) { $('#g_ic').value = n.ic; $('#g_ic2').hidden = true; } else { $('#g_ic').value = '__other'; $('#g_ic2').hidden = false; $('#g_ic2').value = n.ic; } if (!$('#g_cat').value) $('#g_cat').value = CATS[0]; $('#g_rem').value = $('#g_rem').value || (n.certNo ? 'Certificate ' + n.certNo : ''); };
+  $('#denBox').addEventListener('input', renderGiveAmt); $('#gSave').onclick = saveReward; $('#gCancel').onclick = () => resetGive();
+  ['#q_text', '#q_ic', '#q_cat', '#q_month'].forEach(s => $(s).addEventListener('input', renderRec)); $('#q_clear').onclick = () => { $('#q_text').value = ''; $('#q_ic').value = ''; $('#q_cat').value = ''; $('#q_month').value = ''; renderRec(); };
+  $('#btnCsv').onclick = exportCsv; $('#btnDelSel').onclick = delRewards;
+  $('#sSave').onclick = saveStock; $('#sCancel').onclick = () => resetStock();
+  $('#i_file').onchange = async e => { const f = e.target.files[0]; if (f) { $('#i_text').value = await f.text(); prepImport(); } }; $('#i_text').addEventListener('input', prepImport); $('#i_go').onclick = doImport;
+  if (TOKEN) enter();
+}
+init();
+</script>
+</body>
+</html>
