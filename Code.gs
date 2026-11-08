@@ -1,4 +1,4 @@
-// Code.gs v1.1.0 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
+// Code.gs v1.1.1 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
 // Deploy: Extensions > Apps Script (on iggifernandes@gmail.com) > paste this file > run setup() once >
 //   Project Settings > Script properties: add GEMINI_API_KEY (free Google AI Studio key) >
 //   Deploy > New deployment > Web app > Execute as: Me, Who has access: Anyone.
@@ -10,11 +10,11 @@ var COLS = ['id','createdAt','week','status','certNo','name','nick','role','ic',
 var EDITABLE = ['status','certNo','name','nick','role','ic','location','eventDate','observation','action','outcome',
   'category','certLang','certDate','certPara','hseNote','level','aiJson'];
 var IC_LIST = ['EcoOils','GSB','WEN','KKS','PBS'];
-var VERSION = 'v1.1.0';
+var VERSION = 'v1.1.1';
 
 /* ---------- Rewards: voucher stock and reward distribution (admin only) ---------- */
 var RW_NAME = 'Rewards';
-var RW_COLS = ['id','createdAt','date','ic','name','category','items','amount','remarks','nominationId','serials','photos','status','issuedBy','updatedAt'];
+var RW_COLS = ['id','createdAt','date','ic','name','category','items','amount','remarks','nominationId','serials','photos','status','issuedBy','updatedAt','alloc'];
 var ST_NAME = 'Stock';
 var ST_COLS = ['id','createdAt','date','type','denom','qty','custodian','ref','expiry','serials','photos','remarks','updatedAt'];
 var DATE_COLS = ['date','expiry'];
@@ -61,6 +61,14 @@ function rwList_() { return { ok: true, rewards: readTab_(RW_NAME, RW_COLS), sto
 function folderPhotos_(uris, prefix) { return uris && uris.length ? savePhotos_(uris, DriveApp.getFolderById(prop_('FOLDER_ID')), prefix) : []; }
 function trash_(ids) { ids.forEach(function (f) { f = String(f).trim(); if (f) { try { DriveApp.getFileById(f).setTrashed(true); } catch (e) {} } }); }
 
+function allocClean_(a, total) {
+  if (!a || !a.length) return '';
+  if (a.length > 10) throw new Error('Too many companies');
+  var out = [], sum = 0;
+  a.forEach(function (x) { var ic = s_(x.ic, 40), amt = Math.max(0, Math.floor(Number(x.amount) || 0)); if (!ic) throw new Error('Company missing'); out.push({ ic: ic, amount: amt }); sum += amt; });
+  if (sum !== total) throw new Error('Company amounts must add up to the voucher total');
+  return JSON.stringify(out);
+}
 function rwSave_(r) {
   var f = r.reward || {}, ic = itemsClean_(f.items);
   if (!s_(f.name) || !s_(f.category)) throw new Error('Missing name or category');
@@ -77,7 +85,7 @@ function rwSave_(r) {
     var kept = old.filter(function (x) { return keep.indexOf(x) >= 0; });
     var added = folderPhotos_((f.newPhotos || []).slice(0, Math.max(0, 3 - kept.length)), id + '-reward');
     var o = {
-      id: id, createdAt: rec.createdAt || now, date: date, ic: s_(f.ic, 40), name: s_(f.name, 160), category: s_(f.category, 120),
+      id: id, createdAt: rec.createdAt || now, date: date, ic: s_(f.ic, 120), name: s_(f.name, 160), category: s_(f.category, 120), alloc: allocClean_(f.alloc, ic.amount),
       items: JSON.stringify(ic.items), amount: ic.amount, remarks: s_(f.remarks, 600), nominationId: s_(f.nominationId, 40),
       serials: s_(f.serials, 3000), photos: kept.concat(added).join(','), status: 'Issued', issuedBy: rec.issuedBy || s_(r.email || '', 80), updatedAt: now
     };

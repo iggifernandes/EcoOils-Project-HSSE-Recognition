@@ -101,6 +101,7 @@ table.t tr.clk{cursor:pointer}table.t tr.clk:hover{background:#f1f7f3}
 .tw{overflow:auto}
 .bar{height:8px;border-radius:4px;background:var(--glight);min-width:2px}
 .den{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.arow{display:flex;gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap}.arow select{flex:1 1 130px;min-width:110px}.arow .oth{flex:1 1 130px}.arow .am{flex:1 1 120px;min-width:100px}.arow .rm{padding:6px 10px}
 .den label{display:flex;flex-direction:column;gap:3px;font-size:13px;color:var(--mut)}
 .amt{font:500 22px/1 Jost,sans-serif;color:var(--gdark)}
 .pillt{display:inline-block;font-size:11px;padding:1px 9px;border-radius:99px;background:#eef6f1;border:1px solid #cfe5d8;white-space:nowrap}
@@ -167,7 +168,7 @@ table.t tr.clk{cursor:pointer}table.t tr.clk:hover{background:#f1f7f3}
     <label class="f"><span><span data-i="f.date"></span> <b>*</b></span><input id="g_date" type="date"></label>
     <label class="f"><span data-i="f.nom"></span><select id="g_nom"></select></label>
     <label class="f"><span><span data-i="f.name"></span> <b>*</b></span><input id="g_name" maxlength="160" autocomplete="off"></label>
-    <label class="f"><span data-i="f.company"></span><select id="g_ic"></select><input id="g_ic2" maxlength="40" style="margin-top:6px" data-ph="ph.company" hidden></label>
+    <div class="f"><span data-i="f.company"></span><div id="g_alloc"></div><div class="row" style="margin-top:6px"><button class="btn sm" id="g_addIc" type="button" data-i="g.addIc"></button><button class="btn sm" id="g_split" type="button" data-i="g.split" hidden></button></div><div class="hint" id="g_allocSum"></div></div>
     <label class="f"><span><span data-i="f.cat"></span> <b>*</b></span><select id="g_cat"></select><input id="g_cat2" maxlength="120" style="margin-top:6px" data-ph="ph.cat" hidden></label>
     <label class="f w"><span data-i="f.remarks"></span><textarea id="g_rem" rows="2" maxlength="600"></textarea></label>
    </div>
@@ -240,7 +241,7 @@ table.t tr.clk{cursor:pointer}table.t tr.clk:hover{background:#f1f7f3}
 
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbx2wdQ_TGsu6Kfj8xk8Tjz8vuqvzdKTuKKlLZFb214dai5J32Kw781Z1DOZ9Amd3GNV/exec';
-const VERSION = 'v1.0.1', VERDATE = '2026-11-07';
+const VERSION = 'v1.1.0', VERDATE = '2026-11-08';
 const COMPANIES = ['EcoOils','GSB','WEN','KKS','PBS'];
 const DENOMS = [100000, 50000];   /* edit here to add a voucher denomination */
 const CATS = ['Best Observation for the Week','PTW Award','Spot quiz','Team or task achievement','Safety Day activity','Management walkthrough'];
@@ -266,7 +267,7 @@ const D = {
 'd.expiry':['Voucher expiry','Kedaluwarsa voucher','Tamat tempoh baucar'],'d.byIc':['Given by company','Diberikan per perusahaan','Diberi mengikut syarikat'],'d.byCat':['Given by reason','Diberikan per alasan','Diberi mengikut sebab'],'d.weeks':['Last 8 weeks','8 minggu terakhir','8 minggu terakhir'],
 'g.title':['Give a reward','Beri hadiah','Beri ganjaran'],'g.vouchers':['Vouchers given','Voucher diberikan','Baucar diberi'],'g.total':['Total value:','Total nilai:','Jumlah nilai:'],'g.photos':['Photos','Foto','Foto'],
 'g.photosHint':['Photo of the crew receiving the reward (up to 3). Drag and drop, or tap +.','Foto kru menerima hadiah (maksimal 3). Seret dan lepas, atau ketuk +.','Foto krew menerima ganjaran (maksimum 3). Seret dan lepas, atau ketik +.'],
-'f.date':['Date','Tanggal','Tarikh'],'f.nom':['Link to a nomination (optional)','Tautkan ke nominasi (opsional)','Pautkan kepada pencalonan (pilihan)'],'f.name':['Name (person or team)','Nama (orang atau tim)','Nama (individu atau pasukan)'],'f.company':['Company','Perusahaan','Syarikat'],
+'f.date':['Date','Tanggal','Tarikh'],'f.nom':['Link to a nomination (optional)','Tautkan ke nominasi (opsional)','Pautkan kepada pencalonan (pilihan)'],'f.name':['Name (person or team)','Nama (orang atau tim)','Nama (individu atau pasukan)'],'f.company':['Company (add more than one if shared)','Perusahaan (tambah lebih dari satu jika dibagi)','Syarikat (tambah lebih daripada satu jika dikongsi)'],'g.addIc':['+ Add another company','+ Tambah perusahaan lain','+ Tambah syarikat lain'],'g.split':['Split equally','Bagi rata','Bahagi sama rata'],'ph.share':['Amount (Rp)','Jumlah (Rp)','Jumlah (Rp)'],
 'f.cat':['Reason / category','Alasan / kategori','Sebab / kategori'],'f.remarks':['Remarks','Catatan','Catatan'],'f.serials':['Voucher serial numbers (optional)','Nomor seri voucher (opsional)','Nombor siri baucar (pilihan)'],
 'ph.company':['Type the company','Tulis perusahaan','Taip syarikat'],'ph.cat':['Type the reason','Tulis alasan','Taip sebab'],'ph.search':['Search name, remarks…','Cari nama, catatan…','Cari nama, catatan…'],'ph.ref':['Batch or who requested it','Batch atau peminta','Kelompok atau peminta'],'ph.csv':['…or paste CSV text here','…atau tempel teks CSV di sini','…atau tampal teks CSV di sini'],
 'p.drop':['Drop photos here or tap to choose','Letakkan foto di sini atau ketuk untuk memilih','Letak foto di sini atau ketik untuk memilih'],
@@ -278,6 +279,9 @@ const D = {
 'i.title':['Import past records','Impor catatan lama','Import rekod lama'],'i.help':['Upload a CSV with the columns Date (yyyy-mm-dd), IC, Name, Amount, Remarks. Rows already in the app are skipped, so it is safe to import twice. Imported records dated after your opening count are deducted from stock. Older ones are history only.','Unggah CSV dengan kolom Date (yyyy-mm-dd), IC, Name, Amount, Remarks. Baris yang sudah ada dilewati, jadi aman diimpor dua kali. Catatan impor bertanggal setelah hitungan awal mengurangi stok. Yang lebih lama hanya riwayat.','Muat naik CSV dengan lajur Date (yyyy-mm-dd), IC, Name, Amount, Remarks. Baris yang sudah ada dilangkau, jadi selamat diimport dua kali. Rekod import bertarikh selepas kiraan awal menolak stok. Yang lebih lama hanya sejarah.'],
 };
 const M = {
+ allocSum:['Allocated {a} of {t}','Dialokasikan {a} dari {t}','Diperuntukkan {a} daripada {t}'],
+ allocBad:['Company amounts must add up to the voucher total ({t}).','Jumlah per perusahaan harus sama dengan total voucher ({t}).','Jumlah setiap syarikat mesti sama dengan jumlah baucar ({t}).'],
+ allocNone:['Choose the company.','Pilih perusahaan.','Pilih syarikat.'],
  rows:['{n} rows ready to import ({s} skipped: no date or amount).','{n} baris siap diimpor ({s} dilewati: tanpa tanggal atau jumlah).','{n} baris sedia diimport ({s} dilangkau: tiada tarikh atau jumlah).'],
  imported:['Imported {a}. Already there: {s}.','Diimpor {a}. Sudah ada: {s}.','Diimport {a}. Sudah ada: {s}.'],
  saved:['Saved.','Tersimpan.','Disimpan.'],deleted:['Deleted {n}.','{n} dihapus.','{n} dipadam.'],
@@ -387,8 +391,9 @@ function renderDash(){
   $('#expiry').innerHTML = exps.length ? `<table class="t"><tr><th>${tc('exp')}</th><th>${tc('den')}</th><th class="n">${tc('qty')}</th><th>${tc('ref')}</th><th></th></tr>` + exps.map(r => { const dl = Math.round((new Date(r.expiry + 'T12:00:00') - now) / 864e5), bad = dl < 0 ? 'err' : dl <= 90 ? 'warn' : '';
     return `<tr><td>${esc(r.expiry)}</td><td>${Number(r.denom) / 1000}k</td><td class="n">${esc(r.qty)}</td><td>${esc(r.ref)}</td><td>${dl < 0 ? `<span class="pillt OUT">${esc(m('expired'))}</span>` : `<span class="pillt ${dl <= 90 ? 'ADJ' : ''}">${esc(m('days', {n: dl}))}</span>`}</td></tr>`; }).join('') + '</table>' : `<div class="hint">${esc(m('noExp'))}</div>`;
   const grp = (key) => { const g = {}; R.forEach(r => { const k = (key(r) || '—').trim() || '—'; (g[k] = g[k] || {n: 0, a: 0}); g[k].n++; g[k].a += Number(r.amount) || 0; }); return Object.entries(g).sort((a, b) => b[1].a - a[1].a); };
+  const grpIc = () => { const g = {}; R.forEach(r => icParts(r).forEach(p => { const k = (p.ic || '—').trim() || '—'; (g[k] = g[k] || {n: 0, a: 0}); g[k].n++; g[k].a += Number(p.amount) || 0; })); return Object.entries(g).sort((a, b) => b[1].a - a[1].a); };
   const tbl = rows => rows.length ? `<table class="t"><tr><th></th><th class="n">${tc('cnt')}</th><th class="n">${tc('amt')}</th></tr>${rows.map(([k, v]) => `<tr><td>${esc(k)}</td><td class="n">${v.n}</td><td class="n">${IDR(v.a)}</td></tr>`).join('')}</table>` : `<div class="hint">${esc(m('none'))}</div>`;
-  $('#byIc').innerHTML = tbl(grp(r => r.ic)); $('#byCat').innerHTML = tbl(grp(r => r.category));
+  $('#byIc').innerHTML = tbl(grpIc()); $('#byCat').innerHTML = tbl(grp(r => r.category));
   const wk = {}; R.forEach(r => { if (!r.date) return; const k = isoWeekKey(r.date); (wk[k] = wk[k] || {n: 0, a: 0}); wk[k].n++; wk[k].a += Number(r.amount) || 0; });
   const keys = Object.keys(wk).sort().slice(-8).reverse(), mx = Math.max(1, ...keys.map(k => wk[k].a));
   $('#byWeek').innerHTML = keys.length ? `<table class="t"><tr><th>${tc('week')}</th><th class="n">${tc('cnt')}</th><th class="n">${tc('amt')}</th><th style="width:40%"></th></tr>${keys.map(k => `<tr><td>${k}</td><td class="n">${wk[k].n}</td><td class="n">${IDR(wk[k].a)}</td><td><div class="bar" style="width:${Math.round(wk[k].a / mx * 100)}%"></div></td></tr>`).join('')}</table>` : `<div class="hint">${esc(m('none'))}</div>`;
@@ -399,7 +404,6 @@ let EDIT_RW = null;
 function fillSelects(){
   const keep = id => { const e = $(id); return e ? e.value : ''; };
   const set = (id, opts, v) => { const e = $(id); if (!e) return; e.innerHTML = opts.map(o => `<option value="${esc(o[0])}">${esc(o[1])}</option>`).join(''); if (v !== undefined && [...e.options].some(o => o.value === v)) e.value = v; };
-  set('#g_ic', [['', '—'], ...COMPANIES.map(x => [x, x]), ['__other', m('other')]], keep('#g_ic'));
   set('#g_cat', [['', '—'], ...CATS.map(x => [x, x]), ['__other', m('other')]], keep('#g_cat'));
   set('#g_nom', [['', m('noneNom')], ...NOMS.map(n => [n.id, `${n.name} · ${n.ic} · ${String(n.eventDate).slice(0, 10)}`])], keep('#g_nom'));
   set('#q_ic', [['', m('all')], ...COMPANIES.map(x => [x, x])], keep('#q_ic'));
@@ -407,33 +411,58 @@ function fillSelects(){
   set('#s_type', STYPES.map(x => [x, t('ty.' + x)]), keep('#s_type') || 'OPEN');
   set('#s_denom', DENOMS.map(d => [String(d), IDR(d)]), keep('#s_denom'));
   const box = $('#denBox'); if (!box.children.length) box.innerHTML = DENOMS.map(d => `<label>${IDR(d)}<input type="number" min="0" max="1000" step="1" inputmode="numeric" id="den_${d}" value="0"></label>`).join('');
+  renderAlloc();
 }
 function giveItems(){ const it = {}; DENOMS.forEach(d => { const n = Math.max(0, Math.floor(Number($('#den_' + d).value) || 0)); if (n) it[d] = n; }); return it; }
 function renderGiveAmt(){
-  const it = giveItems(), amt = Object.keys(it).reduce((s, d) => s + Number(d) * it[d], 0); $('#g_amt').textContent = IDR(amt);
+  const it = giveItems(), amt = Object.keys(it).reduce((s, d) => s + Number(d) * it[d], 0); $('#g_amt').textContent = IDR(amt); allocTotal(amt);
   const sc = stockCalc(), prev = EDIT_RW ? itemsOf(DATA.rewards.find(r => r.id === EDIT_RW) || {}) : {}, w = [];
   if (sc.openDate) Object.keys(it).forEach(d => { const have = (sc.on[d] || 0) + (prev[d] ? Number(prev[d]) : 0); if (it[d] > have) w.push(m('over', {d: IDR(d), h: have, g: it[d]})); });
   $('#g_stockWarn').innerHTML = w.map(x => `<div class="box warn">${esc(x)}</div>`).join('');
 }
+let ALLOC = [{ic: '', oth: '', amt: 0}];
+const giveTotal = () => { const it = giveItems(); return Object.keys(it).reduce((s, d) => s + Number(d) * it[d], 0); };
+function allocTotal(total){
+  if (ALLOC.length === 1) ALLOC[0].amt = total;
+  const el = $('#g_alloc'); if (el) { [...el.querySelectorAll('.am')].forEach((e, i) => { if (ALLOC.length === 1) { e.value = total; e.disabled = true; } else e.disabled = false; }); }
+  const sum = ALLOC.reduce((a, x) => a + (Number(x.amt) || 0), 0), s = $('#g_allocSum'); if (!s) return;
+  s.innerHTML = ALLOC.length > 1 ? `<span class="${sum === total ? '' : 'err'}">${esc(m('allocSum', {a: IDR(sum), t: IDR(total)}))}</span>` : '';
+}
+function renderAlloc(){
+  const el = $('#g_alloc'); if (!el) return;
+  const opts = [['', '—'], ...COMPANIES.map(x => [x, x]), ['__other', m('other')]];
+  el.innerHTML = ALLOC.map((a, i) => `<div class="arow" data-i="${i}"><select class="ic">${opts.map(o => `<option value="${esc(o[0])}" ${(a.ic === o[0]) ? 'selected' : ''}>${esc(o[1])}</option>`).join('')}</select><input class="oth" maxlength="40" placeholder="${esc(t('ph.company'))}" value="${esc(a.oth)}" ${a.ic === '__other' ? '' : 'hidden'}><input class="am" type="number" min="0" step="10000" inputmode="numeric" placeholder="${esc(t('ph.share'))}" value="${a.amt || ''}">${ALLOC.length > 1 ? '<button class="btn sm rm" type="button" data-rm="' + i + '">×</button>' : ''}</div>`).join('');
+  $('#g_split').hidden = ALLOC.length < 2; allocTotal(giveTotal());
+}
+function allocClean(){
+  const total = giveTotal(), map = {};
+  for (const a of ALLOC) { const name = a.ic === '__other' ? a.oth.trim() : a.ic; if (!name) return {err: m('allocNone')}; map[name] = (map[name] || 0) + (ALLOC.length === 1 ? total : Math.max(0, Math.floor(Number(a.amt) || 0))); }
+  const list = Object.entries(map).map(([ic, amount]) => ({ic, amount}));
+  if (list.reduce((x, y) => x + y.amount, 0) !== total) return {err: m('allocBad', {t: IDR(total)})};
+  return {list, ic: list.map(x => x.ic).join(', ')};
+}
+function icParts(r){ let a = []; try { a = r.alloc ? JSON.parse(r.alloc) : []; } catch (e) {} return a.length ? a : [{ic: r.ic, amount: Number(r.amount) || 0}]; }
 function resetGive(){
-  EDIT_RW = null; $('#gEditBar').hidden = true; ['g_name', 'g_ic2', 'g_cat2', 'g_rem', 'g_ser'].forEach(i => $('#' + i).value = '');
-  $('#g_date').value = todayISO(); $('#g_ic').value = ''; $('#g_cat').value = ''; $('#g_nom').value = ''; $('#g_ic2').hidden = true; $('#g_cat2').hidden = true;
+  EDIT_RW = null; $('#gEditBar').hidden = true; ['g_name', 'g_cat2', 'g_rem', 'g_ser'].forEach(i => $('#' + i).value = '');
+  ALLOC = [{ic: '', oth: '', amt: 0}]; renderAlloc();
+  $('#g_date').value = todayISO(); $('#g_cat').value = ''; $('#g_nom').value = ''; $('#g_cat2').hidden = true;
   DENOMS.forEach(d => $('#den_' + d).value = 0); gPB.clear(); renderGiveAmt();
 }
 function editReward(id){
   const r = DATA.rewards.find(x => x.id === id); if (!r) return; resetGive(); EDIT_RW = id;
   $('#g_date').value = r.date; $('#g_name').value = r.name; $('#g_rem').value = r.remarks || ''; $('#g_ser').value = r.serials || '';
   const setSel = (sel, inp, v) => { if (!v) return; if ([...$(sel).options].some(o => o.value === v)) $(sel).value = v; else { $(sel).value = '__other'; $(inp).hidden = false; $(inp).value = v; } };
-  setSel('#g_ic', '#g_ic2', r.ic); setSel('#g_cat', '#g_cat2', r.category); $('#g_nom').value = r.nominationId || '';
+  ALLOC = icParts(r).map(x => COMPANIES.includes(x.ic) || !x.ic ? {ic: x.ic, oth: '', amt: x.amount} : {ic: '__other', oth: x.ic, amt: x.amount}); renderAlloc(); setSel('#g_cat', '#g_cat2', r.category); $('#g_nom').value = r.nominationId || '';
   const it = itemsOf(r); DENOMS.forEach(d => $('#den_' + d).value = it[d] || 0);
   gPB.set(r.photos); $('#gEditBar').hidden = false; $('#gEditTxt').textContent = m('editing', {id}); renderGiveAmt(); showTab('give');
 }
 async function saveReward(){
-  const ic = $('#g_ic').value === '__other' ? $('#g_ic2').value.trim() : $('#g_ic').value, cat = $('#g_cat').value === '__other' ? $('#g_cat2').value.trim() : $('#g_cat').value, it = giveItems();
+  const cat = $('#g_cat').value === '__other' ? $('#g_cat2').value.trim() : $('#g_cat').value, it = giveItems();
   if (!$('#g_name').value.trim() || !cat || !Object.keys(it).length) { toast(m('needName'), true); return; }
+  const al = allocClean(); if (al.err) { toast(al.err, true); return; }
   const b = $('#gSave'); b.disabled = true;
   try {
-    await admApi({action:'rwSave', reward:Object.assign({id:EDIT_RW || undefined, date:$('#g_date').value, ic, name:$('#g_name').value.trim(), category:cat, items:it, remarks:$('#g_rem').value.trim(), nominationId:$('#g_nom').value, serials:$('#g_ser').value.trim()}, gPB.payload())});
+    await admApi({action:'rwSave', reward:Object.assign({id:EDIT_RW || undefined, date:$('#g_date').value, ic: al.ic, alloc: al.list.length > 1 ? al.list : [], name:$('#g_name').value.trim(), category:cat, items:it, remarks:$('#g_rem').value.trim(), nominationId:$('#g_nom').value, serials:$('#g_ser').value.trim()}, gPB.payload())});
     toast(m('saved')); resetGive(); await load(); showTab('rec');
   } catch (e) { toast(e.message, true); }
   b.disabled = false;
@@ -443,19 +472,19 @@ async function saveReward(){
 const SEL = new Set();
 function filtered(){
   const q = $('#q_text').value.trim().toLowerCase(), ic = $('#q_ic').value, cat = $('#q_cat').value, mo = $('#q_month').value;
-  return DATA.rewards.filter(r => (!ic || r.ic === ic) && (!cat || r.category === cat) && (!mo || String(r.date).slice(0, 7) === mo) && (!q || (r.name + ' ' + r.remarks + ' ' + r.category + ' ' + r.ic).toLowerCase().includes(q)))
+  return DATA.rewards.filter(r => (!ic || icParts(r).some(p => p.ic === ic)) && (!cat || r.category === cat) && (!mo || String(r.date).slice(0, 7) === mo) && (!q || (r.name + ' ' + r.remarks + ' ' + r.category + ' ' + r.ic).toLowerCase().includes(q)))
     .sort((a, b) => String(b.date).localeCompare(String(a.date)) || String(b.createdAt).localeCompare(String(a.createdAt)));
 }
 function renderRec(){
   const rows = filtered(); $('#recInfo').textContent = m('recCount', {n: rows.length}) + ' · ' + IDR(sum(rows, r => r.amount));
   $('#recTable').innerHTML = rows.length ? `<table class="t"><tr><th></th><th>${tc('date')}</th><th>${tc('ic')}</th><th>${tc('name')}</th><th>${tc('cat')}</th><th>${tc('vch')}</th><th class="n">${tc('amt')}</th><th>${tc('ph')}</th></tr>` +
-    rows.map(r => `<tr class="clk" data-id="${esc(r.id)}"><td><input type="checkbox" ${SEL.has(r.id) ? 'checked' : ''}></td><td>${esc(r.date)}</td><td>${esc(r.ic)}</td><td>${esc(r.name)}${r.remarks ? `<div class="hint">${esc(r.remarks)}</div>` : ''}</td><td>${esc(r.category)}</td><td>${esc(vchText(r))}</td><td class="n">${IDR(r.amount)}</td><td>${String(r.photos || '').split(',').filter(Boolean).length ? '📷 ' + String(r.photos).split(',').filter(Boolean).length : ''}</td></tr>`).join('') + '</table>' : `<div class="hint">${esc(m('none'))}</div>`;
+    rows.map(r => `<tr class="clk" data-id="${esc(r.id)}"><td><input type="checkbox" ${SEL.has(r.id) ? 'checked' : ''}></td><td>${esc(r.date)}</td><td>${esc(r.ic)}${icParts(r).length > 1 ? `<div class="hint">${esc(icParts(r).map(p => p.ic + ' ' + IDR(p.amount)).join(' · '))}</div>` : ''}</td><td>${esc(r.name)}${r.remarks ? `<div class="hint">${esc(r.remarks)}</div>` : ''}</td><td>${esc(r.category)}</td><td>${esc(vchText(r))}</td><td class="n">${IDR(r.amount)}</td><td>${String(r.photos || '').split(',').filter(Boolean).length ? '📷 ' + String(r.photos).split(',').filter(Boolean).length : ''}</td></tr>`).join('') + '</table>' : `<div class="hint">${esc(m('none'))}</div>`;
   $$('#recTable tr.clk').forEach(tr => tr.onclick = e => { const id = tr.dataset.id; if (e.target.type === 'checkbox') { e.target.checked ? SEL.add(id) : SEL.delete(id); } else editReward(id); });
 }
 function csvCell(v){ v = String(v == null ? '' : v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
 function exportCsv(){
   const rows = filtered().slice().sort((a, b) => String(a.date).localeCompare(String(b.date)));
-  const out = [['Sr#', 'Date', 'IC', 'Name', 'Amount', 'Remarks', 'Reason', 'Vouchers', 'Nomination']].concat(rows.map((r, i) => [i + 1, r.date, r.ic, r.name, r.amount, r.remarks, r.category, vchText(r), r.nominationId]));
+  const out = [['Sr#', 'Date', 'IC', 'Name', 'Amount', 'Remarks', 'Reason', 'Vouchers', 'Nomination']].concat(rows.flatMap((r, i) => icParts(r).map((p, j) => [i + 1, r.date, p.ic, r.name, p.amount, r.remarks, r.category, j ? '' : vchText(r), r.nominationId])));
   const blob = new Blob(['﻿' + out.map(r => r.map(csvCell).join(',')).join('\r\n')], {type:'text/csv'}), a = document.createElement('a');
   a.href = URL.createObjectURL(blob); a.download = 'EcoOils-reward-records-' + todayISO() + '.csv'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
 }
@@ -551,8 +580,13 @@ function init(){
   $('#btnLogout').onclick = async () => { try { await api({action:'logout', token:TOKEN}); } catch (e) {} logoutUI(); };
   $('#btnRefresh').onclick = () => load().then(() => toast(m('saved'))).catch(e => toast(e.message, true));
   $('#apiSave').onclick = () => { localStorage.setItem('rec_api', $('#apiUrl').value.trim()); location.reload(); };
-  $('#g_ic').onchange = () => { $('#g_ic2').hidden = $('#g_ic').value !== '__other'; }; $('#g_cat').onchange = () => { $('#g_cat2').hidden = $('#g_cat').value !== '__other'; };
-  $('#g_nom').onchange = () => { const n = NOMS.find(x => x.id === $('#g_nom').value); if (!n) return; $('#g_name').value = n.name; if ([...$('#g_ic').options].some(o => o.value === n.ic)) { $('#g_ic').value = n.ic; $('#g_ic2').hidden = true; } else { $('#g_ic').value = '__other'; $('#g_ic2').hidden = false; $('#g_ic2').value = n.ic; } if (!$('#g_cat').value) $('#g_cat').value = CATS[0]; $('#g_rem').value = $('#g_rem').value || (n.certNo ? 'Certificate ' + n.certNo : ''); };
+  $('#g_addIc').onclick = () => { const t0 = giveTotal(), used = ALLOC.reduce((a, x) => a + (Number(x.amt) || 0), 0); if (ALLOC.length === 1) ALLOC[0].amt = t0; ALLOC.push({ic: '', oth: '', amt: Math.max(0, t0 - used) }); renderAlloc(); };
+  $('#g_split').onclick = () => { const t0 = giveTotal(), n = ALLOC.length, u = 50000, each = Math.floor(t0 / n / u) * u; ALLOC.forEach((a, i) => a.amt = each); ALLOC[0].amt += t0 - each * n; renderAlloc(); };
+  $('#g_alloc').addEventListener('change', e => { const row = e.target.closest('.arow'); if (!row) return; const a = ALLOC[+row.dataset.i]; if (e.target.classList.contains('ic')) { a.ic = e.target.value; renderAlloc(); } });
+  $('#g_alloc').addEventListener('input', e => { const row = e.target.closest('.arow'); if (!row) return; const a = ALLOC[+row.dataset.i]; if (e.target.classList.contains('am')) { a.amt = Number(e.target.value) || 0; allocTotal(giveTotal()); } else if (e.target.classList.contains('oth')) a.oth = e.target.value; });
+  $('#g_alloc').addEventListener('click', e => { const b = e.target.closest('[data-rm]'); if (!b) return; ALLOC.splice(+b.dataset.rm, 1); renderAlloc(); });
+  $('#g_cat').onchange = () => { $('#g_cat2').hidden = $('#g_cat').value !== '__other'; };
+  $('#g_nom').onchange = () => { const n = NOMS.find(x => x.id === $('#g_nom').value); if (!n) return; $('#g_name').value = n.name; ALLOC = [COMPANIES.includes(n.ic) ? {ic: n.ic, oth: '', amt: 0} : {ic: '__other', oth: n.ic, amt: 0}]; renderAlloc(); if (!$('#g_cat').value) $('#g_cat').value = CATS[0]; $('#g_rem').value = $('#g_rem').value || (n.certNo ? 'Certificate ' + n.certNo : ''); };
   $('#denBox').addEventListener('input', renderGiveAmt); $('#gSave').onclick = saveReward; $('#gCancel').onclick = () => resetGive();
   ['#q_text', '#q_ic', '#q_cat', '#q_month'].forEach(s => $(s).addEventListener('input', renderRec)); $('#q_clear').onclick = () => { $('#q_text').value = ''; $('#q_ic').value = ''; $('#q_cat').value = ''; $('#q_month').value = ''; renderRec(); };
   $('#btnCsv').onclick = exportCsv; $('#btnDelSel').onclick = delRewards;
