@@ -87,6 +87,7 @@ table.wk td.zero{color:#aaa}table.wk td.cur.zero{background:var(--errbg);color:#
 .hp{position:absolute;left:-9999px;height:0;overflow:hidden}
 
 
+nav.tabs a{display:inline-flex;align-items:center;padding:10px 14px;min-height:44px;color:var(--mut);letter-spacing:.06em;white-space:nowrap}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:14px}
 .kpi{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px}
 .kpi small{display:block;color:var(--mut);letter-spacing:.1em;text-transform:uppercase;font-size:11px}
@@ -142,7 +143,7 @@ table.t tr.clk{cursor:pointer}table.t tr.clk:hover{background:#f1f7f3}
 <div id="app" hidden>
  <nav class="tabs" id="tabs" style="margin:0 0 12px;padding:0">
   <button data-t="dash" class="on" data-i="tab.dash"></button><button data-t="give" data-i="tab.give"></button><button data-t="rec" data-i="tab.rec"></button><button data-t="stock" data-i="tab.stock"></button><button data-t="imp" data-i="tab.imp"></button>
-  <span style="flex:1"></span><button id="btnRefresh" data-i="btn.refresh"></button><button id="btnLogout" data-i="a.logout"></button>
+  <a id="lnkNoms" href="./" data-i="tab.noms" style="text-decoration:none"></a><span style="flex:1"></span><button id="btnRefresh" data-i="btn.refresh"></button><button id="btnLogout" data-i="a.logout"></button>
  </nav>
 
  <!-- ============ DASHBOARD ============ -->
@@ -239,7 +240,7 @@ table.t tr.clk{cursor:pointer}table.t tr.clk:hover{background:#f1f7f3}
 
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbx2wdQ_TGsu6Kfj8xk8Tjz8vuqvzdKTuKKlLZFb214dai5J32Kw781Z1DOZ9Amd3GNV/exec';
-const VERSION = 'v1.0.0', VERDATE = '2026-11-07';
+const VERSION = 'v1.0.1', VERDATE = '2026-11-07';
 const COMPANIES = ['EcoOils','GSB','WEN','KKS','PBS'];
 const DENOMS = [100000, 50000];   /* edit here to add a voucher denomination */
 const CATS = ['Best Observation for the Week','PTW Award','Spot quiz','Team or task achievement','Safety Day activity','Management walkthrough'];
@@ -261,7 +262,7 @@ const D = {
 'a.login':['HSSE admin sign-in','Masuk admin HSSE','Log masuk admin HSSE'],'a.email':['Email','Email','Emel'],'a.pin':['PIN','PIN','PIN'],'a.loginBtn':['Sign in','Masuk','Log masuk'],'a.forgot':['Forgot PIN / first time','Lupa PIN / pertama kali','Lupa PIN / kali pertama'],
 'a.resetInfo':['A one-time code is emailed to the registered HSSE admin address. PINs can only be set this way.','Kode sekali pakai dikirim ke email admin HSSE terdaftar. PIN hanya dapat diatur dengan cara ini.','Kod sekali guna dihantar ke emel admin HSSE berdaftar. PIN hanya boleh ditetapkan dengan cara ini.'],
 'a.sendCode':['Email me a code','Kirim kode ke email','Emel kod kepada saya'],'a.code':['6-digit code','Kode 6 digit','Kod 6 digit'],'a.newPin':['New PIN (6 to 12 digits)','PIN baru (6 sampai 12 digit)','PIN baharu (6 hingga 12 digit)'],'a.newPin2':['Repeat new PIN','Ulangi PIN baru','Ulang PIN baharu'],'a.setPin':['Set PIN','Atur PIN','Tetapkan PIN'],'a.logout':['Sign out','Keluar','Log keluar'],
-'tab.dash':['Dashboard','Dasbor','Papan pemuka'],'tab.give':['Give reward','Beri hadiah','Beri ganjaran'],'tab.rec':['Records','Catatan','Rekod'],'tab.stock':['Voucher stock','Stok voucher','Stok baucar'],'tab.imp':['Import','Impor','Import'],
+'tab.dash':['Dashboard','Dasbor','Papan pemuka'],'tab.give':['Give reward','Beri hadiah','Beri ganjaran'],'tab.rec':['Records','Catatan','Rekod'],'tab.stock':['Voucher stock','Stok voucher','Stok baucar'],'tab.noms':['← Nominations','← Nominasi','← Pencalonan'],'tab.imp':['Import','Impor','Import'],
 'd.expiry':['Voucher expiry','Kedaluwarsa voucher','Tamat tempoh baucar'],'d.byIc':['Given by company','Diberikan per perusahaan','Diberi mengikut syarikat'],'d.byCat':['Given by reason','Diberikan per alasan','Diberi mengikut sebab'],'d.weeks':['Last 8 weeks','8 minggu terakhir','8 minggu terakhir'],
 'g.title':['Give a reward','Beri hadiah','Beri ganjaran'],'g.vouchers':['Vouchers given','Voucher diberikan','Baucar diberi'],'g.total':['Total value:','Total nilai:','Jumlah nilai:'],'g.photos':['Photos','Foto','Foto'],
 'g.photosHint':['Photo of the crew receiving the reward (up to 3). Drag and drop, or tap +.','Foto kru menerima hadiah (maksimal 3). Seret dan lepas, atau ketuk +.','Foto krew menerima ganjaran (maksimum 3). Seret dan lepas, atau ketik +.'],

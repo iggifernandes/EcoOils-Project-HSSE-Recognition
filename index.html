@@ -234,6 +234,7 @@ table.wk td.zero{color:#aaa}table.wk td.cur.zero{background:var(--errbg);color:#
       <button class="btn pri sm" id="btnPrintCerts" data-i="a.printCerts"></button>
       <button class="btn sm" id="btnPrintCards" data-i="a.printCards"></button>
       <button class="btn ghost sm" id="btnCsv" data-i="a.csv"></button>
+      <a class="btn sm" id="lnkRewards" href="rewards.html" data-i="a.rewards" style="text-decoration:none"></a>
       <button class="btn ghost danger sm" id="btnDelSel" data-i="a.delSel"></button>
     </div>
     <div class="hint" id="selInfo" style="margin-top:6px"></div>
@@ -309,7 +310,7 @@ table.wk td.zero{color:#aaa}table.wk td.cur.zero{background:var(--errbg);color:#
 <script>
 /* ---------- constants (edit here) ---------- */
 const API_URL = 'https://script.google.com/macros/s/AKfycbx2wdQ_TGsu6Kfj8xk8Tjz8vuqvzdKTuKKlLZFb214dai5J32Kw781Z1DOZ9Amd3GNV/exec';
-const VERSION = 'v2.10.0', VERDATE = '2026-11-07';
+const VERSION = 'v2.10.1', VERDATE = '2026-11-07';
 const ICS = ['GSB','WEN','KKS','PBS'];
 const COMPANIES = ['EcoOils', ...ICS];
 const LOCS = ["ADMINISTRATION BUILDING", "BLOCK 6 B SOUTH EAST CORNER", "BLOCK 6B", "BLOCK 6B EAST GATE", "BOILER / CHIMNEY AREA", "CONTROL ROOM, MCC ROOM", "COOLING TOWER", "DDE TREATMENT PLANT (DTP)", "DIESEL TANK", "DIRTY COOLING TOWER", "DRY AND LIQUID CHEMICAL STORAGE", "ECOOILS WARE HOUSE", "EFFLUENT TREATMENT PLANT (ETP)", "ELECTRICAL SUBSTATION (PLN)", "EXTRACTION PLANT", "FA PLANT", "FIRE WATER PUMP HOUSE", "FIRE WATER TANK", "GSB OFFICE", "HEXANE AND DIESEL RECEIVING BAY", "HEXANE TANK", "KKS OFFICE", "LOADING/UNLOADING AREA (PUMP HOUSE)", "MCC BUILDING", "NORTH-WEST CORNER BLOCK 6A", "OFFICE VEHICLE PARKING AREA", "OIL POLISHING PLANT", "PBS OFFICE", "PIPE RACK", "PRE TREATMENT UNIT (PTU)", "RAW WATER PIT", "SCHEDULED & DOMESTIC WASTE SHED", "SECURITY BUILDING", "SECURITY POST", "SILO", "TANK FARM", "TRUCK PARKING AREA", "VAPOR ABSORPTION MACHINE (VAM) SHED", "WAREHOUSE", "WAREHOUSE BLOCK B", "WASTE WATER TREATMENT PLANT (WWTP)", "WATER TANK", "WATER TREATMENT PLANT (WTP) AND WATER TANKS", "WEIGHT BRIDGE", "WEN OFFICE", "WORKSHOP AREA"];
@@ -338,7 +339,7 @@ const D = {
 'n.notEnough':['Not enough:','Belum cukup:','Tidak mencukupi:'],
 'n.example':['“Exemplary safety standard” or “strong safety commitment”. Good example: “Found a scaffold with a missing toe board over a walkway, stopped work, fitted the board and re-tagged it before anyone passed under.”','“Standar keselamatan teladan” atau “komitmen keselamatan tinggi”. Contoh baik: “Menemukan scaffold tanpa toe board di atas jalur jalan, menghentikan pekerjaan, memasang toe board dan memasang tag ulang sebelum ada yang lewat.”','“Standard keselamatan teladan” atau “komitmen keselamatan tinggi”. Contoh baik: “Mendapati perancah tanpa toe board di atas laluan, menghentikan kerja, memasang papan dan menanda semula sebelum sesiapa lalu.”'],
 'n.nominee':['Who are you recognising?','Siapa yang diberi penghargaan?','Siapa yang diiktiraf?'],
-'f.name':['Full name','Nama lengkap','Nama penuh'],'f.nick':['Nickname (optional)','Nama panggilan (opsional)','Nama panggilan (pilihan)'],'f.role':['Position','Jabatan','Jawatan'],'ph.otherPos':['Type the position','Tulis jabatan','Taip jawatan'],'a.translate':['Translate nomination text (AI)','Terjemahkan teks nominasi (AI)','Terjemah teks pencalonan (AI)'],'a.del':['Delete','Hapus','Padam'],'a.delSel':['Delete selected','Hapus yang dipilih','Padam yang dipilih'],'f.level':['Nominee level','Tingkat nominasi','Tahap pencalonan'],'a.level':['Level','Tingkat','Tahap'],'f.ic':['Company','Perusahaan','Syarikat'],
+'f.name':['Full name','Nama lengkap','Nama penuh'],'f.nick':['Nickname (optional)','Nama panggilan (opsional)','Nama panggilan (pilihan)'],'f.role':['Position','Jabatan','Jawatan'],'ph.otherPos':['Type the position','Tulis jabatan','Taip jawatan'],'a.translate':['Translate nomination text (AI)','Terjemahkan teks nominasi (AI)','Terjemah teks pencalonan (AI)'],'a.rewards':['Rewards and vouchers →','Hadiah dan voucher →','Ganjaran dan baucar →'],'a.del':['Delete','Hapus','Padam'],'a.delSel':['Delete selected','Hapus yang dipilih','Padam yang dipilih'],'f.level':['Nominee level','Tingkat nominasi','Tahap pencalonan'],'a.level':['Level','Tingkat','Tahap'],'f.ic':['Company','Perusahaan','Syarikat'],
 'ph.otherLoc':['Type the location','Ketik lokasi','Taip lokasi'],'ph.otherCo':['Type the company name','Ketik nama perusahaan','Taip nama syarikat'],
 'f.location':['Location','Lokasi','Lokasi'],'f.date':['Date of the intervention','Tanggal intervensi','Tarikh intervensi'],'f.category':['Category','Kategori','Kategori'],
 'n.what':['What happened','Apa yang terjadi','Apa yang berlaku'],
