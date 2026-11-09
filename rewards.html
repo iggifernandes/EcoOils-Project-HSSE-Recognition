@@ -101,6 +101,7 @@ table.t tr.clk{cursor:pointer}table.t tr.clk:hover{background:#f1f7f3}
 .tw{overflow:auto}
 .bar{height:8px;border-radius:4px;background:var(--glight);min-width:2px}
 .den{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.mrow{border:1px solid var(--line,#ddd);border-radius:8px;padding:8px;margin-bottom:8px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}.mrow>*{flex:1 1 140px;min-width:110px}.mrow .q{flex:0 1 90px;min-width:80px}.mrow .mt{flex:0 1 120px;text-align:right;font-weight:600}.mrow .rm{flex:0 0 auto;min-width:0}.mrow .no{flex:0 0 22px;min-width:0;color:var(--mut)}
 .arow{display:flex;gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap}.arow select{flex:1 1 130px;min-width:110px}.arow .oth{flex:1 1 130px}.arow .am{flex:1 1 120px;min-width:100px}.arow .rm{padding:6px 10px}
 .den label{display:flex;flex-direction:column;gap:3px;font-size:13px;color:var(--mut)}
 .amt{font:500 22px/1 Jost,sans-serif;color:var(--gdark)}
@@ -163,18 +164,26 @@ table.t tr.clk{cursor:pointer}table.t tr.clk:hover{background:#f1f7f3}
  <section id="tab-give" class="tab">
   <div class="card">
    <h2 id="gTitle" data-i="g.title"></h2>
+   <div class="row" id="gMode" style="margin-bottom:10px"><button class="btn sm pri" type="button" data-mode="one" data-i="g.mode1"></button><button class="btn sm" type="button" data-mode="many" data-i="g.modeN"></button></div>
    <div id="gEditBar" class="box info" hidden><span id="gEditTxt"></span> <button class="btn ghost sm" id="gCancel" data-i="btn.cancel"></button></div>
    <div class="grid">
     <label class="f"><span><span data-i="f.date"></span> <b>*</b></span><input id="g_date" type="date"></label>
-    <label class="f"><span data-i="f.nom"></span><select id="g_nom"></select></label>
-    <label class="f"><span><span data-i="f.name"></span> <b>*</b></span><input id="g_name" maxlength="160" autocomplete="off"></label>
-    <div class="f"><span data-i="f.company"></span><div id="g_alloc"></div><div class="row" style="margin-top:6px"><button class="btn sm" id="g_addIc" type="button" data-i="g.addIc"></button><button class="btn sm" id="g_split" type="button" data-i="g.split" hidden></button></div><div class="hint" id="g_allocSum"></div></div>
-    <label class="f"><span><span data-i="f.cat"></span> <b>*</b></span><select id="g_cat"></select><input id="g_cat2" maxlength="120" style="margin-top:6px" data-ph="ph.cat" hidden></label>
+    <label class="f one"><span data-i="f.nom"></span><select id="g_nom"></select></label>
+    <label class="f one"><span><span data-i="f.name"></span> <b>*</b></span><input id="g_name" maxlength="160" autocomplete="off"></label>
+    <div class="f one"><span data-i="f.company"></span><div id="g_alloc"></div><div class="row" style="margin-top:6px"><button class="btn sm" id="g_addIc" type="button" data-i="g.addIc"></button><button class="btn sm" id="g_split" type="button" data-i="g.split" hidden></button></div><div class="hint" id="g_allocSum"></div></div>
+    <label class="f one"><span><span data-i="f.cat"></span> <b>*</b></span><select id="g_cat"></select><input id="g_cat2" maxlength="120" style="margin-top:6px" data-ph="ph.cat" hidden></label>
     <label class="f w"><span data-i="f.remarks"></span><textarea id="g_rem" rows="2" maxlength="600"></textarea></label>
    </div>
+   <div class="one">
    <h2 style="margin-top:14px" data-i="g.vouchers"></h2>
    <div class="den" id="denBox"></div>
    <div class="row" style="margin-top:10px"><span class="hint" data-i="g.total"></span> <span class="amt" id="g_amt">Rp 0</span></div>
+   </div>
+   <div id="gMany" hidden>
+    <h2 style="margin-top:14px" data-i="g.people"></h2>
+    <div id="m_rows"></div>
+    <div class="row" style="margin-top:6px"><button class="btn sm" type="button" id="m_add" data-i="g.addPerson"></button> <span class="hint" id="m_sum"></span></div>
+   </div>
    <div id="g_stockWarn"></div>
    <label class="f w" style="margin-top:10px"><span data-i="f.serials"></span><textarea id="g_ser" rows="2" maxlength="3000"></textarea></label>
    <h2 style="margin-top:14px" data-i="g.photos"></h2>
@@ -241,7 +250,7 @@ table.t tr.clk{cursor:pointer}table.t tr.clk:hover{background:#f1f7f3}
 
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbx2wdQ_TGsu6Kfj8xk8Tjz8vuqvzdKTuKKlLZFb214dai5J32Kw781Z1DOZ9Amd3GNV/exec';
-const VERSION = 'v1.1.0', VERDATE = '2026-11-08';
+const VERSION = 'v1.2.0', VERDATE = '2026-11-10';
 const COMPANIES = ['EcoOils','GSB','WEN','KKS','PBS'];
 const DENOMS = [100000, 50000];   /* edit here to add a voucher denomination */
 const CATS = ['Best Observation for the Week','PTW Award','Spot quiz','Team or task achievement','Safety Day activity','Management walkthrough'];
@@ -267,7 +276,7 @@ const D = {
 'd.expiry':['Voucher expiry','Kedaluwarsa voucher','Tamat tempoh baucar'],'d.byIc':['Given by company','Diberikan per perusahaan','Diberi mengikut syarikat'],'d.byCat':['Given by reason','Diberikan per alasan','Diberi mengikut sebab'],'d.weeks':['Last 8 weeks','8 minggu terakhir','8 minggu terakhir'],
 'g.title':['Give a reward','Beri hadiah','Beri ganjaran'],'g.vouchers':['Vouchers given','Voucher diberikan','Baucar diberi'],'g.total':['Total value:','Total nilai:','Jumlah nilai:'],'g.photos':['Photos','Foto','Foto'],
 'g.photosHint':['Photo of the crew receiving the reward (up to 3). Drag and drop, or tap +.','Foto kru menerima hadiah (maksimal 3). Seret dan lepas, atau ketuk +.','Foto krew menerima ganjaran (maksimum 3). Seret dan lepas, atau ketik +.'],
-'f.date':['Date','Tanggal','Tarikh'],'f.nom':['Link to a nomination (optional)','Tautkan ke nominasi (opsional)','Pautkan kepada pencalonan (pilihan)'],'f.name':['Name (person or team)','Nama (orang atau tim)','Nama (individu atau pasukan)'],'f.company':['Company (add more than one if shared)','Perusahaan (tambah lebih dari satu jika dibagi)','Syarikat (tambah lebih daripada satu jika dikongsi)'],'g.addIc':['+ Add another company','+ Tambah perusahaan lain','+ Tambah syarikat lain'],'g.split':['Split equally','Bagi rata','Bahagi sama rata'],'ph.share':['Amount (Rp)','Jumlah (Rp)','Jumlah (Rp)'],
+'f.date':['Date','Tanggal','Tarikh'],'f.nom':['Link to a nomination (optional)','Tautkan ke nominasi (opsional)','Pautkan kepada pencalonan (pilihan)'],'f.name':['Name (person or team)','Nama (orang atau tim)','Nama (individu atau pasukan)'],'f.company':['Company (add more than one if shared)','Perusahaan (tambah lebih dari satu jika dibagi)','Syarikat (tambah lebih daripada satu jika dikongsi)'],'g.mode1':['One person / team','Satu orang / tim','Seorang / pasukan'],'g.modeN':['Several people at once','Beberapa orang sekaligus','Beberapa orang serentak'],'g.people':['People receiving a reward','Penerima hadiah','Penerima ganjaran'],'g.addPerson':['+ Add person','+ Tambah orang','+ Tambah orang'],'ph.pname':['Name','Nama','Nama'],'ph.reasonOther':['Type the reason','Tulis alasan','Taip sebab'],'g.addIc':['+ Add another company','+ Tambah perusahaan lain','+ Tambah syarikat lain'],'g.split':['Split equally','Bagi rata','Bahagi sama rata'],'ph.share':['Amount (Rp)','Jumlah (Rp)','Jumlah (Rp)'],
 'f.cat':['Reason / category','Alasan / kategori','Sebab / kategori'],'f.remarks':['Remarks','Catatan','Catatan'],'f.serials':['Voucher serial numbers (optional)','Nomor seri voucher (opsional)','Nombor siri baucar (pilihan)'],
 'ph.company':['Type the company','Tulis perusahaan','Taip syarikat'],'ph.cat':['Type the reason','Tulis alasan','Taip sebab'],'ph.search':['Search name, remarks…','Cari nama, catatan…','Cari nama, catatan…'],'ph.ref':['Batch or who requested it','Batch atau peminta','Kelompok atau peminta'],'ph.csv':['…or paste CSV text here','…atau tempel teks CSV di sini','…atau tampal teks CSV di sini'],
 'p.drop':['Drop photos here or tap to choose','Letakkan foto di sini atau ketuk untuk memilih','Letak foto di sini atau ketik untuk memilih'],
@@ -279,6 +288,9 @@ const D = {
 'i.title':['Import past records','Impor catatan lama','Import rekod lama'],'i.help':['Upload a CSV with the columns Date (yyyy-mm-dd), IC, Name, Amount, Remarks. Rows already in the app are skipped, so it is safe to import twice. Imported records dated after your opening count are deducted from stock. Older ones are history only.','Unggah CSV dengan kolom Date (yyyy-mm-dd), IC, Name, Amount, Remarks. Baris yang sudah ada dilewati, jadi aman diimpor dua kali. Catatan impor bertanggal setelah hitungan awal mengurangi stok. Yang lebih lama hanya riwayat.','Muat naik CSV dengan lajur Date (yyyy-mm-dd), IC, Name, Amount, Remarks. Baris yang sudah ada dilangkau, jadi selamat diimport dua kali. Rekod import bertarikh selepas kiraan awal menolak stok. Yang lebih lama hanya sejarah.'],
 };
 const M = {
+ manyNeed:['Every person needs a name, company, reason and at least one voucher.','Setiap orang perlu nama, perusahaan, alasan dan minimal satu voucher.','Setiap orang perlu nama, syarikat, sebab dan sekurang-kurangnya satu baucar.'],
+ manySum:['{n} people · {t}','{n} orang · {t}','{n} orang · {t}'],
+ savedMany:['Saved {n} rewards.','{n} hadiah tersimpan.','{n} ganjaran disimpan.'],
  allocSum:['Allocated {a} of {t}','Dialokasikan {a} dari {t}','Diperuntukkan {a} daripada {t}'],
  allocBad:['Company amounts must add up to the voucher total ({t}).','Jumlah per perusahaan harus sama dengan total voucher ({t}).','Jumlah setiap syarikat mesti sama dengan jumlah baucar ({t}).'],
  allocNone:['Choose the company.','Pilih perusahaan.','Pilih syarikat.'],
@@ -416,8 +428,8 @@ function fillSelects(){
 function giveItems(){ const it = {}; DENOMS.forEach(d => { const n = Math.max(0, Math.floor(Number($('#den_' + d).value) || 0)); if (n) it[d] = n; }); return it; }
 function renderGiveAmt(){
   const it = giveItems(), amt = Object.keys(it).reduce((s, d) => s + Number(d) * it[d], 0); $('#g_amt').textContent = IDR(amt); allocTotal(amt);
-  const sc = stockCalc(), prev = EDIT_RW ? itemsOf(DATA.rewards.find(r => r.id === EDIT_RW) || {}) : {}, w = [];
-  if (sc.openDate) Object.keys(it).forEach(d => { const have = (sc.on[d] || 0) + (prev[d] ? Number(prev[d]) : 0); if (it[d] > have) w.push(m('over', {d: IDR(d), h: have, g: it[d]})); });
+  const itAll = MODE === 'many' ? manyItems() : it; const sc = stockCalc(), prev = EDIT_RW ? itemsOf(DATA.rewards.find(r => r.id === EDIT_RW) || {}) : {}, w = [];
+  if (sc.openDate) Object.keys(itAll).forEach(d => { const have = (sc.on[d] || 0) + (prev[d] ? Number(prev[d]) : 0); if (itAll[d] > have) w.push(m('over', {d: IDR(d), h: have, g: itAll[d]})); });
   $('#g_stockWarn').innerHTML = w.map(x => `<div class="box warn">${esc(x)}</div>`).join('');
 }
 let ALLOC = [{ic: '', oth: '', amt: 0}];
@@ -442,21 +454,51 @@ function allocClean(){
   return {list, ic: list.map(x => x.ic).join(', ')};
 }
 function icParts(r){ let a = []; try { a = r.alloc ? JSON.parse(r.alloc) : []; } catch (e) {} return a.length ? a : [{ic: r.ic, amount: Number(r.amount) || 0}]; }
+let MODE = 'one', MANY = [];
+const newPerson = (prev) => ({name: '', ic: prev ? prev.ic : '', ico: prev ? prev.ico : '', cat: prev ? prev.cat : '', cato: prev ? prev.cato : '', q: {}});
+const pAmt = p => DENOMS.reduce((a, d) => a + d * (Math.max(0, Math.floor(Number(p.q[d]) || 0))), 0);
+function setMode(mo){
+  MODE = mo; $$('.one').forEach(e => e.hidden = mo === 'many'); $('#gMany').hidden = mo !== 'many';
+  $$('#gMode button').forEach(b => b.classList.toggle('pri', b.dataset.mode === mo));
+  if (mo === 'many' && !MANY.length) MANY = [newPerson(), newPerson()]; renderMany(); renderGiveAmt();
+}
+function renderMany(){
+  const el = $('#m_rows'); if (!el) return;
+  const sel = (cur, list) => `<option value="">—</option>` + list.map(x => `<option value="${esc(x)}" ${cur === x ? 'selected' : ''}>${esc(x)}</option>`).join('') + `<option value="__other" ${cur === '__other' ? 'selected' : ''}>${esc(m('other'))}</option>`;
+  el.innerHTML = MANY.map((p, i) => `<div class="mrow" data-i="${i}"><span class="no">${i + 1}</span><input class="nm" maxlength="160" autocomplete="off" placeholder="${esc(t('ph.pname'))}" value="${esc(p.name)}"><div><select class="ic">${sel(p.ic, COMPANIES)}</select><input class="ico" maxlength="40" style="margin-top:4px" placeholder="${esc(t('ph.company'))}" value="${esc(p.ico)}" ${p.ic === '__other' ? '' : 'hidden'}></div><div><select class="ct">${sel(p.cat, CATS)}</select><input class="cato" maxlength="120" style="margin-top:4px" placeholder="${esc(t('ph.reasonOther'))}" value="${esc(p.cato)}" ${p.cat === '__other' ? '' : 'hidden'}></div>${DENOMS.map(d => `<input class="q" type="number" min="0" max="100" step="1" inputmode="numeric" data-d="${d}" placeholder="${d / 1000}k ×" value="${p.q[d] || ''}">`).join('')}<span class="mt">${IDR(pAmt(p))}</span>${MANY.length > 1 ? `<button class="btn sm rm" type="button" data-rm="${i}">×</button>` : ''}</div>`).join('');
+  manyTotals();
+}
+function manyTotals(){
+  [...$('#m_rows').children].forEach((r, i) => { const x = r.querySelector('.mt'); if (x && MANY[i]) x.textContent = IDR(pAmt(MANY[i])); });
+  $('#m_sum').textContent = m('manySum', {n: MANY.length, t: IDR(MANY.reduce((a, p) => a + pAmt(p), 0))}); renderGiveAmt();
+}
+function manyItems(){ const it = {}; MANY.forEach(p => DENOMS.forEach(d => { const n = Math.max(0, Math.floor(Number(p.q[d]) || 0)); if (n) it[d] = (it[d] || 0) + n; })); return it; }
 function resetGive(){
   EDIT_RW = null; $('#gEditBar').hidden = true; ['g_name', 'g_cat2', 'g_rem', 'g_ser'].forEach(i => $('#' + i).value = '');
-  ALLOC = [{ic: '', oth: '', amt: 0}]; renderAlloc();
+  ALLOC = [{ic: '', oth: '', amt: 0}]; renderAlloc(); MANY = MODE === 'many' ? [newPerson(), newPerson()] : []; if (MODE === 'many') renderMany();
   $('#g_date').value = todayISO(); $('#g_cat').value = ''; $('#g_nom').value = ''; $('#g_cat2').hidden = true;
   DENOMS.forEach(d => $('#den_' + d).value = 0); gPB.clear(); renderGiveAmt();
 }
 function editReward(id){
-  const r = DATA.rewards.find(x => x.id === id); if (!r) return; resetGive(); EDIT_RW = id;
+  const r = DATA.rewards.find(x => x.id === id); if (!r) return; setMode('one'); resetGive(); EDIT_RW = id;
   $('#g_date').value = r.date; $('#g_name').value = r.name; $('#g_rem').value = r.remarks || ''; $('#g_ser').value = r.serials || '';
   const setSel = (sel, inp, v) => { if (!v) return; if ([...$(sel).options].some(o => o.value === v)) $(sel).value = v; else { $(sel).value = '__other'; $(inp).hidden = false; $(inp).value = v; } };
   ALLOC = icParts(r).map(x => COMPANIES.includes(x.ic) || !x.ic ? {ic: x.ic, oth: '', amt: x.amount} : {ic: '__other', oth: x.ic, amt: x.amount}); renderAlloc(); setSel('#g_cat', '#g_cat2', r.category); $('#g_nom').value = r.nominationId || '';
   const it = itemsOf(r); DENOMS.forEach(d => $('#den_' + d).value = it[d] || 0);
   gPB.set(r.photos); $('#gEditBar').hidden = false; $('#gEditTxt').textContent = m('editing', {id}); renderGiveAmt(); showTab('give');
 }
+async function saveMany(){
+  const rows = MANY.map(p => ({name: p.name.trim(), ic: p.ic === '__other' ? p.ico.trim() : p.ic, category: p.cat === '__other' ? p.cato.trim() : p.cat, items: Object.fromEntries(DENOMS.filter(d => Math.floor(Number(p.q[d]) || 0) > 0).map(d => [d, Math.floor(Number(p.q[d]))]))}));
+  if (!rows.length || rows.some(r => !r.name || !r.ic || !r.category || !Object.keys(r.items).length)) { toast(m('manyNeed'), true); return; }
+  const b = $('#gSave'); b.disabled = true;
+  try {
+    await admApi({action:'rwSaveMany', rows, shared: Object.assign({date: $('#g_date').value, remarks: $('#g_rem').value.trim(), serials: $('#g_ser').value.trim()}, gPB.payload())}, 120000);
+    toast(m('savedMany', {n: rows.length})); resetGive(); await load(); showTab('rec');
+  } catch (e) { toast(e.message, true); }
+  b.disabled = false;
+}
 async function saveReward(){
+  if (MODE === 'many' && !EDIT_RW) return saveMany();
   const cat = $('#g_cat').value === '__other' ? $('#g_cat2').value.trim() : $('#g_cat').value, it = giveItems();
   if (!$('#g_name').value.trim() || !cat || !Object.keys(it).length) { toast(m('needName'), true); return; }
   const al = allocClean(); if (al.err) { toast(al.err, true); return; }
@@ -587,7 +629,13 @@ function init(){
   $('#g_alloc').addEventListener('click', e => { const b = e.target.closest('[data-rm]'); if (!b) return; ALLOC.splice(+b.dataset.rm, 1); renderAlloc(); });
   $('#g_cat').onchange = () => { $('#g_cat2').hidden = $('#g_cat').value !== '__other'; };
   $('#g_nom').onchange = () => { const n = NOMS.find(x => x.id === $('#g_nom').value); if (!n) return; $('#g_name').value = n.name; ALLOC = [COMPANIES.includes(n.ic) ? {ic: n.ic, oth: '', amt: 0} : {ic: '__other', oth: n.ic, amt: 0}]; renderAlloc(); if (!$('#g_cat').value) $('#g_cat').value = CATS[0]; $('#g_rem').value = $('#g_rem').value || (n.certNo ? 'Certificate ' + n.certNo : ''); };
-  $('#denBox').addEventListener('input', renderGiveAmt); $('#gSave').onclick = saveReward; $('#gCancel').onclick = () => resetGive();
+  $('#denBox').addEventListener('input', renderGiveAmt); $('#gSave').onclick = saveReward;
+  $('#gMode').addEventListener('click', e => { const b = e.target.closest('[data-mode]'); if (b && !EDIT_RW) setMode(b.dataset.mode); });
+  $('#m_add').onclick = () => { MANY.push(newPerson(MANY[MANY.length - 1])); renderMany(); };
+  $('#m_rows').addEventListener('click', e => { const b = e.target.closest('[data-rm]'); if (b) { MANY.splice(+b.dataset.rm, 1); renderMany(); } });
+  $('#m_rows').addEventListener('change', e => { const row = e.target.closest('.mrow'); if (!row) return; const p = MANY[+row.dataset.i]; if (e.target.classList.contains('ic')) { p.ic = e.target.value; renderMany(); } else if (e.target.classList.contains('ct')) { p.cat = e.target.value; renderMany(); } });
+  $('#m_rows').addEventListener('input', e => { const row = e.target.closest('.mrow'); if (!row) return; const p = MANY[+row.dataset.i], c = e.target.classList;
+    if (c.contains('nm')) p.name = e.target.value; else if (c.contains('ico')) p.ico = e.target.value; else if (c.contains('cato')) p.cato = e.target.value; else if (c.contains('q')) { p.q[e.target.dataset.d] = e.target.value; manyTotals(); } }); $('#gCancel').onclick = () => resetGive();
   ['#q_text', '#q_ic', '#q_cat', '#q_month'].forEach(s => $(s).addEventListener('input', renderRec)); $('#q_clear').onclick = () => { $('#q_text').value = ''; $('#q_ic').value = ''; $('#q_cat').value = ''; $('#q_month').value = ''; renderRec(); };
   $('#btnCsv').onclick = exportCsv; $('#btnDelSel').onclick = delRewards;
   $('#sSave').onclick = saveStock; $('#sCancel').onclick = () => resetStock();

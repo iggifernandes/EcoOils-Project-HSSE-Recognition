@@ -1,4 +1,4 @@
-// Code.gs v1.1.1 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
+// Code.gs v1.1.2 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
 // Deploy: Extensions > Apps Script (on iggifernandes@gmail.com) > paste this file > run setup() once >
 //   Project Settings > Script properties: add GEMINI_API_KEY (free Google AI Studio key) >
 //   Deploy > New deployment > Web app > Execute as: Me, Who has access: Anyone.
@@ -10,7 +10,7 @@ var COLS = ['id','createdAt','week','status','certNo','name','nick','role','ic',
 var EDITABLE = ['status','certNo','name','nick','role','ic','location','eventDate','observation','action','outcome',
   'category','certLang','certDate','certPara','hseNote','level','aiJson'];
 var IC_LIST = ['EcoOils','GSB','WEN','KKS','PBS'];
-var VERSION = 'v1.1.1';
+var VERSION = 'v1.1.2';
 
 /* ---------- Rewards: voucher stock and reward distribution (admin only) ---------- */
 var RW_NAME = 'Rewards';
@@ -95,6 +95,20 @@ function rwSave_(r) {
   } finally { lock.releaseLock(); }
 }
 
+function rwSaveMany_(r) {
+  var rows = r.rows || [], sh = r.shared || {};
+  if (!rows.length || rows.length > 30) throw new Error('Send 1 to 30 people');
+  rows.forEach(function (x, i) {
+    if (!s_(x.name) || !s_(x.ic) || !s_(x.category) || itemsClean_(x.items).amount <= 0) throw new Error('Person ' + (i + 1) + ': name, company, reason and vouchers are required');
+  });
+  var saved = [];
+  rows.forEach(function (x, i) {
+    var f = { date: sh.date, remarks: sh.remarks, serials: sh.serials, name: x.name, ic: x.ic, category: x.category, items: x.items };
+    if (i === 0) { f.newPhotos = sh.newPhotos; f.keepPhotos = []; }
+    saved.push(rwSave_({ reward: f, email: r.email }).reward);
+  });
+  return { ok: true, rewards: saved };
+}
 function stSave_(r) {
   var f = r.row || {}, type = s_(f.type, 6);
   if (['OPEN', 'IN', 'OUT', 'ADJ'].indexOf(type) < 0) throw new Error('Bad type');
@@ -211,6 +225,7 @@ function doPost(e) {
       case 'delete': requireAdmin_(req); return out_(delete_(req));
       case 'rwList': requireAdmin_(req); return out_(rwList_());
       case 'rwSave': req.email = requireAdmin_(req); return out_(rwSave_(req));
+      case 'rwSaveMany': req.email = requireAdmin_(req); return out_(rwSaveMany_(req));
       case 'rwDelete': requireAdmin_(req); return out_(rowsDelete_(RW_NAME, RW_COLS, req.ids, ['photos']));
       case 'rwImport': requireAdmin_(req); return out_(rwImport_(req));
       case 'stSave': requireAdmin_(req); return out_(stSave_(req));
