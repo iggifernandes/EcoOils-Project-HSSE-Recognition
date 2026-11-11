@@ -310,7 +310,7 @@ table.wk td.zero{color:#aaa}table.wk td.cur.zero{background:var(--errbg);color:#
 <script>
 /* ---------- constants (edit here) ---------- */
 const API_URL = 'https://script.google.com/macros/s/AKfycbx2wdQ_TGsu6Kfj8xk8Tjz8vuqvzdKTuKKlLZFb214dai5J32Kw781Z1DOZ9Amd3GNV/exec';
-const VERSION = 'v2.10.1', VERDATE = '2026-11-07';
+const VERSION = 'v2.11.0', VERDATE = '2026-11-11';
 const ICS = ['GSB','WEN','KKS','PBS'];
 const COMPANIES = ['EcoOils', ...ICS];
 const LOCS = ["ADMINISTRATION BUILDING", "BLOCK 6 B SOUTH EAST CORNER", "BLOCK 6B", "BLOCK 6B EAST GATE", "BOILER / CHIMNEY AREA", "CONTROL ROOM, MCC ROOM", "COOLING TOWER", "DDE TREATMENT PLANT (DTP)", "DIESEL TANK", "DIRTY COOLING TOWER", "DRY AND LIQUID CHEMICAL STORAGE", "ECOOILS WARE HOUSE", "EFFLUENT TREATMENT PLANT (ETP)", "ELECTRICAL SUBSTATION (PLN)", "EXTRACTION PLANT", "FA PLANT", "FIRE WATER PUMP HOUSE", "FIRE WATER TANK", "GSB OFFICE", "HEXANE AND DIESEL RECEIVING BAY", "HEXANE TANK", "KKS OFFICE", "LOADING/UNLOADING AREA (PUMP HOUSE)", "MCC BUILDING", "NORTH-WEST CORNER BLOCK 6A", "OFFICE VEHICLE PARKING AREA", "OIL POLISHING PLANT", "PBS OFFICE", "PIPE RACK", "PRE TREATMENT UNIT (PTU)", "RAW WATER PIT", "SCHEDULED & DOMESTIC WASTE SHED", "SECURITY BUILDING", "SECURITY POST", "SILO", "TANK FARM", "TRUCK PARKING AREA", "VAPOR ABSORPTION MACHINE (VAM) SHED", "WAREHOUSE", "WAREHOUSE BLOCK B", "WASTE WATER TREATMENT PLANT (WWTP)", "WATER TANK", "WATER TREATMENT PLANT (WTP) AND WATER TANKS", "WEIGHT BRIDGE", "WEN OFFICE", "WORKSHOP AREA"];
@@ -778,6 +778,18 @@ function renderScore(){
    <div class="crit">${tick(q.crit.hazard_identified, 'hazard_identified')}${tick(q.crit.ownership, 'ownership')}${tick(q.crit.corrected, 'corrected')}${tick(q.crit.outcome, 'outcome')}${tick(q.spec, 'spec')}${tick(q.photos, 'photos')}</div>${bey}
    <div class="box ${rec === 'recApprove' ? 'info' : 'warn'}" style="margin-top:6px"><b>${esc(m(rec))}</b></div>`;
 }
+/* shrink text to fit its box (never crop) - certificate body, name, meta line; card text boxes */
+function fitBox(el, base, min, over){
+  if (!el || !el.clientWidth) return; let fs = base, g = 0; el.style.fontSize = fs + 'em';
+  while (over(el) && fs > min && g++ < 120) { fs = Math.round((fs - 0.03) * 100) / 100; el.style.fontSize = fs + 'em'; }
+}
+function fitDoc(root){
+  if (!root) return;
+  root.querySelectorAll('.cert .body').forEach(e => fitBox(e, 2.05, 1.05, x => x.scrollHeight > x.clientHeight + 1));
+  root.querySelectorAll('.cert .nm').forEach(e => fitBox(e, 4.1, 1.8, x => x.scrollWidth > x.clientWidth + 1));
+  root.querySelectorAll('.cert .meta').forEach(e => fitBox(e, 1.75, 1.0, x => x.offsetHeight > parseFloat(getComputedStyle(x).fontSize) * 2));
+  root.querySelectorAll('.gj .txt div').forEach(e => fitBox(e, 1.55, 0.85, x => x.scrollHeight > x.clientHeight + 1));
+}
 function renderPreview(){
   renderScore(); trHint();
   clearTimeout(pvT); pvT = setTimeout(async () => {
@@ -785,6 +797,8 @@ function renderPreview(){
     const st = $('#pvStage'), wrap = $('#pvWrap');
     if (PVMODE === 'cert') st.innerHTML = certHTML(n);
     else { const ph = {}; for (const id of [...String(n.beforePhotos).split(',').slice(0, 1), ...String(n.afterPhotos).split(',').slice(0, 1)].filter(Boolean)) { try { ph[id] = await photoUri(id); } catch (e) {} } st.innerHTML = cardHTML(n, ph); }
+    if (document.fonts && document.fonts.ready) await document.fonts.ready;
+    fitDoc(st);
     const el = st.firstElementChild, w = el.offsetWidth, sc = wrap.clientWidth / w; st.style.width = w + 'px'; st.style.transform = `scale(${sc})`; wrap.style.height = (el.offsetHeight * sc) + 'px';
   }, 120);
 }
@@ -801,6 +815,7 @@ async function printRows(rows, kind){
     const ph = {}; [String(x.beforePhotos).split(',')[0], String(x.afterPhotos).split(',')[0]].forEach(id => { if (id && PHC[id]) ph[id] = PHC[id]; }); return cardHTML(x, ph); }).join('');
   if (document.fonts && document.fonts.ready) await document.fonts.ready;
   await Promise.all([...document.querySelectorAll('#printRoot img')].map(i => i.complete ? 1 : new Promise(r => { i.onload = i.onerror = r; })));
+  const pr = $('#printRoot'), ps = pr.getAttribute('style'); pr.style.cssText = 'display:block;position:absolute;left:-9999px;top:0;visibility:hidden'; fitDoc(pr); if (ps == null) pr.removeAttribute('style'); else pr.setAttribute('style', ps);
   window.print();
   if (kind === 'cert') { const ids = rows.filter(r => r.status === 'Approved').map(r => r.id); if (ids.length) askIssued(ids); }
 }
