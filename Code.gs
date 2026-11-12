@@ -1,4 +1,4 @@
-// Code.gs v1.1.3 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
+// Code.gs v1.1.4 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
 // Deploy: Extensions > Apps Script (on iggifernandes@gmail.com) > paste this file > run setup() once >
 //   Project Settings > Script properties: add GEMINI_API_KEY (free Google AI Studio key) >
 //   Deploy > New deployment > Web app > Execute as: Me, Who has access: Anyone.
@@ -10,7 +10,7 @@ var COLS = ['id','createdAt','week','status','certNo','name','nick','role','ic',
 var EDITABLE = ['status','certNo','name','nick','role','ic','location','eventDate','observation','action','outcome',
   'category','certLang','certDate','certPara','hseNote','level','aiJson'];
 var IC_LIST = ['EcoOils','GSB','WEN','KKS','PBS'];
-var VERSION = 'v1.1.3';
+var VERSION = 'v1.1.4';
 
 /* ---------- Rewards: voucher stock and reward distribution (admin only) ---------- */
 var RW_NAME = 'Rewards';
@@ -219,6 +219,7 @@ function doPost(e) {
       case 'setPin': return out_(setPin_(req));
       case 'login': return out_(login_(req));
       case 'logout': CacheService.getScriptCache().remove('sess_' + req.token); return out_({ ok: true });
+      case 'adminCreate': requireAdmin_(req); return out_(adminCreate_(req));
       case 'verify': return out_(verify_(req));
       case 'list': requireAdmin_(req); return out_({ ok: true, rows: readAll_() });
       case 'photo': requireAdmin_(req); return out_(photo_(req));
@@ -462,6 +463,29 @@ function requireAdmin_(r) {
 }
 
 /* ---------- admin data ---------- */
+/* Admin-issued appreciation certificate (e.g. crew leaving) - no nomination or photos; issued straight away */
+function adminCreate_(r) {
+  var f = r.fields || {};
+  var name = s_(f.name, 120), role = s_(f.role, 120), ic = s_(f.ic, 40), to = s_(f.to, 20), from = s_(f.from, 20);
+  if (!name || !role || !ic || !/^\d{4}-\d{2}-\d{2}$/.test(to)) throw new Error('Name, position, company and last day are required');
+  if (from && !/^\d{4}-\d{2}-\d{2}$/.test(from)) throw new Error('Bad joined date');
+  var lang = ['id', 'en', 'ms'].indexOf(s_(f.certLang)) >= 0 ? s_(f.certLang) : 'id';
+  var lock = LockService.getScriptLock(); lock.waitLock(20000);
+  try {
+    var sh = sheet_(), n = sh.getLastRow(), now = new Date();
+    var all = n < 2 ? 0 : sh.getRange(2, COLS.indexOf('certNo') + 1, n - 1, 1).getValues().filter(function (x) { return x[0]; }).length;
+    var y = Utilities.formatDate(now, 'Asia/Jakarta', 'yyyy');
+    var id = 'APP-' + Utilities.formatDate(now, 'Asia/Jakarta', 'yyyyMMdd') + '-' + Utilities.getUuid().slice(0, 4).toUpperCase();
+    var row = {
+      id: id, createdAt: now.toISOString(), week: weekKey_(now), status: 'Issued', certNo: 'EOSM-REC-' + y + '-' + ('000' + (all + 1)).slice(-4),
+      name: name, role: role, ic: ic, location: 'Mentari Project', eventDate: to, observation: from ? 'Joined: ' + from : 'Leaving appreciation',
+      action: 'Leaving appreciation', outcome: 'Leaving appreciation', category: 'Leaving appreciation', nomName: 'HSSE', nomRole: 'HSSE Manager',
+      level: 'crew', certLang: lang, certDate: Utilities.formatDate(now, 'Asia/Jakarta', 'yyyy-MM-dd'), updatedAt: now.toISOString(), source: 'admin'
+    };
+    sh.appendRow(COLS.map(function (c) { return row[c] == null ? '' : row[c]; }));
+    return { ok: true, id: id };
+  } finally { lock.releaseLock(); }
+}
 /* QR verification: token is derived from the nomination id and the secret salt; public verify returns only non-sensitive fields */
 function vtok_(id) { return hash_('verify|' + id).slice(0, 12); }
 function verify_(req) {

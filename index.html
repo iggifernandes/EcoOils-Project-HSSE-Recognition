@@ -240,10 +240,23 @@ table.wk td.zero{color:#aaa}table.wk td.cur.zero{background:var(--errbg);color:#
       <button class="btn pri sm" id="btnPrintCerts" data-i="a.printCerts"></button>
       <button class="btn sm" id="btnPrintCards" data-i="a.printCards"></button>
       <button class="btn ghost sm" id="btnCsv" data-i="a.csv"></button>
+      <button class="btn sm" id="btnLeave" data-i="lv.btn"></button>
       <a class="btn sm" id="lnkRewards" href="rewards.html" data-i="a.rewards" style="text-decoration:none"></a>
       <button class="btn ghost danger sm" id="btnDelSel" data-i="a.delSel"></button>
     </div>
     <div class="hint" id="selInfo" style="margin-top:6px"></div>
+    <div id="lvBox" class="box" hidden style="margin-top:10px">
+     <b data-i="lv.title"></b> <span class="hint" data-i="lv.hint"></span>
+     <div class="grid" style="margin-top:8px">
+      <label class="f"><span><span data-i="f.name"></span> <b>*</b></span><input id="lv_name" maxlength="120" autocomplete="off"></label>
+      <label class="f"><span><span data-i="f.role"></span> <b>*</b></span><select id="lv_role"></select><input id="lv_role2" maxlength="80" style="margin-top:6px" hidden></label>
+      <label class="f"><span><span data-i="f.ic"></span> <b>*</b></span><select id="lv_ic"></select></label>
+      <label class="f"><span data-i="lv.joined"></span><input id="lv_from" type="date"></label>
+      <label class="f"><span><span data-i="lv.last"></span> <b>*</b></span><input id="lv_to" type="date"></label>
+      <label class="f"><span data-i="a.certLang"></span><select id="lv_lang"><option value="id">Bahasa Indonesia</option><option value="en">English</option><option value="ms">Bahasa Melayu</option></select></label>
+     </div>
+     <div class="row" style="margin-top:8px"><button class="btn pri sm" id="lvCreate" data-i="lv.create"></button><button class="btn ghost sm" id="lvCancel" data-i="btn.cancel"></button></div>
+    </div>
     <ul class="list" id="nomList"></ul>
     <p class="hint" id="emptyList" hidden data-i="a.empty"></p>
    </div>
@@ -325,7 +338,7 @@ table.wk td.zero{color:#aaa}table.wk td.cur.zero{background:var(--errbg);color:#
 <script>
 /* ---------- constants (edit here) ---------- */
 const API_URL = 'https://script.google.com/macros/s/AKfycbx2wdQ_TGsu6Kfj8xk8Tjz8vuqvzdKTuKKlLZFb214dai5J32Kw781Z1DOZ9Amd3GNV/exec';
-const VERSION = 'v2.13.0', VERDATE = '2026-11-12';
+const VERSION = 'v2.14.0', VERDATE = '2026-11-12';
 const ICS = ['GSB','WEN','KKS','PBS'];
 const COMPANIES = ['EcoOils', ...ICS];
 const LOCS = ["ADMINISTRATION BUILDING", "BLOCK 6 B SOUTH EAST CORNER", "BLOCK 6B", "BLOCK 6B EAST GATE", "BOILER / CHIMNEY AREA", "CONTROL ROOM, MCC ROOM", "COOLING TOWER", "DDE TREATMENT PLANT (DTP)", "DIESEL TANK", "DIRTY COOLING TOWER", "DRY AND LIQUID CHEMICAL STORAGE", "ECOOILS WARE HOUSE", "EFFLUENT TREATMENT PLANT (ETP)", "ELECTRICAL SUBSTATION (PLN)", "EXTRACTION PLANT", "FA PLANT", "FIRE WATER PUMP HOUSE", "FIRE WATER TANK", "GSB OFFICE", "HEXANE AND DIESEL RECEIVING BAY", "HEXANE TANK", "KKS OFFICE", "LOADING/UNLOADING AREA (PUMP HOUSE)", "MCC BUILDING", "NORTH-WEST CORNER BLOCK 6A", "OFFICE VEHICLE PARKING AREA", "OIL POLISHING PLANT", "PBS OFFICE", "PIPE RACK", "PRE TREATMENT UNIT (PTU)", "RAW WATER PIT", "SCHEDULED & DOMESTIC WASTE SHED", "SECURITY BUILDING", "SECURITY POST", "SILO", "TANK FARM", "TRUCK PARKING AREA", "VAPOR ABSORPTION MACHINE (VAM) SHED", "WAREHOUSE", "WAREHOUSE BLOCK B", "WASTE WATER TREATMENT PLANT (WWTP)", "WATER TANK", "WATER TREATMENT PLANT (WTP) AND WATER TANKS", "WEIGHT BRIDGE", "WEN OFFICE", "WORKSHOP AREA"];
@@ -381,6 +394,7 @@ const D = {
 'a.resetInfo':['A one-time code is emailed to the registered HSSE admin address. PINs can only be set this way.','Kode sekali pakai dikirim ke email admin HSSE terdaftar. PIN hanya bisa diatur dengan cara ini.','Kod sekali guna dihantar ke emel admin HSSE berdaftar. PIN hanya boleh ditetapkan dengan cara ini.'],
 'a.sendCode':['Email me a code','Kirim kode ke email','Emel kod kepada saya'],'a.code':['6-digit code','Kode 6 digit','Kod 6 digit'],'a.newPin':['New PIN (6 to 12 digits)','PIN baru (6 sampai 12 digit)','PIN baharu (6 hingga 12 digit)'],'a.newPin2':['Repeat new PIN','Ulangi PIN baru','Ulang PIN baharu'],'a.setPin':['Set PIN','Atur PIN','Tetapkan PIN'],
 'a.queue':['Nominations','Nominasi','Pencalonan'],'a.weekly':['Weekly coverage','Cakupan mingguan','Liputan mingguan'],'a.logout':['Sign out','Keluar','Log keluar'],
+'lv.btn':['+ Appreciation certificate (leaving)','+ Sertifikat apresiasi (keluar)','+ Sijil penghargaan (berhenti)'],'lv.title':['Appreciation certificate for a leaving crew member','Sertifikat apresiasi untuk kru yang akan keluar','Sijil penghargaan untuk kru yang akan berhenti'],'lv.hint':['No nomination needed. It is issued straight away and can be edited and printed.','Tidak perlu nominasi. Langsung diterbitkan dan dapat diedit serta dicetak.','Tiada pencalonan diperlukan. Terus dikeluarkan dan boleh disunting serta dicetak.'],'lv.joined':['Joined (optional)','Mulai bekerja (opsional)','Mula bekerja (pilihan)'],'lv.last':['Last day on site','Hari terakhir di lokasi','Hari terakhir di tapak'],'lv.create':['Create certificate','Buat sertifikat','Buat sijil'],'lv.badge':['Leaving appreciation','Apresiasi keluar','Penghargaan berhenti'],'btn.cancel':['Cancel','Batal','Batal'],
 'a.search':['Search name, location…','Cari nama, lokasi…','Cari nama, lokasi…'],'a.printCerts':['Print certificates','Cetak sertifikat','Cetak sijil'],'a.printCards':['Print Great Job cards','Cetak kartu Great Job','Cetak kad Great Job'],'a.csv':['Export CSV','Ekspor CSV','Eksport CSV'],
 'a.empty':['No nominations yet.','Belum ada nominasi.','Tiada pencalonan lagi.'],'a.pick':['Select a nomination on the left.','Pilih nominasi di sebelah kiri.','Pilih pencalonan di sebelah kiri.'],
 'a.certSection':['Certificate','Sertifikat','Sijil'],'a.certLang':['Certificate language','Bahasa sertifikat','Bahasa sijil'],'a.certDate':['Certificate date','Tanggal sertifikat','Tarikh sijil'],'a.para':['Personalised wording','Kalimat personal','Ayat peribadi'],'a.regen':['Regenerate from nomination','Buat ulang dari nominasi','Jana semula dari pencalonan'],
@@ -399,6 +413,9 @@ const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp
 
 /* extra dynamic strings */
 const M = {
+ stdLv:['In sincere appreciation of your service on the EcoOils Mentari Project.','Sebagai bentuk apresiasi tulus atas pengabdian Anda pada Proyek EcoOils Mentari.','Sebagai penghargaan ikhlas atas khidmat anda kepada Projek EcoOils Mentari.'],
+ lvNeed:['Name, position, company and last day are required.','Nama, jabatan, perusahaan dan hari terakhir wajib diisi.','Nama, jawatan, syarikat dan hari terakhir wajib diisi.'],
+ lvDone:['Certificate created. Check it, then print.','Sertifikat dibuat. Periksa lalu cetak.','Sijil dibuat. Semak kemudian cetak.'],
  disc:['This certificate is not proof of employment by EcoOils. The holder was contracted by their Contractor to work on the EcoOils Mentari Project.','Sertifikat ini bukan bukti hubungan kerja dengan EcoOils. Pemegang sertifikat dipekerjakan oleh Kontraktornya untuk bekerja pada Proyek EcoOils Mentari.','Sijil ini bukan bukti pekerjaan dengan EcoOils. Pemegang sijil diambil bekerja oleh Kontraktornya untuk Projek EcoOils Mentari.'],
  scanv:['Scan to verify','Pindai untuk verifikasi','Imbas untuk sahkan'],
  chk:['Check with AI first','Periksa dengan AI dulu','Semak dengan AI dahulu'],
@@ -475,6 +492,8 @@ function fillSelects(){
   const set = (id, opts, v) => { const e = $(id); if (!e) return; e.innerHTML = opts.map(o => `<option value="${esc(o[0])}">${esc(o[1])}</option>`).join(''); if (v) e.value = v; };
   set('#f_ic', [['','—'], ...COMPANIES.map(x => [x, x]), ['OTHER', m('other')]], keep('#f_ic'));
   set('#f_loc', [['','—'], ...LOCS.map(x => [x, x]), ['__other', m('other')]], keep('#f_loc'));
+  set('#lv_ic', [['','—'], ...COMPANIES.map(x => [x, x])], keep('#lv_ic'));
+  set('#lv_role', [['','—'], ...POSITIONS.map(x => [x, x]), ['__other', m('other')]], keep('#lv_role'));
   set('#f_nic', [['','—'], ...COMPANIES.map(x => [x, x]), ['OTHER', m('other')]], keep('#f_nic'));
   set('#f_cat', [['','—'], ...CATS], keep('#f_cat'));
   set('#f_role', [['','—'], ...POSITIONS.map(x => [x, x]), ['OTHER', m('other')]], keep('#f_role'));
@@ -677,8 +696,15 @@ const KEEPU = /^(MCC|PTU|DTP|WTP|WWTP|ETP|VAM|PLN|FA|DDE|GSB|WEN|PBS|KKS|6A|6B)$
 function niceLoc(s){ s = String(s || ''); if (s !== s.toUpperCase()) return s; return s.toLowerCase().replace(/[a-z0-9]+/g, w => { const u = w.toUpperCase(); if (u === 'ECOOILS') return 'EcoOils'; if (u === 'AND') return 'and'; return KEEPU.test(u) ? u : w.charAt(0).toUpperCase() + w.slice(1); }); }
 function lowerFirst(s){ return s ? s.charAt(0).toLowerCase() + s.slice(1) : s; }
 function LG(l){ return l === 'en' || l === 'ms' ? l : 'id'; }
+const LV_CAT = 'Leaving appreciation';
+function lvPara(n, lang){
+  const from = (String(n.observation || '').match(/\d{4}-\d{2}-\d{2}/) || [''])[0], f = from ? fmtDate(from, lang) : '', l = fmtDate(n.eventDate, lang);
+  return {en:`Thank you for your hard work, your commitment to safety and your contribution to the EcoOils Mentari Project${f ? ' from ' + f : ''} until ${l}. We wish you every success ahead.`,
+    id:`Terima kasih atas kerja keras, komitmen terhadap keselamatan, dan kontribusi Anda pada Proyek EcoOils Mentari${f ? ' sejak ' + f : ''} hingga ${l}. Kami mendoakan kesuksesan untuk Anda ke depannya.`,
+    ms:`Terima kasih atas kerja keras, komitmen terhadap keselamatan dan sumbangan anda kepada Projek EcoOils Mentari${f ? ' sejak ' + f : ''} hingga ${l}. Kami mengucapkan semoga berjaya.`}[lang];
+}
 function genPara(n, lang){
-  lang = LG(lang);
+  lang = LG(lang); if (n.category === LV_CAT) return lvPara(n, lang);
   const imp = improvedOf(n)[lang] || {};
   const hl = (imp.highlight || imp.action || n.action || '').trim().replace(/[.\s]+$/, ''), out = (imp.outcome || n.outcome || '').trim().replace(/[.\s]+$/, '');
   const d = fmtDate(n.eventDate, lang), loc = niceLoc(n.location);
@@ -712,7 +738,7 @@ function certHTML(n){
    <div class="ttl">${T[0]}</div><div class="st">${T[1]}</div><div class="lb">${esc(M.proud[lang])}</div>
    <div class="nm">${esc(name)}</div><div class="rule"></div>
    <div class="meta"><span>${esc(role)}</span><span class="d">${esc(PLACE)}, ${esc(date)}</span></div>
-   <div class="body"><div class="wrap"></div><p>${esc(M.std[lang])}</p><p class="pers">${esc(para)}</p></div>
+   <div class="body"><div class="wrap"></div><p>${esc(n.category === LV_CAT ? M.stdLv[{en:0, id:1, ms:2}[lang]] : M.std[lang])}</p><p class="pers">${esc(para)}</p></div>
    <div class="sig l"><div class="ln"></div><div class="sn">${esc(SIGS.l.name)}</div><div class="sj">${esc(SIGS.l.title[lang])}</div></div>
    <div class="sig r"><img class="sigimg" src="signature.png?v=1" alt="" onerror="this.remove()"><div class="ln"></div><div class="sn">${esc(SIGS.r.name)}</div><div class="sj">${esc(SIGS.r.title[lang])}</div></div>
    ${qrHTML(n, lang)}<div class="disc">${esc(M.disc[{en:0, id:1, ms:2}[lang]])}</div>
@@ -804,6 +830,7 @@ async function doTranslate(){
 }
 function renderScore(){
   const el = $('#edScore'); if (!el || !cur) return; const n = readEditor();
+  if (n.category === LV_CAT) { el.innerHTML = `<div class="box info" style="margin:6px 0"><b>${esc(t('lv.badge'))}</b></div>`; return; }
   const bp = String(n.beforePhotos || '').split(',').filter(Boolean), ap = String(n.afterPhotos || '').split(',').filter(Boolean);
   const q = scoreNom(n.observation || '', n.action || '', n.outcome || '', !!(bp.length && ap.length && bp[0] !== ap[0]), n.level);
   const cls = q.score >= 8 ? 'hi' : q.score >= 6 ? 'mid' : 'lo', tick = (ok, k) => `<span>${ok ? '✓' : '✗'} ${esc(m('crit', k))}</span>`;
@@ -926,8 +953,20 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#btnIssued').onclick = () => saveRow({status:'Issued'}).catch(e => toast(e.message, true));
   $('#btnPrint').onclick = async () => { const r = await saveRow().catch(e => { toast(e.message, true); return null; }); if (r) printRows([r], 'cert'); };
   $('#btnPrintCard').onclick = async () => { const r = await saveRow().catch(e => { toast(e.message, true); return null; }); if (r) printRows([r], 'card'); };
+  $('#btnLeave').onclick = () => { $('#lvBox').hidden = !$('#lvBox').hidden; };
+  $('#lvCancel').onclick = () => { $('#lvBox').hidden = true; };
+  $('#lv_role').onchange = () => { $('#lv_role2').hidden = $('#lv_role').value !== '__other'; };
+  $('#lvCreate').onclick = async () => {
+    const role = $('#lv_role').value === '__other' ? $('#lv_role2').value.trim() : $('#lv_role').value, name = $('#lv_name').value.trim(), ic = $('#lv_ic').value, to = $('#lv_to').value;
+    if (!name || !role || !ic || !to) { toast(m('lvNeed'), true); return; }
+    const b = $('#lvCreate'); b.disabled = true;
+    try { const j = await admApi({action:'adminCreate', fields:{name, role, ic, from:$('#lv_from').value, to, certLang:$('#lv_lang').value}});
+      await loadRows(); selectRow(j.id); $('#lvBox').hidden = true; ['lv_name', 'lv_role2', 'lv_from', 'lv_to'].forEach(i => $('#' + i).value = ''); toast(m('lvDone')); }
+    catch (e) { toast(e.message, true); }
+    b.disabled = false;
+  };
   $('#btnPrintCerts').onclick = () => printRows(ROWS.filter(r => SEL.has(r.id)), 'cert');
-  $('#btnPrintCards').onclick = () => printRows(ROWS.filter(r => SEL.has(r.id)), 'card');
+  $('#btnPrintCards').onclick = () => printRows(ROWS.filter(r => SEL.has(r.id) && r.category !== LV_CAT), 'card');
   $('#btnCsv').onclick = exportCsv;
   $('#issYes').onclick = markIssued; $('#issNo').onclick = () => $('#issuedBar').hidden = true;
   if (TOKEN) { /* resume session when the admin tab is opened */ }
