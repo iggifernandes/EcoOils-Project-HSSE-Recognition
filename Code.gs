@@ -1,4 +1,4 @@
-// Code.gs v1.1.4 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
+// Code.gs v1.1.5 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
 // Deploy: Extensions > Apps Script (on iggifernandes@gmail.com) > paste this file > run setup() once >
 //   Project Settings > Script properties: add GEMINI_API_KEY (free Google AI Studio key) >
 //   Deploy > New deployment > Web app > Execute as: Me, Who has access: Anyone.
@@ -6,11 +6,11 @@
 var SHEET_NAME = 'Nominations';
 var COLS = ['id','createdAt','week','status','certNo','name','nick','role','ic','location','eventDate',
   'observation','action','outcome','category','nomName','nomRole','nomIC','nomPhone',
-  'beforePhotos','afterPhotos','aiScore','aiVerdict','aiJson','certLang','certDate','certPara','hseNote','updatedAt','source','level'];
+  'beforePhotos','afterPhotos','aiScore','aiVerdict','aiJson','certLang','certDate','certPara','hseNote','updatedAt','source','level','handNote'];
 var EDITABLE = ['status','certNo','name','nick','role','ic','location','eventDate','observation','action','outcome',
-  'category','certLang','certDate','certPara','hseNote','level','aiJson'];
+  'category','certLang','certDate','certPara','hseNote','level','aiJson','handNote'];
 var IC_LIST = ['EcoOils','GSB','WEN','KKS','PBS'];
-var VERSION = 'v1.1.4';
+var VERSION = 'v1.1.5';
 
 /* ---------- Rewards: voucher stock and reward distribution (admin only) ---------- */
 var RW_NAME = 'Rewards';
@@ -553,7 +553,7 @@ function update_(r) {
     var cur = sh.getRange(row, 1, 1, COLS.length).getValues()[0], rec = {};
     COLS.forEach(function (c, i) { rec[c] = cur[i]; });
     var patch = r.patch || {};
-    EDITABLE.forEach(function (k) { if (patch[k] !== undefined) rec[k] = s_(patch[k], k === 'aiJson' ? 45000 : (k === 'certPara' ? 4000 : 2000)); });
+    EDITABLE.forEach(function (k) { if (patch[k] !== undefined) rec[k] = s_(patch[k], k === 'aiJson' ? 45000 : (k === 'certPara' ? 4000 : (k === 'handNote' ? 140 : 2000))); });
     if (['Pending', 'Approved', 'Issued', 'Rejected'].indexOf(rec.status) < 0) throw new Error('Bad status');
     if ((rec.status === 'Approved' || rec.status === 'Issued') && !rec.certNo) {
       var all = sh.getRange(2, COLS.indexOf('certNo') + 1, n - 1, 1).getValues().filter(function (x) { return x[0]; }).length;

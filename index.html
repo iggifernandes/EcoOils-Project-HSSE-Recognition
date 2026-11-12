@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>EcoOils HSSE Recognition</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,300;0,400;0,500;0,600;0,700;1,600;1,700&family=Arvo:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,300;0,400;0,500;0,600;0,700;1,600;1,700&family=Arvo:wght@700&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
 <style>
 :root{--ink:#231f20;--mut:#6e6b6c;--line:#dcdcdc;--bg:#f6f6f5;--card:#fff;--green:#44a276;--gdark:#025b40;--glight:#5cb41f;--navy:#002060;--yellow:#fbce07;--red:#dd1d21;--warn:#8a5a00;--warnbg:#fff4d6;--errbg:#fde8e8;--ok:#1d6b2a;--okbg:#e6f4dc}
 *{box-sizing:border-box}[hidden]{display:none!important}
@@ -98,9 +98,10 @@ table.wk td.zero{color:#aaa}table.wk td.cur.zero{background:var(--errbg);color:#
 .cert .meta{position:absolute;left:6.7%;top:52.3%;width:70.5%;display:flex;justify-content:space-between;gap:2em;font-size:1.75em;line-height:1.2;color:var(--gdark);font-weight:500}
 .cert .body{position:absolute;left:6.6%;top:57.2%;width:80%;height:22%;font-size:2.05em;line-height:1.28;overflow:hidden}
 .cert .body .wrap{float:right;width:8%;height:100%;shape-outside:polygon(100% 0,100% 66%,15% 100%,100% 100%);shape-margin:1.6em}
-.cert .body p{margin:0 0 .55em;text-align:justify}.cert .body p.pers{font-size:8pt;font-weight:400;font-style:italic;line-height:1.3}
+.cert .body p{margin:0 0 .55em;text-align:justify}.cert .body p.hand{font-family:'Caveat','Segoe Script','Bradley Hand',cursive;font-weight:500;font-size:.95em;line-height:1.15;color:#12309e;margin:.5em 0 0;transform:rotate(-1deg);transform-origin:left}
+.cert .body p.pers{font-size:8pt;font-weight:400;font-style:italic;line-height:1.3}
 .cert .sig{position:absolute;top:86.6%;width:24.85%;text-align:center}.cert .sig.l{left:5.54%}.cert .sig.r{left:44.77%}
-.cert .sig{z-index:1}.cert .sig .sigimg{position:absolute;left:50%;top:-6.2em;transform:translateX(-50%);height:11.6em;width:auto;max-width:none;object-fit:contain;mix-blend-mode:multiply;pointer-events:none;z-index:2}
+.cert .sig{z-index:1}.cert .sig .sigimg{position:absolute;left:50%;top:-6.2em;transform:translateX(-72%);height:11.6em;width:auto;max-width:none;object-fit:contain;mix-blend-mode:multiply;pointer-events:none;z-index:2}
 .cert .sig .ln{border-top:.3em solid #008000;margin-bottom:.3em}.cert .sig .sn{font-size:1.9em;line-height:1.2}.cert .sig .sj{font-size:2.05em;line-height:1.2;font-weight:700;font-style:italic}
 .cert .disc{position:absolute;left:21%;width:76%;bottom:.2%;height:2.6%;display:flex;align-items:center;white-space:nowrap;overflow:hidden;font-size:.8em;line-height:1.15;color:#fff;opacity:.95}
 .cert .qr{position:absolute;left:88.4%;top:70.5%;width:8.4%;background:#fff;border-radius:.5em;padding:.5em .5em .35em;text-align:center;box-shadow:0 0 0 .12em #d8e2dc}
@@ -288,6 +289,7 @@ table.wk td.zero{color:#aaa}table.wk td.cur.zero{background:var(--errbg);color:#
        <div class="row w" style="margin:4px 0"><button class="btn" type="button" id="btnTr" data-i="a.translate"></button><span class="hint" id="trHint"></span></div>
        <label class="f"><span data-i="a.certDate"></span><input id="e_cdate" type="date"></label>
        <div class="row w" style="margin:6px 0"><button class="btn" type="button" id="btnEFix" data-i="a.fix"></button></div>
+       <label class="f w"><span data-i="a.hand"></span><textarea id="e_hand" rows="2" maxlength="140"></textarea></label>
        <label class="f w"><span data-i="a.para"></span><textarea id="e_para" rows="5"></textarea><span class="row" style="justify-content:space-between"><small class="hint" id="paraCnt"></small><button class="btn ghost" type="button" id="btnRegen" data-i="a.regen"></button></span></label>
        <label class="f"><span data-i="a.certNo"></span><input id="e_no" placeholder="auto"></label>
        <label class="f"><span data-i="a.note"></span><input id="e_note"></label>
@@ -338,7 +340,7 @@ table.wk td.zero{color:#aaa}table.wk td.cur.zero{background:var(--errbg);color:#
 <script>
 /* ---------- constants (edit here) ---------- */
 const API_URL = 'https://script.google.com/macros/s/AKfycbx2wdQ_TGsu6Kfj8xk8Tjz8vuqvzdKTuKKlLZFb214dai5J32Kw781Z1DOZ9Amd3GNV/exec';
-const VERSION = 'v2.14.2', VERDATE = '2026-11-12';
+const VERSION = 'v2.15.0', VERDATE = '2026-11-12';
 const ICS = ['GSB','WEN','KKS','PBS'];
 const COMPANIES = ['EcoOils', ...ICS];
 const LOCS = ["ADMINISTRATION BUILDING", "BLOCK 6 B SOUTH EAST CORNER", "BLOCK 6B", "BLOCK 6B EAST GATE", "BOILER / CHIMNEY AREA", "CONTROL ROOM, MCC ROOM", "COOLING TOWER", "DDE TREATMENT PLANT (DTP)", "DIESEL TANK", "DIRTY COOLING TOWER", "DRY AND LIQUID CHEMICAL STORAGE", "ECOOILS WARE HOUSE", "EFFLUENT TREATMENT PLANT (ETP)", "ELECTRICAL SUBSTATION (PLN)", "EXTRACTION PLANT", "FA PLANT", "FIRE WATER PUMP HOUSE", "FIRE WATER TANK", "GSB OFFICE", "HEXANE AND DIESEL RECEIVING BAY", "HEXANE TANK", "KKS OFFICE", "LOADING/UNLOADING AREA (PUMP HOUSE)", "MCC BUILDING", "NORTH-WEST CORNER BLOCK 6A", "OFFICE VEHICLE PARKING AREA", "OIL POLISHING PLANT", "PBS OFFICE", "PIPE RACK", "PRE TREATMENT UNIT (PTU)", "RAW WATER PIT", "SCHEDULED & DOMESTIC WASTE SHED", "SECURITY BUILDING", "SECURITY POST", "SILO", "TANK FARM", "TRUCK PARKING AREA", "VAPOR ABSORPTION MACHINE (VAM) SHED", "WAREHOUSE", "WAREHOUSE BLOCK B", "WASTE WATER TREATMENT PLANT (WWTP)", "WATER TANK", "WATER TREATMENT PLANT (WTP) AND WATER TANKS", "WEIGHT BRIDGE", "WEN OFFICE", "WORKSHOP AREA"];
@@ -395,6 +397,7 @@ const D = {
 'a.sendCode':['Email me a code','Kirim kode ke email','Emel kod kepada saya'],'a.code':['6-digit code','Kode 6 digit','Kod 6 digit'],'a.newPin':['New PIN (6 to 12 digits)','PIN baru (6 sampai 12 digit)','PIN baharu (6 hingga 12 digit)'],'a.newPin2':['Repeat new PIN','Ulangi PIN baru','Ulang PIN baharu'],'a.setPin':['Set PIN','Atur PIN','Tetapkan PIN'],
 'a.queue':['Nominations','Nominasi','Pencalonan'],'a.weekly':['Weekly coverage','Cakupan mingguan','Liputan mingguan'],'a.logout':['Sign out','Keluar','Log keluar'],
 'lv.btn':['+ Appreciation certificate (leaving)','+ Sertifikat apresiasi (keluar)','+ Sijil penghargaan (berhenti)'],'lv.title':['Appreciation certificate for a leaving crew member','Sertifikat apresiasi untuk kru yang akan keluar','Sijil penghargaan untuk kru yang akan berhenti'],'lv.hint':['No nomination needed. It is issued straight away and can be edited and printed.','Tidak perlu nominasi. Langsung diterbitkan dan dapat diedit serta dicetak.','Tiada pencalonan diperlukan. Terus dikeluarkan dan boleh disunting serta dicetak.'],'lv.joined':['Joined (optional)','Mulai bekerja (opsional)','Mula bekerja (pilihan)'],'lv.last':['Last day on site','Hari terakhir di lokasi','Hari terakhir di tapak'],'lv.create':['Create certificate','Buat sertifikat','Buat sijil'],'lv.badge':['Leaving appreciation','Apresiasi keluar','Penghargaan berhenti'],'btn.cancel':['Cancel','Batal','Batal'],
+'a.hand':['Handwritten-style message (optional, max 140 characters)','Pesan tulisan tangan (opsional, maks 140 karakter)','Mesej tulisan tangan (pilihan, maks 140 aksara)'],
 'a.search':['Search name, location…','Cari nama, lokasi…','Cari nama, lokasi…'],'a.printCerts':['Print certificates','Cetak sertifikat','Cetak sijil'],'a.printCards':['Print Great Job cards','Cetak kartu Great Job','Cetak kad Great Job'],'a.csv':['Export CSV','Ekspor CSV','Eksport CSV'],
 'a.empty':['No nominations yet.','Belum ada nominasi.','Tiada pencalonan lagi.'],'a.pick':['Select a nomination on the left.','Pilih nominasi di sebelah kiri.','Pilih pencalonan di sebelah kiri.'],
 'a.certSection':['Certificate','Sertifikat','Sijil'],'a.certLang':['Certificate language','Bahasa sertifikat','Bahasa sijil'],'a.certDate':['Certificate date','Tanggal sertifikat','Tarikh sijil'],'a.para':['Personalised wording','Kalimat personal','Ayat peribadi'],'a.regen':['Regenerate from nomination','Buat ulang dari nominasi','Jana semula dari pencalonan'],
@@ -738,7 +741,7 @@ function certHTML(n){
    <div class="ttl">${T[0]}</div><div class="st">${T[1]}</div><div class="lb">${esc(M.proud[lang])}</div>
    <div class="nm">${esc(name)}</div><div class="rule"></div>
    <div class="meta"><span>${esc(role)}</span><span class="d">${esc(PLACE)}, ${esc(date)}</span></div>
-   <div class="body"><div class="wrap"></div><p>${esc(n.category === LV_CAT ? M.stdLv[{en:0, id:1, ms:2}[lang]] : M.std[lang])}</p><p class="pers">${esc(para)}</p></div>
+   <div class="body"><div class="wrap"></div><p>${esc(n.category === LV_CAT ? M.stdLv[{en:0, id:1, ms:2}[lang]] : M.std[lang])}</p><p class="pers">${esc(para)}</p>${n.handNote ? `<p class="hand">${esc(n.handNote)}</p>` : ''}</div>
    <div class="sig l"><div class="ln"></div><div class="sn">${esc(SIGS.l.name)}</div><div class="sj">${esc(SIGS.l.title[lang])}</div></div>
    <div class="sig r"><img class="sigimg" src="signature.png?v=2" alt="" onerror="this.remove()"><div class="ln"></div><div class="sn">${esc(SIGS.r.name)}</div><div class="sj">${esc(SIGS.r.title[lang])}</div></div>
    ${qrHTML(n, lang)}<div class="disc">${esc(M.disc[{en:0, id:1, ms:2}[lang]])}</div>
@@ -796,7 +799,7 @@ function selectRow(id, keep){
   const iso = s => String(s || '').slice(0, 10);
   $('#e_name').value = r.name; $('#e_nick').value = r.nick; $('#e_role').value = r.role; $('#e_lv').innerHTML = LEVELS.map(x => `<option value="${x[0]}">${esc(m('lv', x[0]))}</option>`).join(''); $('#e_lv').value = r.level || 'crew'; $('#e_ic').value = r.ic; $('#e_loc').value = r.location; $('#e_date').value = iso(r.eventDate);
   $('#e_obs').value = r.observation; $('#e_act').value = r.action; $('#e_out').value = r.outcome;
-  $('#e_lang').value = r.certLang || 'id'; $('#e_cdate').value = iso(r.certDate) || todayISO(); $('#e_no').value = r.certNo || ''; $('#e_note').value = r.hseNote || '';
+  $('#e_lang').value = r.certLang || 'id'; $('#e_cdate').value = iso(r.certDate) || todayISO(); $('#e_no').value = r.certNo || ''; $('#e_note').value = r.hseNote || ''; $('#e_hand').value = r.handNote || '';
   cur.certDate = $('#e_cdate').value; cur.certLang = $('#e_lang').value;
   $('#e_para').value = r.certPara || genPara(cur, cur.certLang); cur.certPara = $('#e_para').value;
   $('#edNom').textContent = m('nomBy') + ': ' + [r.nomName, r.nomRole, r.nomIC, r.nomPhone].filter(Boolean).join(' · ');
@@ -809,7 +812,7 @@ function selectRow(id, keep){
 function readEditor(){
   if (!cur) return null;
   Object.assign(cur, {name:$('#e_name').value, nick:$('#e_nick').value, role:$('#e_role').value, level:$('#e_lv').value, ic:$('#e_ic').value, location:$('#e_loc').value, eventDate:$('#e_date').value,
-    observation:$('#e_obs').value, action:$('#e_act').value, outcome:$('#e_out').value, certLang:$('#e_lang').value, certDate:$('#e_cdate').value, certPara:$('#e_para').value, certNo:$('#e_no').value, hseNote:$('#e_note').value});
+    observation:$('#e_obs').value, action:$('#e_act').value, outcome:$('#e_out').value, certLang:$('#e_lang').value, certDate:$('#e_cdate').value, certPara:$('#e_para').value, certNo:$('#e_no').value, hseNote:$('#e_note').value, handNote:$('#e_hand').value});
   return cur;
 }
 let pvT;
@@ -867,7 +870,7 @@ function renderPreview(){
 }
 async function saveRow(extra){
   const n = readEditor(); if (!n) return null;
-  const patch = {aiJson:n.aiJson, name:n.name, nick:n.nick, role:n.role, level:n.level, ic:n.ic, location:n.location, eventDate:n.eventDate, observation:n.observation, action:n.action, outcome:n.outcome, certLang:n.certLang, certDate:n.certDate, certPara:n.certPara, certNo:n.certNo, hseNote:n.hseNote, ...(extra || {})};
+  const patch = {aiJson:n.aiJson, name:n.name, nick:n.nick, role:n.role, level:n.level, ic:n.ic, location:n.location, eventDate:n.eventDate, observation:n.observation, action:n.action, outcome:n.outcome, certLang:n.certLang, certDate:n.certDate, certPara:n.certPara, certNo:n.certNo, hseNote:n.hseNote, handNote:n.handNote, ...(extra || {})};
   const j = await admApi({action:'update', id:n.id, patch}); const i = ROWS.findIndex(r => r.id === n.id); if (i >= 0) ROWS[i] = j.row; cur = JSON.parse(JSON.stringify(j.row)); selectRow(n.id, true); toast(m('saved')); return j.row;
 }
 async function prepPhotos(rows){ for (const r of rows) for (const id of [String(r.beforePhotos).split(',')[0], String(r.afterPhotos).split(',')[0]].filter(Boolean)) { try { await photoUri(id); } catch (e) {} } }
@@ -878,6 +881,7 @@ async function printRows(rows, kind){
     const ph = {}; [String(x.beforePhotos).split(',')[0], String(x.afterPhotos).split(',')[0]].forEach(id => { if (id && PHC[id]) ph[id] = PHC[id]; }); return cardHTML(x, ph); }).join('');
   if (document.fonts && document.fonts.ready) await document.fonts.ready;
   await Promise.all([...document.querySelectorAll('#printRoot img')].map(i => i.complete ? 1 : new Promise(r => { i.onload = i.onerror = r; })));
+  if (document.fonts && document.fonts.ready) { try { await document.fonts.ready; } catch (e) {} }
   const pr = $('#printRoot'), ps = pr.getAttribute('style'); pr.style.cssText = 'display:block;position:absolute;left:-9999px;top:0;visibility:hidden'; fitDoc(pr); if (ps == null) pr.removeAttribute('style'); else pr.setAttribute('style', ps);
   window.print();
   if (kind === 'cert') { const ids = rows.filter(r => r.status === 'Approved').map(r => r.id); if (ids.length) askIssued(ids); }
@@ -933,7 +937,7 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#btnRefresh').onclick = loadRows;
   $$('#admTabs button').forEach(b => b.onclick = () => { $$('#admTabs button').forEach(x => x.classList.toggle('on', x === b)); $('#a-queue').hidden = b.dataset.a !== 'queue'; $('#a-weekly').hidden = b.dataset.a !== 'weekly'; });
   ['#q_s', '#q_st', '#q_ic'].forEach(s => $(s).addEventListener('input', renderList));
-  ['#e_name','#e_nick','#e_role','#e_lv','#e_ic','#e_loc','#e_date','#e_obs','#e_act','#e_out','#e_cdate','#e_para','#e_no'].forEach(s => $(s).addEventListener('input', renderPreview));
+  ['#e_name','#e_nick','#e_role','#e_lv','#e_ic','#e_loc','#e_date','#e_obs','#e_act','#e_out','#e_cdate','#e_para','#e_hand','#e_no'].forEach(s => $(s).addEventListener('input', renderPreview));
   $('#e_lang').onchange = () => { if (cur) { $('#e_para').value = genPara(readEditor(), $('#e_lang').value); renderPreview(); } };
   $('#btnEFix').onclick = () => { if (!cur || !window.TextFix) return; const r = TextFix.fixAll({o:$('#e_obs').value, a:$('#e_act').value, u:$('#e_out').value, p:$('#e_para').value}); $('#e_obs').value = r.text.o; $('#e_act').value = r.text.a; $('#e_out').value = r.text.u; $('#e_para').value = r.text.p; renderPreview(); toast(r.count ? m('fixDone').replace('{n}', r.count) : m('fixNone')); };
   $('#btnRegen').onclick = () => { if (cur) { $('#e_para').value = genPara(readEditor(), $('#e_lang').value); renderPreview(); } };
