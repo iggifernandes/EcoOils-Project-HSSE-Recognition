@@ -101,6 +101,11 @@ table.wk td.zero{color:#aaa}table.wk td.cur.zero{background:var(--errbg);color:#
 .cert .body p{margin:0 0 .55em;text-align:justify}.cert .body p.pers{font-size:8pt;font-weight:400;font-style:italic;line-height:1.3}
 .cert .sig{position:absolute;top:86.6%;width:24.85%;text-align:center}.cert .sig.l{left:5.54%}.cert .sig.r{left:44.77%}
 .cert .sig .ln{border-top:.3em solid #008000;margin-bottom:.3em}.cert .sig .sn{font-size:1.9em;line-height:1.2}.cert .sig .sj{font-size:2.05em;line-height:1.2;font-weight:700;font-style:italic}
+.cert .disc{position:absolute;left:21%;width:50%;bottom:.2%;height:2.6%;display:flex;align-items:center;font-size:.78em;line-height:1.15;color:#fff;opacity:.92}
+.cert .qr{position:absolute;left:88.4%;top:70.5%;width:8.4%;background:#fff;border-radius:.5em;padding:.5em .5em .35em;text-align:center;box-shadow:0 0 0 .12em #d8e2dc}
+.cert .qr svg{display:block;width:100%;height:auto}.cert .qr span{display:block;font-size:.62em;line-height:1.15;color:var(--gdark);letter-spacing:.04em;margin-top:.3em}
+.vbadge{font-size:1.25rem;font-weight:600;padding:12px 14px;border-radius:8px;margin-bottom:12px}.vbadge.ok{background:#e6f4ea;color:#0b6b33}.vbadge.bad{background:#fdeaea;color:#a61b1b}
+#verifyPage dl{display:grid;grid-template-columns:max-content 1fr;gap:6px 14px;margin:0 0 10px}#verifyPage dt{color:var(--mut)}#verifyPage dd{margin:0;font-weight:600}
 .cert .no{position:absolute;left:6.7%;bottom:.15%;height:3%;display:flex;align-items:center;font-size:1.05em;letter-spacing:.08em;color:#fff;opacity:.9}
 .gj{border:0}.gj .frame{position:absolute;inset:3.2%;border:.35em solid var(--navy);padding:1.6em 2.2em}
 .gj .top{display:flex;justify-content:space-between;align-items:flex-start}.gj .top img{width:16em}
@@ -300,6 +305,14 @@ table.wk td.zero{color:#aaa}table.wk td.cur.zero{background:var(--errbg);color:#
 <!-- ===================== HELP ===================== -->
 <section id="tab-help" class="tab"><div class="card" id="helpBody"></div></section>
 </main>
+<section id="verifyPage" hidden style="max-width:640px;margin:18px auto;padding:0 16px"><div class="card">
+ <h2 data-i="v.title"></h2>
+ <div id="v_wait" class="hint" data-i="v.checking"></div>
+ <div id="v_ok" hidden><div class="vbadge ok">✓ <span data-i="v.ok"></span></div>
+  <dl><dt data-i="v.name"></dt><dd id="v_name"></dd><dt data-i="v.role"></dt><dd id="v_role"></dd><dt data-i="v.ic"></dt><dd id="v_ic"></dd><dt data-i="v.no"></dt><dd id="v_no"></dd><dt data-i="v.date"></dt><dd id="v_date"></dd></dl>
+  <p class="hint" data-i="v.note"></p></div>
+ <div id="v_bad" hidden><div class="vbadge bad">✕ <span data-i="v.bad"></span></div></div>
+</div></section>
 
 <div id="printRoot"></div>
 <div id="issuedBar" class="issuedbar" hidden><span id="issuedMsg"></span><button class="btn" id="issYes"></button><button class="btn" id="issNo"></button></div>
@@ -307,10 +320,11 @@ table.wk td.zero{color:#aaa}table.wk td.cur.zero{background:var(--errbg);color:#
 <div id="toast" class="toast" hidden></div>
 
 <script src="textfix.js?v=2.5.1"></script>
+<script src="qr.js?v=2.0.4"></script>
 <script>
 /* ---------- constants (edit here) ---------- */
 const API_URL = 'https://script.google.com/macros/s/AKfycbx2wdQ_TGsu6Kfj8xk8Tjz8vuqvzdKTuKKlLZFb214dai5J32Kw781Z1DOZ9Amd3GNV/exec';
-const VERSION = 'v2.11.1', VERDATE = '2026-11-11';
+const VERSION = 'v2.12.0', VERDATE = '2026-11-12';
 const ICS = ['GSB','WEN','KKS','PBS'];
 const COMPANIES = ['EcoOils', ...ICS];
 const LOCS = ["ADMINISTRATION BUILDING", "BLOCK 6 B SOUTH EAST CORNER", "BLOCK 6B", "BLOCK 6B EAST GATE", "BOILER / CHIMNEY AREA", "CONTROL ROOM, MCC ROOM", "COOLING TOWER", "DDE TREATMENT PLANT (DTP)", "DIESEL TANK", "DIRTY COOLING TOWER", "DRY AND LIQUID CHEMICAL STORAGE", "ECOOILS WARE HOUSE", "EFFLUENT TREATMENT PLANT (ETP)", "ELECTRICAL SUBSTATION (PLN)", "EXTRACTION PLANT", "FA PLANT", "FIRE WATER PUMP HOUSE", "FIRE WATER TANK", "GSB OFFICE", "HEXANE AND DIESEL RECEIVING BAY", "HEXANE TANK", "KKS OFFICE", "LOADING/UNLOADING AREA (PUMP HOUSE)", "MCC BUILDING", "NORTH-WEST CORNER BLOCK 6A", "OFFICE VEHICLE PARKING AREA", "OIL POLISHING PLANT", "PBS OFFICE", "PIPE RACK", "PRE TREATMENT UNIT (PTU)", "RAW WATER PIT", "SCHEDULED & DOMESTIC WASTE SHED", "SECURITY BUILDING", "SECURITY POST", "SILO", "TANK FARM", "TRUCK PARKING AREA", "VAPOR ABSORPTION MACHINE (VAM) SHED", "WAREHOUSE", "WAREHOUSE BLOCK B", "WASTE WATER TREATMENT PLANT (WWTP)", "WATER TANK", "WATER TREATMENT PLANT (WTP) AND WATER TANKS", "WEIGHT BRIDGE", "WEN OFFICE", "WORKSHOP AREA"];
@@ -369,6 +383,7 @@ const D = {
 'a.search':['Search name, location…','Cari nama, lokasi…','Cari nama, lokasi…'],'a.printCerts':['Print certificates','Cetak sertifikat','Cetak sijil'],'a.printCards':['Print Great Job cards','Cetak kartu Great Job','Cetak kad Great Job'],'a.csv':['Export CSV','Ekspor CSV','Eksport CSV'],
 'a.empty':['No nominations yet.','Belum ada nominasi.','Tiada pencalonan lagi.'],'a.pick':['Select a nomination on the left.','Pilih nominasi di sebelah kiri.','Pilih pencalonan di sebelah kiri.'],
 'a.certSection':['Certificate','Sertifikat','Sijil'],'a.certLang':['Certificate language','Bahasa sertifikat','Bahasa sijil'],'a.certDate':['Certificate date','Tanggal sertifikat','Tarikh sijil'],'a.para':['Personalised wording','Kalimat personal','Ayat peribadi'],'a.regen':['Regenerate from nomination','Buat ulang dari nominasi','Jana semula dari pencalonan'],
+'v.title':['Certificate verification','Verifikasi sertifikat','Pengesahan sijil'],'v.checking':['Checking…','Memeriksa…','Menyemak…'],'v.ok':['Genuine certificate - issued by EcoOils Project HSSE','Sertifikat asli - diterbitkan oleh HSSE EcoOils Project','Sijil tulen - dikeluarkan oleh HSSE EcoOils Project'],'v.bad':['Not verified. This certificate could not be found or is not valid.','Tidak terverifikasi. Sertifikat tidak ditemukan atau tidak valid.','Tidak disahkan. Sijil tidak ditemui atau tidak sah.'],'v.name':['Name','Nama','Nama'],'v.role':['Position','Jabatan','Jawatan'],'v.ic':['Contractor','Kontraktor','Kontraktor'],'v.no':['Certificate no.','No. sertifikat','No. sijil'],'v.date':['Date','Tanggal','Tarikh'],'v.note':['This certificate recognises good safety practice. It is not proof of employment by EcoOils.','Sertifikat ini mengakui praktik keselamatan yang baik. Bukan bukti hubungan kerja dengan EcoOils.','Sijil ini mengiktiraf amalan keselamatan yang baik. Bukan bukti pekerjaan dengan EcoOils.'],
 'a.certNo':['Certificate no.','No. sertifikat','No. sijil'],'a.note':['HSSE note (internal)','Catatan HSSE (internal)','Nota HSSE (dalaman)'],
 'a.approve':['Approve','Setujui','Lulus'],'a.printCert':['Print certificate','Cetak sertifikat','Cetak sijil'],'a.printCard':['Print Great Job card','Cetak kartu Great Job','Cetak kad Great Job'],'a.issued':['Mark as issued','Tandai sudah diberikan','Tanda telah diberi'],'a.reject':['Reject','Tolak','Tolak'],
 'a.preview':['Preview','Pratinjau','Pratonton'],'a.pvCert':['Certificate','Sertifikat','Sijil'],'a.pvCard':['Great Job card','Kartu Great Job','Kad Great Job'],
@@ -383,6 +398,8 @@ const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp
 
 /* extra dynamic strings */
 const M = {
+ disc:['This certificate is not proof of employment by EcoOils. The holder was contracted by their Contractor to work on the EcoOils Mentari Project.','Sertifikat ini bukan bukti hubungan kerja dengan EcoOils. Pemegang sertifikat dipekerjakan oleh Kontraktornya untuk bekerja pada Proyek EcoOils Mentari.','Sijil ini bukan bukti pekerjaan dengan EcoOils. Pemegang sijil diambil bekerja oleh Kontraktornya untuk Projek EcoOils Mentari.'],
+ scanv:['Scan to verify','Pindai untuk verifikasi','Imbas untuk sahkan'],
  chk:['Check with AI first','Periksa dengan AI dulu','Semak dengan AI dahulu'],
  aiBusy:['Working… up to 30 s','Memproses… hingga 30 dtk','Memproses… sehingga 30 saat'],
  aiQuick:['Working…','Memproses…','Memproses…'],
@@ -669,6 +686,22 @@ function genPara(n, lang){
   if (s.length > 420) s = `${head}${lowerFirst(hl)}.`;
   return s.trim();
 }
+const VERIFY_BASE = 'https://iggifernandes.github.io/EcoOils-Project-HSSE-Recognition/';
+function qrHTML(n, lang){
+  if (!n.id || !n.vtok || typeof qrcode !== 'function') return '';
+  try { const q = qrcode(0, 'M'); q.addData(VERIFY_BASE + '?v=' + encodeURIComponent(n.id) + '.' + n.vtok); q.make();
+    const svg = q.createSvgTag({cellSize: 4, margin: 0, scalable: true});
+    return `<div class="qr">${svg}<span>${esc(M.scanv[{en:0, id:1, ms:2}[lang]])}</span></div>`; } catch (e) { return ''; }
+}
+async function enterVerify(v){
+  ['.titlebar', '#tabs', 'main'].forEach(sel => { const e = $(sel); if (e) e.hidden = true; }); $('#verifyPage').hidden = false;
+  try {
+    const j = await api({action:'verify', v}, 20000), c = j.cert;
+    $('#v_name').textContent = c.name; $('#v_role').textContent = c.role || '—'; $('#v_ic').textContent = c.ic || '—'; $('#v_no').textContent = c.certNo || '—'; $('#v_date').textContent = c.certDate ? fmtDate(c.certDate, LANG) : '—';
+    $('#v_ok').hidden = false;
+  } catch (e) { $('#v_bad').hidden = false; }
+  $('#v_wait').hidden = true;
+}
 function certHTML(n){
   const lang = LG(n.certLang), T = M.certT[{en:0, id:1, ms:2}[lang]];
   const name = (n.name || '').toUpperCase(), role = [n.role, n.ic].filter(Boolean).join(' · ');
@@ -681,6 +714,7 @@ function certHTML(n){
    <div class="body"><div class="wrap"></div><p>${esc(M.std[lang])}</p><p class="pers">${esc(para)}</p></div>
    <div class="sig l"><div class="ln"></div><div class="sn">${esc(SIGS.l.name)}</div><div class="sj">${esc(SIGS.l.title[lang])}</div></div>
    <div class="sig r"><div class="ln"></div><div class="sn">${esc(SIGS.r.name)}</div><div class="sj">${esc(SIGS.r.title[lang])}</div></div>
+   ${qrHTML(n, lang)}<div class="disc">${esc(M.disc[{en:0, id:1, ms:2}[lang]])}</div>
    <div class="no">${esc(n.certNo || '')}</div></div>`;
 }
 let stampN = 0;
@@ -843,6 +877,7 @@ function show(tab){ $$('#tabs button').forEach(b => b.classList.toggle('on', b.d
 document.addEventListener('DOMContentLoaded', () => {
   $('#ver').textContent = VERSION; $('#verdate').textContent = VERSION + ' · ' + VERDATE;
   buildLogo();
+  const vq = new URLSearchParams(location.search).get('v'); if (vq) enterVerify(vq);
   $$('#lang button').forEach(b => b.onclick = () => { LANG = b.dataset.l; localStorage.setItem('rec_lang', LANG); applyLang(); });
   $$('#tabs button').forEach(b => b.onclick = () => show(b.dataset.t));
   if (!apiUrl()) $('#noapi').hidden = false;

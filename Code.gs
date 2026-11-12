@@ -1,4 +1,4 @@
-// Code.gs v1.1.2 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
+// Code.gs v1.1.3 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
 // Deploy: Extensions > Apps Script (on iggifernandes@gmail.com) > paste this file > run setup() once >
 //   Project Settings > Script properties: add GEMINI_API_KEY (free Google AI Studio key) >
 //   Deploy > New deployment > Web app > Execute as: Me, Who has access: Anyone.
@@ -10,7 +10,7 @@ var COLS = ['id','createdAt','week','status','certNo','name','nick','role','ic',
 var EDITABLE = ['status','certNo','name','nick','role','ic','location','eventDate','observation','action','outcome',
   'category','certLang','certDate','certPara','hseNote','level','aiJson'];
 var IC_LIST = ['EcoOils','GSB','WEN','KKS','PBS'];
-var VERSION = 'v1.1.2';
+var VERSION = 'v1.1.3';
 
 /* ---------- Rewards: voucher stock and reward distribution (admin only) ---------- */
 var RW_NAME = 'Rewards';
@@ -219,6 +219,7 @@ function doPost(e) {
       case 'setPin': return out_(setPin_(req));
       case 'login': return out_(login_(req));
       case 'logout': CacheService.getScriptCache().remove('sess_' + req.token); return out_({ ok: true });
+      case 'verify': return out_(verify_(req));
       case 'list': requireAdmin_(req); return out_({ ok: true, rows: readAll_() });
       case 'photo': requireAdmin_(req); return out_(photo_(req));
       case 'update': requireAdmin_(req); return out_(update_(req));
@@ -461,6 +462,16 @@ function requireAdmin_(r) {
 }
 
 /* ---------- admin data ---------- */
+/* QR verification: token is derived from the nomination id and the secret salt; public verify returns only non-sensitive fields */
+function vtok_(id) { return hash_('verify|' + id).slice(0, 12); }
+function verify_(req) {
+  var v = String(req.v || '').split('.'), id = v[0], tok = v[1] || '';
+  if (!id || tok.length !== 12 || tok !== vtok_(id)) throw new Error('Not found');
+  var rows = readAll_().filter(function (o) { return o.id === id; });
+  if (!rows.length || (rows[0].status !== 'Approved' && rows[0].status !== 'Issued')) throw new Error('Not found');
+  var o = rows[0];
+  return { ok: true, cert: { name: o.name, role: o.role, ic: o.ic, certNo: o.certNo, certDate: o.certDate, status: o.status } };
+}
 function readAll_() {
   var sh = sheet_(), n = sh.getLastRow();
   if (n < 2) return [];
@@ -472,6 +483,7 @@ function readAll_() {
       if (x instanceof Date) x = (c === 'eventDate' || c === 'certDate') ? Utilities.formatDate(x, tz, 'yyyy-MM-dd') : x.toISOString();
       o[c] = x;
     });
+    o.vtok = vtok_(o.id);
     return o;
   }).filter(function (o) { return o.id; });
 }
@@ -526,6 +538,7 @@ function update_(r) {
     }
     rec.updatedAt = new Date().toISOString();
     sh.getRange(row, 1, 1, COLS.length).setValues([COLS.map(function (c) { return rec[c] == null ? '' : rec[c]; })]);
+    rec.vtok = vtok_(rec.id);
     return { ok: true, row: rec };
   } finally { lock.releaseLock(); }
 }
