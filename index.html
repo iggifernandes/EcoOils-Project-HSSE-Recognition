@@ -30,7 +30,9 @@ main{max-width:1180px;margin:0 auto;padding:16px 12px 80px}
 .tab{display:none}.tab.on{display:block}
 .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:14px}
 .card h2{margin:0 0 10px;font:600 13px/1.2 Jost,sans-serif;text-transform:uppercase;letter-spacing:.14em;color:var(--gdark)}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px}.grid .w{grid-column:1/-1}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px}.grid>*{min-width:0}.grid .w{grid-column:1/-1}
+.g6{grid-template-columns:repeat(6,minmax(0,1fr))}.g6 .s2{grid-column:span 2}.g6 .s3{grid-column:span 3}.g6 input,.g6 select{width:100%}
+@media(max-width:700px){.g6{grid-template-columns:1fr 1fr}.g6 .s2,.g6 .s3{grid-column:auto}}
 @media(max-width:620px){.grid{grid-template-columns:1fr}}
 label.f{display:flex;flex-direction:column;gap:3px;font-size:13px;color:var(--mut)}
 label.f b{color:var(--red);font-weight:600}
@@ -68,8 +70,9 @@ button.btn:disabled{opacity:.45;cursor:not-allowed}
 .toast.err{background:var(--red)}
 .pill{display:inline-block;font-size:11px;padding:1px 9px;border-radius:99px;border:1px solid var(--line);letter-spacing:.04em}
 .pill.Pending{background:#fff4d6;color:#7a4b00}.pill.Approved{background:#e3f4d6;color:#245c0f}.pill.Issued{background:#dbe9ff;color:#143c86}.pill.Rejected{background:#f2e1e1;color:#7a1f1f}
-.adm{display:grid;grid-template-columns:320px 1fr;gap:14px;align-items:start}
-@media(max-width:1000px){.adm{grid-template-columns:1fr}}
+.adm{display:grid;grid-template-columns:320px minmax(0,1fr);gap:14px;align-items:start}
+.adm>*{min-width:0}
+@media(max-width:1000px){.adm{grid-template-columns:minmax(0,1fr)}}
 .list{max-height:70vh;overflow:auto;margin:8px 0 0;padding:0;list-style:none}
 .list li{display:flex;gap:8px;padding:9px 6px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:6px}
 .list li:hover{background:#f1f7f3}.list li.on{background:#e3f0e8}
@@ -271,14 +274,14 @@ table.wk td.zero{color:#aaa}table.wk td.cur.zero{background:var(--errbg);color:#
       <div class="row" style="justify-content:space-between"><h2 style="margin:0" id="edTitle"></h2><span id="edStatus"></span></div>
       <div id="edScore"></div>
       <div id="edAI"></div>
-      <div class="grid" style="margin-top:8px">
-       <label class="f"><span data-i="f.name"></span><input id="e_name"></label>
-       <label class="f"><span data-i="f.nick"></span><input id="e_nick"></label>
-       <label class="f"><span data-i="f.role"></span><input id="e_role"></label>
-       <label class="f"><span data-i="a.level"></span><select id="e_lv"></select></label>
-       <label class="f"><span data-i="f.ic"></span><input id="e_ic"></label>
-       <label class="f"><span data-i="f.location"></span><input id="e_loc"></label>
-       <label class="f"><span data-i="f.date"></span><input id="e_date" type="date"></label>
+      <div class="grid g6" style="margin-top:8px">
+       <label class="f s3"><span data-i="f.name"></span><input id="e_name"></label>
+       <label class="f s3"><span data-i="f.nick"></span><input id="e_nick"></label>
+       <label class="f s2"><span data-i="f.role"></span><input id="e_role"></label>
+       <label class="f s2"><span data-i="a.level"></span><select id="e_lv"></select></label>
+       <label class="f s2"><span data-i="f.ic"></span><input id="e_ic"></label>
+       <label class="f s3"><span data-i="f.location"></span><input id="e_loc"></label>
+       <label class="f s3"><span data-i="f.date"></span><input id="e_date" type="date"></label>
        <label class="f w"><span data-i="f.obs"></span><textarea id="e_obs" rows="3"></textarea></label>
        <label class="f w"><span data-i="f.act"></span><textarea id="e_act" rows="3"></textarea></label>
        <label class="f w"><span data-i="f.out"></span><textarea id="e_out" rows="2"></textarea></label>
@@ -287,15 +290,14 @@ table.wk td.zero{color:#aaa}table.wk td.cur.zero{background:var(--errbg);color:#
       <div class="grid" style="margin-top:8px"><div><b data-i="p.before"></b><div class="thumbs" id="ed_before"></div></div><div><b data-i="p.after"></b><div class="thumbs" id="ed_after"></div></div></div>
      </div>
      <div class="card"><h2 data-i="a.certSection"></h2>
-      <div class="grid">
-       <label class="f"><span data-i="a.certLang"></span><select id="e_lang"><option value="id">Bahasa Indonesia</option><option value="en">English</option><option value="ms">Bahasa Melayu</option></select></label>
-       <div class="row w" style="margin:4px 0"><button class="btn" type="button" id="btnTr" data-i="a.translate"></button><span class="hint" id="trHint"></span></div>
-       <label class="f"><span data-i="a.certDate"></span><input id="e_cdate" type="date"></label>
-       <div class="row w" style="margin:6px 0"><button class="btn" type="button" id="btnEFix" data-i="a.fix"></button></div>
+      <div class="grid g6">
+       <label class="f s2"><span data-i="a.certLang"></span><select id="e_lang"><option value="id">Bahasa Indonesia</option><option value="en">English</option><option value="ms">Bahasa Melayu</option></select></label>
+       <label class="f s2"><span data-i="a.certDate"></span><input id="e_cdate" type="date"></label>
+       <label class="f s2"><span data-i="a.certNo"></span><input id="e_no" placeholder="auto"></label>
+       <div class="row w" style="margin:2px 0"><button class="btn" type="button" id="btnTr" data-i="a.translate"></button><button class="btn" type="button" id="btnEFix" data-i="a.fix"></button><span class="hint" id="trHint"></span></div>
        <div class="f w"><span data-i="a.hand"></span><div id="handOpts"></div><textarea id="e_hand" rows="2" maxlength="140" hidden data-ph="hand.ph"></textarea></div>
        <label class="f w"><span data-i="a.para"></span><textarea id="e_para" rows="5"></textarea><span class="row" style="justify-content:space-between"><small class="hint" id="paraCnt"></small><button class="btn ghost" type="button" id="btnRegen" data-i="a.regen"></button></span></label>
-       <label class="f"><span data-i="a.certNo"></span><input id="e_no" placeholder="auto"></label>
-       <label class="f"><span data-i="a.note"></span><input id="e_note"></label>
+       <label class="f w"><span data-i="a.note"></span><input id="e_note"></label>
       </div>
       <div class="row" style="margin-top:12px">
        <button class="btn" id="btnSave" data-i="btn.save"></button>
@@ -343,7 +345,7 @@ table.wk td.zero{color:#aaa}table.wk td.cur.zero{background:var(--errbg);color:#
 <script>
 /* ---------- constants (edit here) ---------- */
 const API_URL = 'https://script.google.com/macros/s/AKfycbx2wdQ_TGsu6Kfj8xk8Tjz8vuqvzdKTuKKlLZFb214dai5J32Kw781Z1DOZ9Amd3GNV/exec';
-const VERSION = 'v2.17.6', VERDATE = '2026-11-12';
+const VERSION = 'v2.17.7', VERDATE = '2026-11-12';
 const ICS = ['GSB','WEN','KKS','PBS'];
 const COMPANIES = ['EcoOils', ...ICS];
 const LOCS = ["ADMINISTRATION BUILDING", "BLOCK 6 B SOUTH EAST CORNER", "BLOCK 6B", "BLOCK 6B EAST GATE", "BOILER / CHIMNEY AREA", "CONTROL ROOM, MCC ROOM", "COOLING TOWER", "DDE TREATMENT PLANT (DTP)", "DIESEL TANK", "DIRTY COOLING TOWER", "DRY AND LIQUID CHEMICAL STORAGE", "ECOOILS WARE HOUSE", "EFFLUENT TREATMENT PLANT (ETP)", "ELECTRICAL SUBSTATION (PLN)", "EXTRACTION PLANT", "FA PLANT", "FIRE WATER PUMP HOUSE", "FIRE WATER TANK", "GSB OFFICE", "HEXANE AND DIESEL RECEIVING BAY", "HEXANE TANK", "KKS OFFICE", "LOADING/UNLOADING AREA (PUMP HOUSE)", "MCC BUILDING", "NORTH-WEST CORNER BLOCK 6A", "OFFICE VEHICLE PARKING AREA", "OIL POLISHING PLANT", "PBS OFFICE", "PIPE RACK", "PRE TREATMENT UNIT (PTU)", "RAW WATER PIT", "SCHEDULED & DOMESTIC WASTE SHED", "SECURITY BUILDING", "SECURITY POST", "SILO", "TANK FARM", "TRUCK PARKING AREA", "VAPOR ABSORPTION MACHINE (VAM) SHED", "WAREHOUSE", "WAREHOUSE BLOCK B", "WASTE WATER TREATMENT PLANT (WWTP)", "WATER TANK", "WATER TREATMENT PLANT (WTP) AND WATER TANKS", "WEIGHT BRIDGE", "WEN OFFICE", "WORKSHOP AREA"];
@@ -844,7 +846,7 @@ function selectRow(id, keep){
   $('#edEmpty').hidden = true; $('#edBody').hidden = false;
   $('#edTitle').textContent = r.id; $('#edStatus').innerHTML = `<span class="pill ${esc(r.status)}">${esc(r.status)}</span>`;
   const iso = s => String(s || '').slice(0, 10);
-  $('#e_name').value = r.name; $('#e_nick').value = r.nick; $('#e_role').value = r.role; $('#e_lv').innerHTML = LEVELS.map(x => `<option value="${x[0]}">${esc(m('lv', x[0]))}</option>`).join(''); $('#e_lv').value = r.level || 'crew'; $('#e_ic').value = r.ic; $('#e_loc').value = r.location; $('#e_date').value = iso(r.eventDate);
+  $('#e_name').value = r.name; $('#e_nick').value = r.nick || ''; $('#e_role').value = r.role; $('#e_lv').innerHTML = LEVELS.map(x => `<option value="${x[0]}">${esc(m('lv', x[0]))}</option>`).join(''); $('#e_lv').value = r.level || 'crew'; $('#e_ic').value = r.ic; $('#e_loc').value = r.location; $('#e_date').value = iso(r.eventDate);
   $('#e_obs').value = r.observation; $('#e_act').value = r.action; $('#e_out').value = r.outcome;
   $('#e_lang').value = r.certLang || 'id'; $('#e_cdate').value = iso(r.certDate) || todayISO(); $('#e_no').value = r.certNo || ''; $('#e_note').value = r.hseNote || ''; $('#e_hand').value = r.handNote || ''; renderHandOpts();
   cur.certDate = $('#e_cdate').value; cur.certLang = $('#e_lang').value;
