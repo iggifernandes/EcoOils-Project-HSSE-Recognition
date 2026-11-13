@@ -251,7 +251,7 @@ table.wk td.zero{color:#aaa}table.wk td.cur.zero{background:var(--errbg);color:#
       <a class="btn sm" id="lnkRewards" href="rewards.html" data-i="a.rewards" style="text-decoration:none"></a>
       <button class="btn ghost danger sm" id="btnDelSel" data-i="a.delSel"></button>
     </div>
-    <div class="hint" id="selInfo" style="margin-top:6px"></div>
+    <div class="row" style="margin-top:6px;justify-content:space-between"><label style="display:flex;gap:6px;align-items:center;font-size:13px;cursor:pointer"><input type="checkbox" id="selAll" style="width:auto"><span id="selAllTxt" data-i="a.selAll"></span></label><span class="hint" id="selInfo"></span></div>
     <div id="lvBox" class="box" hidden style="margin-top:10px">
      <b data-i="lv.title"></b> <span class="hint" data-i="lv.hint"></span>
      <div class="grid" style="margin-top:8px">
@@ -345,7 +345,7 @@ table.wk td.zero{color:#aaa}table.wk td.cur.zero{background:var(--errbg);color:#
 <script>
 /* ---------- constants (edit here) ---------- */
 const API_URL = 'https://script.google.com/macros/s/AKfycbx2wdQ_TGsu6Kfj8xk8Tjz8vuqvzdKTuKKlLZFb214dai5J32Kw781Z1DOZ9Amd3GNV/exec';
-const VERSION = 'v2.17.7', VERDATE = '2026-11-12';
+const VERSION = 'v2.17.8', VERDATE = '2026-11-12';
 const ICS = ['GSB','WEN','KKS','PBS'];
 const COMPANIES = ['EcoOils', ...ICS];
 const LOCS = ["ADMINISTRATION BUILDING", "BLOCK 6 B SOUTH EAST CORNER", "BLOCK 6B", "BLOCK 6B EAST GATE", "BOILER / CHIMNEY AREA", "CONTROL ROOM, MCC ROOM", "COOLING TOWER", "DDE TREATMENT PLANT (DTP)", "DIESEL TANK", "DIRTY COOLING TOWER", "DRY AND LIQUID CHEMICAL STORAGE", "ECOOILS WARE HOUSE", "EFFLUENT TREATMENT PLANT (ETP)", "ELECTRICAL SUBSTATION (PLN)", "EXTRACTION PLANT", "FA PLANT", "FIRE WATER PUMP HOUSE", "FIRE WATER TANK", "GSB OFFICE", "HEXANE AND DIESEL RECEIVING BAY", "HEXANE TANK", "KKS OFFICE", "LOADING/UNLOADING AREA (PUMP HOUSE)", "MCC BUILDING", "NORTH-WEST CORNER BLOCK 6A", "OFFICE VEHICLE PARKING AREA", "OIL POLISHING PLANT", "PBS OFFICE", "PIPE RACK", "PRE TREATMENT UNIT (PTU)", "RAW WATER PIT", "SCHEDULED & DOMESTIC WASTE SHED", "SECURITY BUILDING", "SECURITY POST", "SILO", "TANK FARM", "TRUCK PARKING AREA", "VAPOR ABSORPTION MACHINE (VAM) SHED", "WAREHOUSE", "WAREHOUSE BLOCK B", "WASTE WATER TREATMENT PLANT (WWTP)", "WATER TANK", "WATER TREATMENT PLANT (WTP) AND WATER TANKS", "WEIGHT BRIDGE", "WEN OFFICE", "WORKSHOP AREA"];
@@ -403,7 +403,7 @@ const D = {
 'a.queue':['Nominations','Nominasi','Pencalonan'],'a.weekly':['Weekly coverage','Cakupan mingguan','Liputan mingguan'],'a.logout':['Sign out','Keluar','Log keluar'],
 'lv.btn':['+ Appreciation certificate (leaving)','+ Sertifikat apresiasi (keluar)','+ Sijil penghargaan (berhenti)'],'lv.title':['Appreciation certificate for a leaving crew member','Sertifikat apresiasi untuk kru yang akan keluar','Sijil penghargaan untuk kru yang akan berhenti'],'lv.hint':['No nomination needed. It is issued straight away and can be edited and printed.','Tidak perlu nominasi. Langsung diterbitkan dan dapat diedit serta dicetak.','Tiada pencalonan diperlukan. Terus dikeluarkan dan boleh disunting serta dicetak.'],'lv.joined':['Joined (optional)','Mulai bekerja (opsional)','Mula bekerja (pilihan)'],'lv.last':['Last day on site','Hari terakhir di lokasi','Hari terakhir di tapak'],'lv.create':['Create certificate','Buat sertifikat','Buat sijil'],'lv.badge':['Leaving appreciation','Apresiasi keluar','Penghargaan berhenti'],'btn.cancel':['Cancel','Batal','Batal'],
 'a.hand':['Handwritten-style message beside the signature (tick one)','Pesan tulisan tangan di samping tanda tangan (pilih satu)','Mesej tulisan tangan di sebelah tandatangan (pilih satu)'],'hand.none':['No message','Tanpa pesan','Tiada mesej'],'hand.custom':['Write my own (max 140 characters)','Tulis sendiri (maks 140 karakter)','Tulis sendiri (maks 140 aksara)'],'hand.ph':['Type your message. Please end with Terima kasih.','Ketik pesan Anda. Akhiri dengan Terima kasih.','Taip mesej anda. Akhiri dengan Terima kasih.'],
-'a.search':['Search name, location…','Cari nama, lokasi…','Cari nama, lokasi…'],'a.printCerts':['Print certificates','Cetak sertifikat','Cetak sijil'],'a.printCards':['Print Great Job cards','Cetak kartu Great Job','Cetak kad Great Job'],'a.csv':['Export CSV','Ekspor CSV','Eksport CSV'],
+'a.search':['Search name, location…','Cari nama, lokasi…','Cari nama, lokasi…'],'a.selAll':['Select all shown','Pilih semua yang tampil','Pilih semua yang dipaparkan'],'a.printCerts':['Print certificates','Cetak sertifikat','Cetak sijil'],'a.printCards':['Print Great Job cards','Cetak kartu Great Job','Cetak kad Great Job'],'a.csv':['Export CSV','Ekspor CSV','Eksport CSV'],
 'a.empty':['No nominations yet.','Belum ada nominasi.','Tiada pencalonan lagi.'],'a.pick':['Select a nomination on the left.','Pilih nominasi di sebelah kiri.','Pilih pencalonan di sebelah kiri.'],
 'a.certSection':['Certificate','Sertifikat','Sijil'],'a.certLang':['Certificate language','Bahasa sertifikat','Bahasa sijil'],'a.certDate':['Certificate date','Tanggal sertifikat','Tarikh sijil'],'a.para':['Personalised wording','Kalimat personal','Ayat peribadi'],'a.regen':['Regenerate from nomination','Buat ulang dari nominasi','Jana semula dari pencalonan'],
 'v.title':['Certificate verification','Verifikasi sertifikat','Pengesahan sijil'],'v.checking':['Checking…','Memeriksa…','Menyemak…'],'v.ok':['Genuine certificate - issued by EcoOils Project HSSE','Sertifikat asli - diterbitkan oleh HSSE EcoOils Project','Sijil tulen - dikeluarkan oleh HSSE EcoOils Project'],'v.bad':['Not verified. This certificate could not be found or is not valid.','Tidak terverifikasi. Sertifikat tidak ditemukan atau tidak valid.','Tidak disahkan. Sijil tidak ditemui atau tidak sah.'],'v.name':['Name','Nama','Nama'],'v.role':['Position','Jabatan','Jawatan'],'v.ic':['Contractor','Kontraktor','Kontraktor'],'v.no':['Certificate no.','No. sertifikat','No. sijil'],'v.date':['Date','Tanggal','Tarikh'],'v.note':['This certificate recognises good safety practice. It is not proof of employment by EcoOils.','Sertifikat ini mengakui praktik keselamatan yang baik. Bukan bukti hubungan kerja dengan EcoOils.','Sijil ini mengiktiraf amalan keselamatan yang baik. Bukan bukti pekerjaan dengan EcoOils.'],
@@ -830,11 +830,13 @@ async function enterAdmin(){ $('#loginWrap').hidden = true; $('#admWrap').hidden
 async function loadRows(){ try { const j = await admApi({action:'list'}); ROWS = j.rows.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt))); renderList(); renderWeekly(); if (cur) { const c = ROWS.find(r => r.id === cur.id); if (c) selectRow(c.id, true); } } catch (e) { toast(e.message, true); } }
 function filtered(){ const q = $('#q_s').value.toLowerCase(), st = $('#q_st').value, ic = $('#q_ic').value;
   return ROWS.filter(r => (!st || r.status === st) && (!ic || r.ic === ic) && (!q || (r.name + ' ' + r.location + ' ' + r.role + ' ' + r.nick).toLowerCase().includes(q))); }
+function syncSelAll(){ const a = $('#selAll'); if (!a) return; const f = filtered(); a.checked = f.length > 0 && f.every(r => SEL.has(r.id)); }
+function printTargets(){ const f = filtered(); const picked = f.filter(r => SEL.has(r.id)); return picked.length ? picked : f; }
 function renderList(){
   const ul = $('#nomList'); if (!ul) return; const rows = filtered();
   ul.innerHTML = rows.map(r => `<li data-id="${esc(r.id)}" class="${cur && cur.id === r.id ? 'on' : ''}"><input type="checkbox" ${SEL.has(r.id) ? 'checked' : ''}><div><div class="n">${esc(r.name)} <span class="pill ${esc(r.status)}">${esc(r.status)}</span>${r.level && r.level !== 'crew' ? ` <span class="pill Pending">${esc(m('lv', r.level))}</span>` : ''}</div><div class="s">${esc(r.ic)} · ${esc(r.location)} · ${esc(String(r.eventDate).slice(0, 10))}${r.aiScore !== '' ? ' · ' + esc(m('score')) + ' ' + esc(r.aiScore) + '/10' : ''}</div></div></li>`).join('');
-  $('#emptyList').hidden = rows.length > 0; $('#selInfo').textContent = SEL.size ? SEL.size + ' ' + m('sel') : '';
-  ul.querySelectorAll('li').forEach(li => { li.onclick = e => { const id = li.dataset.id; if (e.target.type === 'checkbox') { e.target.checked ? SEL.add(id) : SEL.delete(id); $('#selInfo').textContent = SEL.size ? SEL.size + ' ' + m('sel') : ''; } else selectRow(id); }; });
+  $('#emptyList').hidden = rows.length > 0; $('#selInfo').textContent = SEL.size ? SEL.size + ' ' + m('sel') : ''; syncSelAll();
+  ul.querySelectorAll('li').forEach(li => { li.onclick = e => { const id = li.dataset.id; if (e.target.type === 'checkbox') { e.target.checked ? SEL.add(id) : SEL.delete(id); $('#selInfo').textContent = SEL.size ? SEL.size + ' ' + m('sel') : ''; syncSelAll(); } else selectRow(id); }; });
 }
 async function photoUri(fid){ if (PHC[fid]) return PHC[fid]; const j = await admApi({action:'photo', fileId:fid}); PHC[fid] = j.uri; return j.uri; }
 async function loadThumbs(id, host, ids){
@@ -1020,8 +1022,9 @@ document.addEventListener('DOMContentLoaded', () => {
     catch (e) { toast(e.message, true); }
     b.disabled = false;
   };
-  $('#btnPrintCerts').onclick = () => printRows(ROWS.filter(r => SEL.has(r.id)), 'cert');
-  $('#btnPrintCards').onclick = () => printRows(ROWS.filter(r => SEL.has(r.id) && r.category !== LV_CAT), 'card');
+  $('#btnPrintCerts').onclick = () => printRows(printTargets(), 'cert');
+  $('#selAll').onchange = e => { filtered().forEach(r => e.target.checked ? SEL.add(r.id) : SEL.delete(r.id)); renderList(); };
+  $('#btnPrintCards').onclick = () => printRows(printTargets().filter(r => r.category !== LV_CAT), 'card');
   $('#btnCsv').onclick = exportCsv;
   $('#issYes').onclick = markIssued; $('#issNo').onclick = () => $('#issuedBar').hidden = true;
   if (TOKEN) { /* resume session when the admin tab is opened */ }
