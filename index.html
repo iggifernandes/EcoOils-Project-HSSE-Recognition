@@ -129,7 +129,7 @@ table.wk td.zero{color:#aaa}table.wk td.cur.zero{background:var(--errbg);color:#
 #printRoot{display:none}
 @page{size:A4 landscape;margin:0}
 @media print{html,body{margin:0!important;background:#fff!important}body>*:not(#printRoot){display:none!important}#printRoot{display:block!important}#printRoot .cert,#printRoot .gj{page-break-after:always;break-after:page;height:209.6mm}#printRoot>*:last-child{page-break-after:auto;break-after:auto}}
-#handOpts{margin-top:4px;border:1px solid var(--line,#ddd);border-radius:8px;padding:4px 8px}#handOpts .hopt{display:flex!important;flex-direction:row!important;align-items:flex-start;gap:8px;padding:3px 0;margin:0;font-size:13px;line-height:1.3;cursor:pointer}#handOpts .hopt input{width:auto!important;min-width:0;height:auto;margin:2px 0 0;padding:0;flex:0 0 auto}#handOpts .hopt span{flex:1 1 auto;display:block;margin:0;font-size:13px}
+#handOpts{margin-top:4px;border:1px solid var(--line,#ddd);border-radius:8px;padding:4px 8px}#handOpts .hopt{display:flex!important;flex-direction:row!important;align-items:flex-start;gap:8px;padding:3px 0;margin:0;font-size:13px;line-height:1.3;cursor:pointer}#handOpts .hopt input{width:auto!important;min-width:0;height:auto;margin:2px 0 0;padding:0;flex:0 0 auto}#handOpts .hopt .hen{display:block;font-size:11.5px;color:#6b7280;font-style:italic;margin-top:1px}#handOpts .hopt span{flex:1 1 auto;display:block;margin:0;font-size:13px}
 </style>
 </head>
 <body>
@@ -343,7 +343,7 @@ table.wk td.zero{color:#aaa}table.wk td.cur.zero{background:var(--errbg);color:#
 <script>
 /* ---------- constants (edit here) ---------- */
 const API_URL = 'https://script.google.com/macros/s/AKfycbx2wdQ_TGsu6Kfj8xk8Tjz8vuqvzdKTuKKlLZFb214dai5J32Kw781Z1DOZ9Amd3GNV/exec';
-const VERSION = 'v2.17.4', VERDATE = '2026-11-12';
+const VERSION = 'v2.17.5', VERDATE = '2026-11-12';
 const ICS = ['GSB','WEN','KKS','PBS'];
 const COMPANIES = ['EcoOils', ...ICS];
 const LOCS = ["ADMINISTRATION BUILDING", "BLOCK 6 B SOUTH EAST CORNER", "BLOCK 6B", "BLOCK 6B EAST GATE", "BOILER / CHIMNEY AREA", "CONTROL ROOM, MCC ROOM", "COOLING TOWER", "DDE TREATMENT PLANT (DTP)", "DIESEL TANK", "DIRTY COOLING TOWER", "DRY AND LIQUID CHEMICAL STORAGE", "ECOOILS WARE HOUSE", "EFFLUENT TREATMENT PLANT (ETP)", "ELECTRICAL SUBSTATION (PLN)", "EXTRACTION PLANT", "FA PLANT", "FIRE WATER PUMP HOUSE", "FIRE WATER TANK", "GSB OFFICE", "HEXANE AND DIESEL RECEIVING BAY", "HEXANE TANK", "KKS OFFICE", "LOADING/UNLOADING AREA (PUMP HOUSE)", "MCC BUILDING", "NORTH-WEST CORNER BLOCK 6A", "OFFICE VEHICLE PARKING AREA", "OIL POLISHING PLANT", "PBS OFFICE", "PIPE RACK", "PRE TREATMENT UNIT (PTU)", "RAW WATER PIT", "SCHEDULED & DOMESTIC WASTE SHED", "SECURITY BUILDING", "SECURITY POST", "SILO", "TANK FARM", "TRUCK PARKING AREA", "VAPOR ABSORPTION MACHINE (VAM) SHED", "WAREHOUSE", "WAREHOUSE BLOCK B", "WASTE WATER TREATMENT PLANT (WWTP)", "WATER TANK", "WATER TREATMENT PLANT (WTP) AND WATER TANKS", "WEIGHT BRIDGE", "WEN OFFICE", "WORKSHOP AREA"];
@@ -706,10 +706,15 @@ const HAND_MSGS = ['Kerja hebat! Dedikasi Anda menginspirasi kami semua. Terusla
  'Aksi nyata Anda membuat tempat kerja lebih aman. Kami bangga dan menghargai Anda. Terima kasih.',
  'Terus semangat! Kepedulian dan keberanian Anda menjadi contoh bagi seluruh tim. Sukses selalu. Terima kasih.',
  'Selamat dan bangga atas kerja keras Anda. Keselamatan dimulai dari orang seperti Anda. Terima kasih.'];
+const HAND_EN = ['Great work! Your dedication inspires us all. Keep shining and be a safety role model. Thank you.',
+ 'Outstanding! Your care for safety protects many people. Always keep this spirit. Thank you.',
+ 'Your real actions make the workplace safer. We are proud of you and value you. Thank you.',
+ 'Keep it up! Your care and courage set an example for the whole team. Wishing you success always. Thank you.',
+ 'Congratulations, and proud of your hard work. Safety starts with people like you. Thank you.'];
 function renderHandOpts(){
   const box = $('#handOpts'); if (!box) return; const cur_ = $('#e_hand').value.trim(), isPre = HAND_MSGS.indexOf(cur_) >= 0, sel = !cur_ ? 'none' : isPre ? String(HAND_MSGS.indexOf(cur_)) : 'custom';
-  const row = (v, label) => `<label class="hopt"><input type="radio" name="handsel" value="${v}" ${sel === v ? 'checked' : ''}> <span>${esc(label)}</span></label>`;
-  box.innerHTML = row('none', t('hand.none')) + HAND_MSGS.map((x, i) => row(String(i), x)).join('') + row('custom', t('hand.custom'));
+  const row = (v, label, en) => `<label class="hopt"><input type="radio" name="handsel" value="${v}" ${sel === v ? 'checked' : ''}> <span>${esc(label)}${en ? '<em class="hen">' + esc(en) + '</em>' : ''}</span></label>`;
+  box.innerHTML = row('none', t('hand.none')) + HAND_MSGS.map((x, i) => row(String(i), x, HAND_EN[i])).join('') + row('custom', t('hand.custom'));
   $('#e_hand').hidden = sel !== 'custom';
 }
 function handHTML(n, lang){
