@@ -1,0 +1,28 @@
+# Optional: auto-deploy Code.gs to Apps Script on every push that changes it.
+# Needs repo secret CLASPRC_JSON = contents of ~/.clasprc.json (after `clasp login`). Without it this job just skips.
+name: Deploy backend (clasp)
+on:
+  push:
+    branches: [main]
+    paths: ['Code.gs', 'appsscript.json']
+  workflow_dispatch:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check secret
+        id: chk
+        run: |
+          if [ -z "$CLASPRC_JSON" ]; then echo "No CLASPRC_JSON secret - skipping."; echo "go=no" >> "$GITHUB_OUTPUT"; else echo "go=yes" >> "$GITHUB_OUTPUT"; fi
+      - uses: actions/setup-node@v4
+        if: steps.chk.outputs.go == 'yes'
+        with: { node-version: 22 }
+      - name: Deploy
+        if: steps.chk.outputs.go == 'yes'
+        run: |
+          npm i -g @google/clasp@3.4.1
+          printf '%s' "$CLASPRC_JSON" > ~/.clasprc.json
+          ./deploy.sh
