@@ -154,6 +154,9 @@ table.t tr.clk{cursor:pointer}table.t tr.clk:hover{background:#f1f7f3}
   <div id="openWarn"></div>
   <div class="kpis" id="kpis"></div>
   <div class="card"><h2 data-i="tl.title"></h2><div class="tw" id="tally"></div></div>
+  <div class="card"><h2 data-i="dl.title"></h2><p class="hint" data-i="dl.help"></p>
+   <div class="row" style="gap:10px;align-items:end;flex-wrap:wrap"><label class="f" style="margin:0;min-width:220px"><span data-i="dl.req"></span><input id="dl_req" type="number" step="500000" inputmode="numeric" value="10000000"></label>
+    <button class="btn pri" id="dlBoth" data-i="dl.both"></button><button class="btn ghost" id="dlPng" data-i="dl.png"></button><button class="btn ghost" id="dlXls" data-i="dl.xls"></button></div></div>
   <div class="card"><h2 data-i="d.expiry"></h2><div id="expiry"></div></div>
   <div class="grid">
    <div class="card"><h2 data-i="d.byIc"></h2><div class="tw" id="byIc"></div></div>
@@ -252,7 +255,7 @@ table.t tr.clk{cursor:pointer}table.t tr.clk:hover{background:#f1f7f3}
 
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbx2wdQ_TGsu6Kfj8xk8Tjz8vuqvzdKTuKKlLZFb214dai5J32Kw781Z1DOZ9Amd3GNV/exec';
-const VERSION = 'v1.5.2', VERDATE = '2026-11-19';
+const VERSION = 'v1.6.0', VERDATE = '2026-11-19';
 const COMPANIES = ['EcoOils','GSB','WEN','KKS','PBS'];
 const DENOMS = [100000, 50000];   /* edit here to add a voucher denomination */
 const CATS = ['Best Observation for the Week','PTW Award','Spot quiz','Team or task achievement','Safety Day activity','Management walkthrough'];
@@ -275,7 +278,7 @@ const D = {
 'a.resetInfo':['A one-time code is emailed to the registered HSSE admin address. PINs can only be set this way.','Kode sekali pakai dikirim ke email admin HSSE terdaftar. PIN hanya dapat diatur dengan cara ini.','Kod sekali guna dihantar ke emel admin HSSE berdaftar. PIN hanya boleh ditetapkan dengan cara ini.'],
 'a.sendCode':['Email me a code','Kirim kode ke email','Emel kod kepada saya'],'a.code':['6-digit code','Kode 6 digit','Kod 6 digit'],'a.newPin':['New PIN (6 to 12 digits)','PIN baru (6 sampai 12 digit)','PIN baharu (6 hingga 12 digit)'],'a.newPin2':['Repeat new PIN','Ulangi PIN baru','Ulang PIN baharu'],'a.setPin':['Set PIN','Atur PIN','Tetapkan PIN'],'a.logout':['Sign out','Keluar','Log keluar'],
 'tab.dash':['Dashboard','Dasbor','Papan pemuka'],'tab.give':['Give reward','Beri hadiah','Beri ganjaran'],'tab.rec':['Records','Catatan','Rekod'],'tab.stock':['Voucher stock','Stok voucher','Stok baucar'],'tab.noms':['← Nominations','← Nominasi','← Pencalonan'],'tab.imp':['Import','Impor','Import'],
-'d.expiry':['Voucher expiry','Kedaluwarsa voucher','Tamat tempoh baucar'],'d.byIc':['Given by company','Diberikan per perusahaan','Diberi mengikut syarikat'],'d.byCat':['Given by reason','Diberikan per alasan','Diberi mengikut sebab'],'d.weeks':['Last 8 weeks','8 minggu terakhir','8 minggu terakhir'],
+'dl.title':['Download for approval','Unduh untuk persetujuan','Muat turun untuk kelulusan'],'dl.help':['PNG summary (bought, utilized, in hand, top-up request) and Excel list of every award. Both go to your Downloads folder.','Ringkasan PNG (dibeli, terpakai, tersedia, permintaan tambahan) dan daftar Excel semua hadiah. Keduanya masuk folder Unduhan.','Ringkasan PNG (dibeli, digunakan, ada, permohonan tambahan) dan senarai Excel semua ganjaran. Kedua-duanya masuk folder Muat Turun.'],'dl.req':['Top-up requested (Rp)','Tambahan diminta (Rp)','Tambahan dipohon (Rp)'],'dl.both':['Download PNG + Excel','Unduh PNG + Excel','Muat turun PNG + Excel'],'dl.png':['PNG only','PNG saja','PNG sahaja'],'dl.xls':['Excel only','Excel saja','Excel sahaja'],'d.expiry':['Voucher expiry','Kedaluwarsa voucher','Tamat tempoh baucar'],'d.byIc':['Given by company','Diberikan per perusahaan','Diberi mengikut syarikat'],'d.byCat':['Given by reason','Diberikan per alasan','Diberi mengikut sebab'],'d.weeks':['Last 8 weeks','8 minggu terakhir','8 minggu terakhir'],
 'g.title':['Give a reward','Beri hadiah','Beri ganjaran'],'g.vouchers':['Vouchers given','Voucher diberikan','Baucar diberi'],'g.total':['Total value:','Total nilai:','Jumlah nilai:'],'g.photos':['Photos','Foto','Foto'],
 'g.photosHint':['Photo of the crew receiving the reward (up to 3). Drag and drop, or tap +.','Foto kru menerima hadiah (maksimal 3). Seret dan lepas, atau ketuk +.','Foto krew menerima ganjaran (maksimum 3). Seret dan lepas, atau ketik +.'],
 'f.date':['Date','Tanggal','Tarikh'],'f.nom':['Link to a nomination (optional)','Tautkan ke nominasi (opsional)','Pautkan kepada pencalonan (pilihan)'],'f.name':['Name (person or team)','Nama (orang atau tim)','Nama (individu atau pasukan)'],'f.company':['Company (add more than one if shared)','Perusahaan (tambah lebih dari satu jika dibagi)','Syarikat (tambah lebih daripada satu jika dikongsi)'],'g.mode1':['One person / team','Satu orang / tim','Seorang / pasukan'],'g.modeN':['Several people at once','Beberapa orang sekaligus','Beberapa orang serentak'],'g.people':['People receiving a reward','Penerima hadiah','Penerima ganjaran'],'g.addPerson':['+ Add person','+ Tambah orang','+ Tambah orang'],'ph.pname':['Name','Nama','Nama'],'ph.reasonOther':['Type the reason','Tulis alasan','Taip sebab'],'g.addIc':['+ Add another company','+ Tambah perusahaan lain','+ Tambah syarikat lain'],'g.split':['Split equally','Bagi rata','Bahagi sama rata'],'ph.share':['Amount (Rp)','Jumlah (Rp)','Jumlah (Rp)'],
@@ -419,6 +422,61 @@ function renderTally(){
    `<div class="tile" tabindex="0"><small>${esc(T('tHand'))}</small><b>${nHand} ${esc(T('tVouchers'))}</b><span class="s">${IDR(c.tot.c)}</span>${lines(hRows, nHand + ' = ' + IDR(c.tot.c))}</div>` +
    `</div>`;
 }
+
+/* ---------- download for approval: PNG summary + Excel list ---------- */
+function dlSummary(){
+  const c = tallyCalc(), R = DATA.rewards, buys = DATA.stock.filter(r => r.type === 'BUY'), buyTot = sum(buys, r => r.qty), bought = c.tot.b + buyTot, used = sum(R, r => r.amount), g = {};
+  R.forEach(r => icParts(r).forEach(p => { const k = (p.ic || '').trim() || '(other)'; g[k] = (g[k] || 0) + (Number(p.amount) || 0); }));
+  const dk = Object.keys(c.per).sort((a, b) => b - a), ins = DATA.stock.filter(r => r.type === 'IN');
+  const batches = buys.map(r => [r.ref || r.date, Number(r.qty)]).concat(ins.map(r => [(r.ref || r.date) + ' (' + r.qty + ' x ' + Number(r.denom) / 1000 + 'k)', Number(r.qty) * Number(r.denom)]));
+  const dates = R.map(r => r.date).filter(Boolean).sort();
+  return {c, bought, used, batches, hand: dk.filter(d => c.per[d].c).map(d => [Number(d), c.per[d].c]), handTot: c.tot.c, comp: Object.entries(g).sort((a, b) => b[1] - a[1]), n: R.length, from: dates[0] || '', to: dates[dates.length - 1] || '', wkNow: projWeek(todayISO())};
+}
+const fmt = n => Math.round(Number(n) || 0).toLocaleString('en-US');
+const dlDate = iso => { if (!iso) return ''; const d = new Date(iso + 'T12:00:00'); return d.getDate() + ' ' + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()] + ' ' + d.getFullYear(); };
+function saveBlob(blob, name){ const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500); }
+function loadImg(src){ return new Promise(res => { const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = src; }); }
+async function dlPng(){
+  const S = dlSummary(), req = Number($('#dl_req').value) || 0, sc = 2, W = 1100, rows = S.comp.length, H = 640 + rows * 34 + 130, cv = document.createElement('canvas');
+  cv.width = W * sc; cv.height = H * sc; const x = cv.getContext('2d'); x.scale(sc, sc); x.fillStyle = '#fff'; x.fillRect(0, 0, W, H); x.textBaseline = 'alphabetic';
+  const F = (w, z) => x.font = (w || '') + ' ' + z + 'px Arial, Helvetica, sans-serif', T = (t, px, py, col, al) => { x.fillStyle = col || '#231f20'; x.textAlign = al || 'left'; x.fillText(t, px, py); };
+  const rr = (px, py, w, h, r, fill, stroke, lw) => { x.beginPath(); x.roundRect(px, py, w, h, r); if (fill) { x.fillStyle = fill; x.fill(); } if (stroke) { x.strokeStyle = stroke; x.lineWidth = lw || 1; x.stroke(); } };
+  const hl = (py, col, lw) => { x.strokeStyle = col; x.lineWidth = lw || 1; x.beginPath(); x.moveTo(0, py); x.lineTo(1, py); };
+  F('300', 25); x.letterSpacing = '5px'; T('REWARD VOUCHER SUMMARY', 44, 62, '#555'); x.letterSpacing = '0px';
+  F('', 14); T('Mentari Project · Sei Mangkei · Position as of ' + dlDate(todayISO()) + ' (Project Week ' + S.wkNow + ')', 44, 90, '#6e6b6c');
+  const lg = await loadImg('wordmark.png'); if (lg) { const lw = 155, lh = lw * 78 / 281; x.drawImage(lg, W - 44 - lw, 34, lw, lh); F('700', 17); const sp = (lw - x.measureText('PROJECT').width) / 6; try { x.letterSpacing = sp + 'px'; } catch (e) {} T('PROJECT', W - 44 - lw, 34 + lh + 17, '#ffc402'); x.letterSpacing = '0px'; }
+  x.fillStyle = '#025b40'; x.fillRect(44, 112, W - 88, 3);
+  const tile = (i, label, big, lines, total) => { const w = (W - 88 - 32) / 3, px = 44 + i * (w + 16), py = 134; rr(px, py, w, 150 + Math.max(0, lines.length - 2) * 22, 10, '#fff', '#d6d6d6'); F('', 12); x.letterSpacing = '1.4px'; T(label.toUpperCase(), px + 18, py + 28, '#6e6b6c'); x.letterSpacing = '0px'; F('600', 30); T(big, px + 18, py + 66, '#025b40');
+    let ly = py + 92; lines.concat([[total[0], total[1], 1]]).forEach(l => { x.strokeStyle = l[2] ? '#999' : '#eee'; x.lineWidth = 1; x.beginPath(); x.moveTo(px + 18, ly - 15); x.lineTo(px + w - 18, ly - 15); x.stroke(); F(l[2] ? '700' : '', 13.5); T(l[0], px + 18, ly, '#231f20'); T(l[1], px + w - 18, ly, '#231f20', 'right'); ly += 24; }); return ly; };
+  const nHand = S.hand.reduce((n, h) => n + h[1], 0);
+  tile(0, 'Total bought', 'Rp ' + fmt(S.bought), S.batches.length ? S.batches.map(b => [String(b[0]).slice(0, 34), 'Rp ' + fmt(b[1])]) : [['No purchase entered', '']], ['Total', 'Rp ' + fmt(S.bought)]);
+  tile(1, 'Utilized (distribution list)', 'Rp ' + fmt(S.used), [['Awards given', String(S.n)], ['Period', dlDate(S.from).replace(/ \d{4}$/, m => m) + ' - ' + dlDate(S.to)]], ['Project weeks', 'W' + projWeek(S.from) + ' - W' + projWeek(S.to)]);
+  tile(2, 'Vouchers in hand', nHand + ' vouchers', S.hand.map(h => ['Rp ' + fmt(h[0]) + ' x ' + h[1], 'Rp ' + fmt(h[0] * h[1])]), ['Total (physical count)', 'Rp ' + fmt(S.handTot)]);
+  let y = 330; F('700', 13); x.letterSpacing = '1.8px'; T('UTILIZED BY COMPANY', 44, y, '#025b40'); x.letterSpacing = '0px'; y += 14;
+  x.fillStyle = '#f2f2f2'; x.fillRect(44, y, W - 88, 30); F('700', 12); T('COMPANY', 56, y + 20, '#555'); T('AMOUNT (IDR)', W - 150, y + 20, '#555', 'right'); T('SHARE', W - 56, y + 20, '#555', 'right'); y += 30;
+  S.comp.concat([['Total utilized', S.used, 1]]).forEach(r => { x.strokeStyle = '#e5e5e5'; x.lineWidth = 1; x.beginPath(); x.moveTo(44, y + 34); x.lineTo(W - 44, y + 34); x.stroke(); F(r[2] ? '700' : '', 14); T(r[0], 56, y + 22, '#231f20'); T(fmt(r[1]), W - 150, y + 22, '#231f20', 'right'); T(S.used ? Math.round(r[1] / S.used * 100) + '%' : '', W - 56, y + 22, '#231f20', 'right'); y += 34; });
+  y += 24; rr(44, y, W - 88, 88, 10, '#fff7d6', '#fbce07', 2); F('700', 25); T('Request: additional vouchers', 66, y + 40, '#231f20'); F('', 14.5); T('To continue the weekly Best Observation, PTW and Best Performance awards', 66, y + 66, '#231f20'); F('700', 29); T('Rp ' + fmt(req), W - 66, y + 52, '#231f20', 'right'); y += 88 + 22;
+  const exp = S.bought - S.used, df = S.handTot - exp; F('', 12); const note = 'Reconciliation: bought ' + fmt(S.bought) + ' less utilized ' + fmt(S.used) + ' = ' + fmt(exp) + ' expected; physical count ' + fmt(S.handTot) + (df ? ' (difference ' + (df > 0 ? '+' : '') + fmt(df) + ').' : ' (tallies).') + ' Full list of every award is in the Reward Distribution Record.';
+  const words = note.split(' '); let line = ''; words.forEach(w => { if (x.measureText(line + w).width > W - 88) { T(line, 44, y, '#6e6b6c'); y += 18; line = ''; } line += w + ' '; }); T(line, 44, y, '#6e6b6c');
+  const out = document.createElement('canvas'); out.width = cv.width; out.height = Math.min(cv.height, (y + 30) * sc); out.getContext('2d').drawImage(cv, 0, 0);
+  await new Promise(res => out.toBlob(b => { saveBlob(b, 'Voucher-Summary-' + todayISO() + '.png'); res(); }, 'image/png'));
+}
+function loadXlsx(){ return new Promise((res, rej) => { if (window.XLSX) return res(); const s = document.createElement('script'); s.src = 'xlsx.mini.min.js'; s.onload = res; s.onerror = () => rej(new Error('Excel library not loaded')); document.head.appendChild(s); }); }
+async function dlXls(){
+  await loadXlsx(); const S = dlSummary(), R = DATA.rewards.slice().sort((a, b) => String(a.date).localeCompare(String(b.date)) || String(a.createdAt).localeCompare(String(b.createdAt)));
+  const wb = XLSX.utils.book_new(), exp = S.bought - S.used;
+  const sum1 = [['Reward Voucher Summary'], ['Position as of', dlDate(todayISO()) + ' (Project Week ' + S.wkNow + ')'], [], ['Total bought'], ...S.batches.map(b => ['  ' + b[0], b[1]]), ['Total bought', S.bought], [], ['Utilized (as per distribution list)', S.used], ['Awards given', S.n], [], ['Should be on hand (bought - utilized)', exp], ...S.hand.map(h => ['  Rp ' + fmt(h[0]) + ' x ' + h[1], h[0] * h[1]]), ['Counted on hand', S.handTot], ['Difference (count - should be)', S.handTot - exp], [], ['Utilized by company'], ...S.comp.map(r => ['  ' + r[0], r[1]])];
+  const ws1 = XLSX.utils.aoa_to_sheet(sum1); ws1['!cols'] = [{wch: 46}, {wch: 20}]; XLSX.utils.book_append_sheet(wb, ws1, 'Summary');
+  const head = ['Sr', 'Date', 'Project week', 'Company', 'Name', 'Reason', 'Remarks', 'Vouchers', 'Amount (IDR)'];
+  const body = R.map((r, i) => [i + 1, r.date || '', r.date ? 'W' + projWeek(r.date) : '', icParts(r).map(p => p.ic).filter(Boolean).join(' / '), r.name || '', r.category || '', r.remarks || '', vchText(r), Number(r.amount) || 0]);
+  const ws2 = XLSX.utils.aoa_to_sheet([head, ...body, [], ['', '', '', '', '', '', '', 'TOTAL', {t: 'n', f: 'SUM(I2:I' + (body.length + 1) + ')', v: S.used}]]); ws2['!cols'] = [{wch: 5}, {wch: 12}, {wch: 12}, {wch: 10}, {wch: 34}, {wch: 30}, {wch: 40}, {wch: 20}, {wch: 14}]; XLSX.utils.book_append_sheet(wb, ws2, 'All given');
+  const wk = {}; R.forEach(r => { if (!r.date) return; const k = projWeek(r.date); wk[k] = wk[k] || [0, 0]; wk[k][0]++; wk[k][1] += Number(r.amount) || 0; });
+  const ks = Object.keys(wk).map(Number).sort((a, b) => a - b), wr = []; if (ks.length) for (let k = ks[0]; k <= ks[ks.length - 1]; k++) wr.push(['W' + k, pwLabel(k).replace(/^[^·]*· /, ''), (wk[k] || [0, 0])[0], (wk[k] || [0, 0])[1]]);
+  const ws3 = XLSX.utils.aoa_to_sheet([['Project week', 'Report week covered', 'Awards', 'Amount (IDR)'], ...wr]); ws3['!cols'] = [{wch: 14}, {wch: 30}, {wch: 10}, {wch: 16}]; XLSX.utils.book_append_sheet(wb, ws3, 'By week');
+  const out = XLSX.write(wb, {bookType: 'xlsx', type: 'array'}); saveBlob(new Blob([out], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}), 'Reward-Distribution-List-' + todayISO() + '.xlsx');
+}
+async function dlRun(which){ const btns = ['dlBoth', 'dlPng', 'dlXls'].map(i => $('#' + i)); btns.forEach(b => b.disabled = true); try { try { localStorage.setItem('rw_topup', $('#dl_req').value); } catch (e) {} if (which !== 'xls') await dlPng(); if (which !== 'png') { await new Promise(r => setTimeout(r, 600)); await dlXls(); } toast(m('saved')); } catch (e) { toast(e.message, true); } btns.forEach(b => b.disabled = false); }
+
 /* ---------- dashboard ---------- */
 function renderDash(){
   renderTally();
@@ -670,6 +728,7 @@ function init(){
     if (c.contains('nm')) p.name = e.target.value; else if (c.contains('ico')) p.ico = e.target.value; else if (c.contains('cato')) p.cato = e.target.value; else if (c.contains('q')) { p.q[e.target.dataset.d] = e.target.value; manyTotals(); } }); $('#gCancel').onclick = () => resetGive();
   ['#q_text', '#q_ic', '#q_cat', '#q_month'].forEach(s => $(s).addEventListener('input', renderRec)); $('#q_clear').onclick = () => { $('#q_text').value = ''; $('#q_ic').value = ''; $('#q_cat').value = ''; $('#q_month').value = ''; renderRec(); };
   $('#btnCsv').onclick = exportCsv; $('#btnDelSel').onclick = delRewards;
+  $('#dlBoth').onclick = () => dlRun('both'); $('#dlPng').onclick = () => dlRun('png'); $('#dlXls').onclick = () => dlRun('xls'); try { const tu = localStorage.getItem('rw_topup'); if (tu) $('#dl_req').value = tu; } catch (e) {}
   $('#sSave').onclick = saveStock; $('#sCancel').onclick = () => resetStock();
   $('#i_file').onchange = async e => { const f = e.target.files[0]; if (f) { $('#i_text').value = await f.text(); prepImport(); } }; $('#i_text').addEventListener('input', prepImport); $('#i_go').onclick = doImport;
   if (TOKEN) enter();
