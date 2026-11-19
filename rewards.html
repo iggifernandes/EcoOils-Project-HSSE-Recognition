@@ -107,6 +107,7 @@ table.t tr.clk{cursor:pointer}table.t tr.clk:hover{background:#f1f7f3}
 .amt{font:500 22px/1 Jost,sans-serif;color:var(--gdark)}
 .pillt{display:inline-block;font-size:11px;padding:1px 9px;border-radius:99px;background:#eef6f1;border:1px solid #cfe5d8;white-space:nowrap}
 .pillt.OUT{background:#f6e6e6;border-color:#e6c8c8}.pillt.ADJ{background:#fff4d6;border-color:#ecd9a3}.pillt.OPEN{background:#dbe9ff;border-color:#b7cdf0}
+#tally.tw{overflow:visible}.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}.tile{position:relative;background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px;outline:none;cursor:help}.tile small{display:block;color:var(--mut);letter-spacing:.1em;text-transform:uppercase;font-size:11px}.tile b{display:block;font:500 26px/1.25 Jost,sans-serif;color:var(--gdark);margin-top:2px}.tile span.s{font-size:12.5px;color:var(--mut)}.tip{display:none;position:absolute;z-index:20;left:0;top:100%;margin-top:6px;min-width:260px;max-width:92vw;background:#fff;border:1px solid var(--gdark);border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.15);padding:10px 12px;font-size:13px}.tile:hover .tip,.tile:focus .tip,.tile:focus-within .tip{display:block}.tile:last-child .tip{left:auto;right:0}.tip div{display:flex;justify-content:space-between;gap:14px;padding:2px 0}.tip div.tt{border-top:1px solid var(--line);margin-top:4px;padding-top:5px;font-weight:700}
 </style>
 </head>
 <body>
@@ -251,7 +252,7 @@ table.t tr.clk{cursor:pointer}table.t tr.clk:hover{background:#f1f7f3}
 
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbx2wdQ_TGsu6Kfj8xk8Tjz8vuqvzdKTuKKlLZFb214dai5J32Kw781Z1DOZ9Amd3GNV/exec';
-const VERSION = 'v1.3.0', VERDATE = '2026-11-19';
+const VERSION = 'v1.4.0', VERDATE = '2026-11-19';
 const COMPANIES = ['EcoOils','GSB','WEN','KKS','PBS'];
 const DENOMS = [100000, 50000];   /* edit here to add a voucher denomination */
 const CATS = ['Best Observation for the Week','PTW Award','Spot quiz','Team or task achievement','Safety Day activity','Management walkthrough'];
@@ -283,7 +284,7 @@ const D = {
 'p.drop':['Drop photos here or tap to choose','Letakkan foto di sini atau ketuk untuk memilih','Letak foto di sini atau ketik untuk memilih'],
 's.title':['Voucher stock entry','Catatan stok voucher','Catatan stok baucar'],'s.help':['Count the vouchers in hand and add an Opening count first. After that add stock received, returned or expired. Rewards you give are deducted automatically.','Hitung voucher yang ada dan tambahkan Hitungan awal dulu. Setelah itu catat stok masuk, dikembalikan atau kedaluwarsa. Hadiah yang diberikan dikurangi otomatis.','Kira baucar di tangan dan tambah Kiraan awal dahulu. Selepas itu catat stok diterima, dipulangkan atau tamat tempoh. Ganjaran yang diberi ditolak secara automatik.'],
 's.type':['Entry type','Jenis catatan','Jenis catatan'],'s.denom':['Denomination','Pecahan','Denominasi'],'s.qty':['Number of vouchers','Jumlah voucher','Bilangan baucar'],'s.cust':['Held by','Dipegang oleh','Dipegang oleh'],'s.ref':['Reference','Referensi','Rujukan'],'s.expiry':['Expiry date','Tanggal kedaluwarsa','Tarikh tamat'],'s.photos':['Photos (receipt or vouchers)','Foto (struk atau voucher)','Foto (resit atau baucar)'],
-'tl.title':['Voucher tally: bought, used, on hand','Rekap voucher: dibeli, terpakai, tersedia','Rekap baucar: dibeli, digunakan, di tangan'],'s.onhand':['Vouchers on hand','Voucher yang ada','Baucar di tangan'],'s.ledger':['Stock ledger','Buku stok','Lejar stok'],
+'tl.title':['Vouchers','Voucher','Baucar'],'s.onhand':['Vouchers on hand','Voucher yang ada','Baucar di tangan'],'s.ledger':['Stock ledger','Buku stok','Lejar stok'],
 'ty.OPEN':['Opening count','Hitungan awal','Kiraan awal'],'ty.IN':['Stock in (received / bought)','Stok masuk (diterima / dibeli)','Stok masuk (diterima / dibeli)'],'ty.OUT':['Stock out (returned / expired / lost)','Stok keluar (dikembalikan / kedaluwarsa / hilang)','Stok keluar (dipulangkan / tamat / hilang)'],'ty.ADJ':['Correction (+ or −)','Koreksi (+ atau −)','Pembetulan (+ atau −)'],
 'ty.s.OPEN':['Opening count','Hitungan awal','Kiraan awal'],'ty.s.IN':['Stock in','Stok masuk','Stok masuk'],'ty.s.OUT':['Stock out','Stok keluar','Stok keluar'],'ty.s.ADJ':['Correction','Koreksi','Pembetulan'],
 'i.title':['Import past records','Impor catatan lama','Import rekod lama'],'i.help':['Upload a CSV with the columns Date (yyyy-mm-dd), IC, Name, Amount, Remarks. Rows already in the app are skipped, so it is safe to import twice. Imported records dated after your opening count are deducted from stock. Older ones are history only.','Unggah CSV dengan kolom Date (yyyy-mm-dd), IC, Name, Amount, Remarks. Baris yang sudah ada dilewati, jadi aman diimpor dua kali. Catatan impor bertanggal setelah hitungan awal mengurangi stok. Yang lebih lama hanya riwayat.','Muat naik CSV dengan lajur Date (yyyy-mm-dd), IC, Name, Amount, Remarks. Baris yang sudah ada dilangkau, jadi selamat diimport dua kali. Rekod import bertarikh selepas kiraan awal menolak stok. Yang lebih lama hanya sejarah.'],
@@ -305,7 +306,7 @@ const M = {
  editing:['Editing {id}','Mengedit {id}','Menyunting {id}'],
  noOpen:['No opening count yet. Go to Voucher stock and add an Opening count of the vouchers you hold now, otherwise the balance is wrong.','Belum ada hitungan awal. Buka Stok voucher dan tambahkan Hitungan awal voucher yang Anda pegang sekarang, kalau tidak saldo salah.','Belum ada kiraan awal. Pergi ke Stok baucar dan tambah Kiraan awal baucar yang anda pegang sekarang, jika tidak baki salah.'],
  over:['Not enough in stock: {d} on hand {h}, you are giving {g}.','Stok tidak cukup: {d} tersedia {h}, Anda memberi {g}.','Stok tidak mencukupi: {d} ada {h}, anda memberi {g}.'],
- tl:{bought:['Bought / received (input)','Dibeli / diterima (masuk)','Dibeli / diterima (masuk)'],out:['Returned / lost / expired','Dikembalikan / hilang / kedaluwarsa','Dikembalikan / hilang / tamat'],adj:['Corrections','Koreksi','Pembetulan'],given:['Used: given to crew (all records)','Terpakai: diberikan ke kru (semua catatan)','Digunakan: diberi kepada kru (semua rekod)'],exp:['Should be on hand','Seharusnya tersedia','Sepatutnya ada'],cnt:['Actually on hand (last count + movements)','Sebenarnya tersedia (hitungan terakhir + pergerakan)','Sebenarnya ada (kiraan terakhir + pergerakan)'],diff:['Difference (actual - should be)','Selisih (aktual - seharusnya)','Beza (sebenar - sepatutnya)'],ok:['Tallies','Sesuai','Tepat'],short:['Shortfall','Kekurangan','Kekurangan'],over:['Surplus','Kelebihan','Lebihan'],noin:['No purchases entered yet. Open Stock > add "Stock in" for each batch you bought, then this tally will show.','Belum ada pembelian. Buka Stok > tambah "Stok masuk" untuk setiap pembelian, lalu rekap ini muncul.','Belum ada pembelian. Buka Stok > tambah "Stok masuk" bagi setiap pembelian, kemudian rekap ini muncul.'],den:['Denomination','Pecahan','Denominasi'],note:['Negative = vouchers missing. Positive = more than the records say.','Negatif = voucher hilang. Positif = lebih dari catatan.','Negatif = baucar hilang. Positif = lebih daripada rekod.']},
+ tl:{tBought:['Total bought','Total dibeli','Jumlah dibeli'],tUsed:['Utilized','Terpakai','Digunakan'],tUsedSub:['As per distribution list','Sesuai daftar pembagian','Mengikut senarai agihan'],tHand:['Vouchers in hand','Voucher di tangan','Baucar di tangan'],tTotal:['Total','Total','Jumlah'],tVouchers:['vouchers','voucher','baucar'],bought:['Bought / received (input)','Dibeli / diterima (masuk)','Dibeli / diterima (masuk)'],out:['Returned / lost / expired','Dikembalikan / hilang / kedaluwarsa','Dikembalikan / hilang / tamat'],adj:['Corrections','Koreksi','Pembetulan'],given:['Used: given to crew (all records)','Terpakai: diberikan ke kru (semua catatan)','Digunakan: diberi kepada kru (semua rekod)'],exp:['Should be on hand','Seharusnya tersedia','Sepatutnya ada'],cnt:['Actually on hand (last count + movements)','Sebenarnya tersedia (hitungan terakhir + pergerakan)','Sebenarnya ada (kiraan terakhir + pergerakan)'],diff:['Difference (actual - should be)','Selisih (aktual - seharusnya)','Beza (sebenar - sepatutnya)'],ok:['Tallies','Sesuai','Tepat'],short:['Shortfall','Kekurangan','Kekurangan'],over:['Surplus','Kelebihan','Lebihan'],noin:['No purchases entered yet. Open Stock > add "Stock in" for each batch you bought, then this tally will show.','Belum ada pembelian. Buka Stok > tambah "Stok masuk" untuk setiap pembelian, lalu rekap ini muncul.','Belum ada pembelian. Buka Stok > tambah "Stok masuk" bagi setiap pembelian, kemudian rekap ini muncul.'],den:['Denomination','Pecahan','Denominasi'],note:['Negative = vouchers missing. Positive = more than the records say.','Negatif = voucher hilang. Positif = lebih dari catatan.','Negatif = baucar hilang. Positif = lebih daripada rekod.']},
  onHand:['On hand','Tersedia','Di tangan'],vch:['vouchers','voucher','baucar'],issuedAll:['Given (all records)','Diberikan (semua catatan)','Diberi (semua rekod)'],issuedMonth:['Given this month','Diberikan bulan ini','Diberi bulan ini'],
  recCount:['{n} records','{n} catatan','{n} rekod'],countAsOf:['Counted on {d}','Dihitung pada {d}','Dikira pada {d}'],
  none:['Nothing yet.','Belum ada.','Belum ada.'],
@@ -402,18 +403,17 @@ function tallyCalc(){
 }
 function renderTally(){
   const host = $('#tally'); if (!host) return; const T = k => M.tl[k][LI()], c = tallyCalc(), hasIn = DATA.stock.some(r => r.type === 'IN');
-  const dk = Object.keys(c.per).sort((a, b) => b - a), q = (f) => dk.map(d => `${f(c.per[d])} × ${Number(d) / 1000}k`).join(' · ');
-  const diff = c.tot.c - c.tot.e, cls = diff === 0 ? 'ok' : 'err', lab = diff === 0 ? T('ok') : diff < 0 ? T('short') : T('over');
-  const row = (k, v, sub, strong) => `<tr${strong ? ' style="font-weight:700;border-top:2px solid var(--line,#ccc)"' : ''}><td>${esc(k)}</td><td class="n">${v}</td><td class="hint">${esc(sub || '')}</td></tr>`;
-  host.innerHTML = (hasIn ? '' : `<div class="box warn" style="margin-bottom:8px">${esc(T('noin'))}</div>`) +
-   `<table class="t">` +
-   row(T('bought'), IDR(c.tot.b), q(o => o.b)) +
-   row('− ' + T('out'), IDR(c.tot.o), q(o => o.o)) +
-   (c.tot.a ? row('± ' + T('adj'), IDR(c.tot.a), q(o => o.a)) : '') +
-   row('− ' + T('given'), IDR(c.tot.g), q(o => o.g) + ' · ' + m('recCount', {n: DATA.rewards.length})) +
-   row('= ' + T('exp'), IDR(c.tot.e), q(o => o.e), true) +
-   row(T('cnt'), IDR(c.tot.c), q(o => o.c) + (c.sc.openDate ? ' · ' + m('countAsOf', {d: c.sc.openDate}) : '')) +
-   `<tr style="font-weight:700"><td>${esc(T('diff'))}</td><td class="n"><span class="pillt ${cls === 'ok' ? '' : 'OUT'}">${diff > 0 ? '+' : ''}${IDR(diff)}</span></td><td class="hint">${esc(lab)}. ${esc(T('note'))}</td></tr></table>`;
+  const dk = Object.keys(c.per).sort((a, b) => b - a), lines = (rows, tot) => '<div class="tip">' + rows.map(r => `<div><span>${esc(r[0])}</span><span>${esc(r[1])}</span></div>`).join('') + `<div class="tt"><span>${esc(T('tTotal'))}</span><span>${esc(tot)}</span></div></div>`;
+  const ins = DATA.stock.filter(r => r.type === 'IN').sort((a, b) => String(a.date).localeCompare(String(b.date)));
+  const bRows = ins.map(r => [(r.date || '') + (r.note ? ' · ' + r.note : '') + ' (' + r.qty + ' × ' + (Number(r.denom) / 1000) + 'k)', IDR(Number(r.qty) * Number(r.denom))]);
+  const gRows = dk.filter(d => c.per[d].g).map(d => [(Number(d) / 1000) + 'k × ' + c.per[d].g, IDR(c.per[d].g * Number(d))]);
+  const hRows = dk.filter(d => c.per[d].c).map(d => [(Number(d) / 1000) + 'k × ' + c.per[d].c, IDR(c.per[d].c * Number(d))]);
+  const nHand = dk.reduce((n, d) => n + c.per[d].c, 0);
+  host.innerHTML = (hasIn ? '' : `<div class="box warn" style="margin-bottom:8px">${esc(T('noin'))}</div>`) + `<div class="tiles">` +
+   `<div class="tile" tabindex="0"><small>${esc(T('tBought'))}</small><b>${IDR(c.tot.b)}</b>${lines(bRows, IDR(c.tot.b))}</div>` +
+   `<div class="tile" tabindex="0"><small>${esc(T('tUsed'))}</small><b>${IDR(c.tot.g)}</b><span class="s">${esc(T('tUsedSub'))} · ${esc(m('recCount', {n: DATA.rewards.length}))}</span>${lines(gRows, IDR(c.tot.g))}</div>` +
+   `<div class="tile" tabindex="0"><small>${esc(T('tHand'))}</small><b>${nHand} ${esc(T('tVouchers'))}</b><span class="s">${IDR(c.tot.c)}</span>${lines(hRows, nHand + ' = ' + IDR(c.tot.c))}</div>` +
+   `</div>`;
 }
 /* ---------- dashboard ---------- */
 function renderDash(){
