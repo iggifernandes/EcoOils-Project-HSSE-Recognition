@@ -252,7 +252,7 @@ table.t tr.clk{cursor:pointer}table.t tr.clk:hover{background:#f1f7f3}
 
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbx2wdQ_TGsu6Kfj8xk8Tjz8vuqvzdKTuKKlLZFb214dai5J32Kw781Z1DOZ9Amd3GNV/exec';
-const VERSION = 'v1.5.1', VERDATE = '2026-11-19';
+const VERSION = 'v1.5.2', VERDATE = '2026-11-19';
 const COMPANIES = ['EcoOils','GSB','WEN','KKS','PBS'];
 const DENOMS = [100000, 50000];   /* edit here to add a voucher denomination */
 const CATS = ['Best Observation for the Week','PTW Award','Spot quiz','Team or task achievement','Safety Day activity','Management walkthrough'];
@@ -389,9 +389,9 @@ function stockCalc(){
   DATA.rewards.forEach(r => { if (openDate && r.date <= openDate) return; const it = itemsOf(r); for (const k in it) add(k, -Number(it[k])); });
   return {on, openDate, value: Object.keys(on).reduce((s, d) => s + Number(d) * on[d], 0)};
 }
-const PW_ANCHOR = Date.UTC(2026, 10, 16), PW_NUM = 82; /* project week 82 starts Mon 16 Nov 2026 */
-function projWeek(iso){ const d = new Date(iso + 'T12:00:00'), u = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()), dow = (new Date(u).getUTCDay() + 6) % 7; return PW_NUM + Math.floor(((u - dow * 864e5) - PW_ANCHOR) / (7 * 864e5)); }
-const pwLabel = n => { const dt = new Date(PW_ANCHOR + (n - PW_NUM) * 7 * 864e5); return (LI() === 0 ? 'Week ' : 'Minggu ') + n + ' · ' + dt.getUTCDate() + ' ' + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][dt.getUTCMonth()] + ' ' + dt.getUTCFullYear(); };
+const PW_ANCHOR = Date.UTC(2026, 10, 1), PW_NUM = 82; /* project week 82 = Sun 1 Nov to Sat 7 Nov 2026 (HSSE report week). Awards are given the Monday after, so an award carries the report week just finished. */
+function projWeek(iso){ const d = new Date(iso + 'T12:00:00'), u = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()); return PW_NUM + Math.floor((u - PW_ANCHOR) / (7 * 864e5)) - 1; }
+const pwLabel = n => { const MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'], f = new Date(PW_ANCHOR + (n - PW_NUM) * 7 * 864e5), l = new Date(f.getTime() + 6 * 864e5), p = x => x.getUTCDate() + ' ' + MN[x.getUTCMonth()]; return (LI() === 0 ? 'Week ' : 'Minggu ') + n + ' · ' + p(f) + ' – ' + p(l) + ' ' + l.getUTCFullYear(); };
 function isoWeekKey(iso){ const d = new Date(iso + 'T12:00:00'); const t0 = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const day = t0.getUTCDay() || 7; t0.setUTCDate(t0.getUTCDate() + 4 - day); const y0 = new Date(Date.UTC(t0.getUTCFullYear(), 0, 1)); return t0.getUTCFullYear() + '-W' + String(Math.ceil(((t0 - y0) / 864e5 + 1) / 7)).padStart(2, '0'); }
 const sum = (a, f) => a.reduce((s, x) => s + (Number(f(x)) || 0), 0);
 
@@ -438,7 +438,7 @@ function renderDash(){
   const tbl = rows => rows.length ? `<table class="t"><tr><th></th><th class="n">${tc('cnt')}</th><th class="n">${tc('amt')}</th></tr>${rows.map(([k, v]) => `<tr><td>${esc(k)}</td><td class="n">${v.n}</td><td class="n">${IDR(v.a)}</td></tr>`).join('')}</table>` : `<div class="hint">${esc(m('none'))}</div>`;
   $('#byIc').innerHTML = tbl(grpIc()); $('#byCat').innerHTML = tbl(grp(r => r.category));
   const wk = {}; R.forEach(r => { if (!r.date) return; const k = projWeek(r.date); (wk[k] = wk[k] || {n: 0, a: 0}); wk[k].n++; wk[k].a += Number(r.amount) || 0; });
-  const top = Math.max(PW_NUM, ...Object.keys(wk).map(Number)), keys = Array.from({length: 8}, (_, i) => top - i); keys.forEach(k => { wk[k] = wk[k] || {n: 0, a: 0}; }); const mx = Math.max(1, ...keys.map(k => wk[k].a));
+  const top = Math.max(projWeek(todayISO()), ...Object.keys(wk).map(Number)), keys = Array.from({length: 8}, (_, i) => top - i); keys.forEach(k => { wk[k] = wk[k] || {n: 0, a: 0}; }); const mx = Math.max(1, ...keys.map(k => wk[k].a));
   $('#byWeek').innerHTML = `<table class="t"><tr><th>${tc('week')}</th><th class="n">${tc('cnt')}</th><th class="n">${tc('amt')}</th><th style="width:40%"></th></tr>${keys.map(k => `<tr><td>${pwLabel(k)}</td><td class="n">${wk[k].n}</td><td class="n">${IDR(wk[k].a)}</td><td><div class="bar" style="width:${Math.round(wk[k].a / mx * 100)}%"></div></td></tr>`).join('')}</table>`;
 }
 
