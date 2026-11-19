@@ -252,11 +252,11 @@ table.t tr.clk{cursor:pointer}table.t tr.clk:hover{background:#f1f7f3}
 
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbx2wdQ_TGsu6Kfj8xk8Tjz8vuqvzdKTuKKlLZFb214dai5J32Kw781Z1DOZ9Amd3GNV/exec';
-const VERSION = 'v1.4.0', VERDATE = '2026-11-19';
+const VERSION = 'v1.5.0', VERDATE = '2026-11-19';
 const COMPANIES = ['EcoOils','GSB','WEN','KKS','PBS'];
 const DENOMS = [100000, 50000];   /* edit here to add a voucher denomination */
 const CATS = ['Best Observation for the Week','PTW Award','Spot quiz','Team or task achievement','Safety Day activity','Management walkthrough'];
-const STYPES = ['OPEN','IN','OUT','ADJ'];
+const STYPES = ['OPEN','BUY','IN','OUT','ADJ'];
 let LANG = localStorage.getItem('rec_lang') || 'en'; if (!['en','id','ms'].includes(LANG)) LANG = 'en';
 const LI = () => ({en:0,id:1,ms:2}[LANG] || 0);
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
@@ -285,7 +285,7 @@ const D = {
 's.title':['Voucher stock entry','Catatan stok voucher','Catatan stok baucar'],'s.help':['Count the vouchers in hand and add an Opening count first. After that add stock received, returned or expired. Rewards you give are deducted automatically.','Hitung voucher yang ada dan tambahkan Hitungan awal dulu. Setelah itu catat stok masuk, dikembalikan atau kedaluwarsa. Hadiah yang diberikan dikurangi otomatis.','Kira baucar di tangan dan tambah Kiraan awal dahulu. Selepas itu catat stok diterima, dipulangkan atau tamat tempoh. Ganjaran yang diberi ditolak secara automatik.'],
 's.type':['Entry type','Jenis catatan','Jenis catatan'],'s.denom':['Denomination','Pecahan','Denominasi'],'s.qty':['Number of vouchers','Jumlah voucher','Bilangan baucar'],'s.cust':['Held by','Dipegang oleh','Dipegang oleh'],'s.ref':['Reference','Referensi','Rujukan'],'s.expiry':['Expiry date','Tanggal kedaluwarsa','Tarikh tamat'],'s.photos':['Photos (receipt or vouchers)','Foto (struk atau voucher)','Foto (resit atau baucar)'],
 'tl.title':['Vouchers','Voucher','Baucar'],'s.onhand':['Vouchers on hand','Voucher yang ada','Baucar di tangan'],'s.ledger':['Stock ledger','Buku stok','Lejar stok'],
-'ty.OPEN':['Opening count','Hitungan awal','Kiraan awal'],'ty.IN':['Stock in (received / bought)','Stok masuk (diterima / dibeli)','Stok masuk (diterima / dibeli)'],'ty.OUT':['Stock out (returned / expired / lost)','Stok keluar (dikembalikan / kedaluwarsa / hilang)','Stok keluar (dipulangkan / tamat / hilang)'],'ty.ADJ':['Correction (+ or −)','Koreksi (+ atau −)','Pembetulan (+ atau −)'],
+'ty.BUY':['Purchase (amount only, e.g. Batch 1)','Pembelian (nominal saja, mis. Batch 1)','Pembelian (jumlah sahaja, cth. Batch 1)'],'ty.s.BUY':['Purchase','Pembelian','Pembelian'],'ty.OPEN':['Opening count','Hitungan awal','Kiraan awal'],'ty.IN':['Stock in (received / bought)','Stok masuk (diterima / dibeli)','Stok masuk (diterima / dibeli)'],'ty.OUT':['Stock out (returned / expired / lost)','Stok keluar (dikembalikan / kedaluwarsa / hilang)','Stok keluar (dipulangkan / tamat / hilang)'],'ty.ADJ':['Correction (+ or −)','Koreksi (+ atau −)','Pembetulan (+ atau −)'],
 'ty.s.OPEN':['Opening count','Hitungan awal','Kiraan awal'],'ty.s.IN':['Stock in','Stok masuk','Stok masuk'],'ty.s.OUT':['Stock out','Stok keluar','Stok keluar'],'ty.s.ADJ':['Correction','Koreksi','Pembetulan'],
 'i.title':['Import past records','Impor catatan lama','Import rekod lama'],'i.help':['Upload a CSV with the columns Date (yyyy-mm-dd), IC, Name, Amount, Remarks. Rows already in the app are skipped, so it is safe to import twice. Imported records dated after your opening count are deducted from stock. Older ones are history only.','Unggah CSV dengan kolom Date (yyyy-mm-dd), IC, Name, Amount, Remarks. Baris yang sudah ada dilewati, jadi aman diimpor dua kali. Catatan impor bertanggal setelah hitungan awal mengurangi stok. Yang lebih lama hanya riwayat.','Muat naik CSV dengan lajur Date (yyyy-mm-dd), IC, Name, Amount, Remarks. Baris yang sudah ada dilangkau, jadi selamat diimport dua kali. Rekod import bertarikh selepas kiraan awal menolak stok. Yang lebih lama hanya sejarah.'],
 };
@@ -385,7 +385,7 @@ function stockCalc(){
   DENOMS.forEach(d => on[d] = 0);
   const add = (d, q) => { d = Number(d); on[d] = (on[d] || 0) + q; };
   opens.filter(r => r.date === openDate).forEach(r => add(r.denom, Number(r.qty)));
-  DATA.stock.forEach(r => { if (r.type === 'OPEN' || (openDate && r.date <= openDate)) return; const q = Number(r.qty); add(r.denom, r.type === 'OUT' ? -q : q); });
+  DATA.stock.forEach(r => { if (r.type === 'OPEN' || r.type === 'BUY' || (openDate && r.date <= openDate)) return; const q = Number(r.qty); add(r.denom, r.type === 'OUT' ? -q : q); });
   DATA.rewards.forEach(r => { if (openDate && r.date <= openDate) return; const it = itemsOf(r); for (const k in it) add(k, -Number(it[k])); });
   return {on, openDate, value: Object.keys(on).reduce((s, d) => s + Number(d) * on[d], 0)};
 }
@@ -402,15 +402,16 @@ function tallyCalc(){
   return {per, tot, sc};
 }
 function renderTally(){
-  const host = $('#tally'); if (!host) return; const T = k => M.tl[k][LI()], c = tallyCalc(), hasIn = DATA.stock.some(r => r.type === 'IN');
+  const host = $('#tally'); if (!host) return; const T = k => M.tl[k][LI()], c = tallyCalc(), hasIn = DATA.stock.some(r => r.type === 'IN' || r.type === 'BUY');
   const dk = Object.keys(c.per).sort((a, b) => b - a), lines = (rows, tot) => '<div class="tip">' + rows.map(r => `<div><span>${esc(r[0])}</span><span>${esc(r[1])}</span></div>`).join('') + `<div class="tt"><span>${esc(T('tTotal'))}</span><span>${esc(tot)}</span></div></div>`;
+  const buys = DATA.stock.filter(r => r.type === 'BUY'), buyTot = buys.reduce((n, r) => n + (Number(r.qty) || 0), 0), boughtTot = c.tot.b + buyTot;
   const ins = DATA.stock.filter(r => r.type === 'IN').sort((a, b) => String(a.date).localeCompare(String(b.date)));
-  const bRows = ins.map(r => [(r.date || '') + (r.note ? ' · ' + r.note : '') + ' (' + r.qty + ' × ' + (Number(r.denom) / 1000) + 'k)', IDR(Number(r.qty) * Number(r.denom))]);
+  const bRows = buys.map(r => [(r.ref || r.date || ''), IDR(r.qty)]).concat(ins.map(r => [(r.date || '') + (r.note ? ' · ' + r.note : '') + ' (' + r.qty + ' × ' + (Number(r.denom) / 1000) + 'k)', IDR(Number(r.qty) * Number(r.denom))]));
   const gRows = dk.filter(d => c.per[d].g).map(d => [(Number(d) / 1000) + 'k × ' + c.per[d].g, IDR(c.per[d].g * Number(d))]);
   const hRows = dk.filter(d => c.per[d].c).map(d => [(Number(d) / 1000) + 'k × ' + c.per[d].c, IDR(c.per[d].c * Number(d))]);
   const nHand = dk.reduce((n, d) => n + c.per[d].c, 0);
   host.innerHTML = (hasIn ? '' : `<div class="box warn" style="margin-bottom:8px">${esc(T('noin'))}</div>`) + `<div class="tiles">` +
-   `<div class="tile" tabindex="0"><small>${esc(T('tBought'))}</small><b>${IDR(c.tot.b)}</b>${lines(bRows, IDR(c.tot.b))}</div>` +
+   `<div class="tile" tabindex="0"><small>${esc(T('tBought'))}</small><b>${IDR(boughtTot)}</b>${lines(bRows, IDR(boughtTot))}</div>` +
    `<div class="tile" tabindex="0"><small>${esc(T('tUsed'))}</small><b>${IDR(c.tot.g)}</b><span class="s">${esc(T('tUsedSub'))} · ${esc(m('recCount', {n: DATA.rewards.length}))}</span>${lines(gRows, IDR(c.tot.g))}</div>` +
    `<div class="tile" tabindex="0"><small>${esc(T('tHand'))}</small><b>${nHand} ${esc(T('tVouchers'))}</b><span class="s">${IDR(c.tot.c)}</span>${lines(hRows, nHand + ' = ' + IDR(c.tot.c))}</div>` +
    `</div>`;
@@ -447,7 +448,7 @@ function fillSelects(){
   set('#g_nom', [['', m('noneNom')], ...NOMS.map(n => [n.id, `${n.name} · ${n.ic} · ${String(n.eventDate).slice(0, 10)}`])], keep('#g_nom'));
   set('#q_ic', [['', m('all')], ...COMPANIES.map(x => [x, x])], keep('#q_ic'));
   set('#q_cat', [['', m('allCat')], ...CATS.map(x => [x, x])], keep('#q_cat'));
-  set('#s_type', STYPES.map(x => [x, t('ty.' + x)]), keep('#s_type') || 'OPEN');
+  set('#s_type', STYPES.map(x => [x, t('ty.' + x)]), keep('#s_type') || 'OPEN'); $('#s_type').onchange = stTog; stTog();
   set('#s_denom', DENOMS.map(d => [String(d), IDR(d)]), keep('#s_denom'));
   const box = $('#denBox'); if (!box.children.length) box.innerHTML = DENOMS.map(d => `<label>${IDR(d)}<input type="number" min="0" max="1000" step="1" inputmode="numeric" id="den_${d}" value="0"></label>`).join('');
   renderAlloc();
@@ -565,17 +566,18 @@ async function delRewards(){
 
 /* ---------- stock ---------- */
 let EDIT_ST = null;
-function resetStock(){ EDIT_ST = null; $('#sEditBar').hidden = true; $('#s_date').value = todayISO(); $('#s_qty').value = ''; ['s_ref', 's_exp', 's_ser', 's_rem'].forEach(i => $('#' + i).value = ''); $('#s_cust').value = 'HSSE (Iggy)'; sPB.clear(); }
+function stTog(){ const b = $('#s_type').value === 'BUY'; $('#s_denom').closest('label').style.display = b ? 'none' : ''; $('#s_qty').placeholder = b ? 'Rp' : ''; }
+function resetStock(){ EDIT_ST = null; $('#sEditBar').hidden = true; $('#s_date').value = todayISO(); $('#s_qty').value = ''; ['s_ref', 's_exp', 's_ser', 's_rem'].forEach(i => $('#' + i).value = ''); $('#s_cust').value = 'HSSE (Iggy)'; sPB.clear(); stTog(); }
 function editStock(id){
   const r = DATA.stock.find(x => x.id === id); if (!r) return; resetStock(); EDIT_ST = id;
   $('#s_date').value = r.date; $('#s_type').value = r.type; $('#s_denom').value = String(r.denom); $('#s_qty').value = r.qty; $('#s_cust').value = r.custodian || ''; $('#s_ref').value = r.ref || ''; $('#s_exp').value = r.expiry || ''; $('#s_ser').value = r.serials || ''; $('#s_rem').value = r.remarks || '';
-  sPB.set(r.photos); $('#sEditBar').hidden = false; $('#sEditTxt').textContent = m('editing', {id}); window.scrollTo(0, 0);
+  sPB.set(r.photos); stTog(); $('#sEditBar').hidden = false; $('#sEditTxt').textContent = m('editing', {id}); window.scrollTo(0, 0);
 }
 async function saveStock(){
   const qty = Number($('#s_qty').value); if (!$('#s_date').value || !qty) { toast(m('needStock'), true); return; }
   const b = $('#sSave'); b.disabled = true;
   try {
-    await admApi({action:'stSave', row:Object.assign({id:EDIT_ST || undefined, date:$('#s_date').value, type:$('#s_type').value, denom:Number($('#s_denom').value), qty, custodian:$('#s_cust').value.trim(), ref:$('#s_ref').value.trim(), expiry:$('#s_exp').value, serials:$('#s_ser').value.trim(), remarks:$('#s_rem').value.trim()}, sPB.payload())});
+    await admApi({action:'stSave', row:Object.assign({id:EDIT_ST || undefined, date:$('#s_date').value, type:$('#s_type').value, denom:$('#s_type').value === 'BUY' ? 0 : Number($('#s_denom').value), qty, custodian:$('#s_cust').value.trim(), ref:$('#s_ref').value.trim(), expiry:$('#s_exp').value, serials:$('#s_ser').value.trim(), remarks:$('#s_rem').value.trim()}, sPB.payload())});
     toast(m('saved')); resetStock(); await load();
   } catch (e) { toast(e.message, true); }
   b.disabled = false;
@@ -585,7 +587,7 @@ function renderStock(){
   $('#onhand').innerHTML = `<div class="kpis" style="margin:0">${Object.keys(sc.on).sort((a, b) => b - a).map(d => `<div class="kpi ${sc.on[d] < 0 ? 'low' : ''}"><small>${IDR(d)}</small><b>${sc.on[d]}</b><span>${IDR(sc.on[d] * d)}</span></div>`).join('')}<div class="kpi ${sc.value < 0 ? 'low' : ''}"><small>${esc(m('th', 'total'))}</small><b>${IDR(sc.value)}</b><span>${sc.openDate ? esc(m('countAsOf', {d: sc.openDate})) : ''}</span></div></div>${sc.openDate ? '' : `<div class="box warn">${esc(m('noOpen'))}</div>`}`;
   const rows = DATA.stock.slice().sort((a, b) => String(b.date).localeCompare(String(a.date)) || String(b.createdAt).localeCompare(String(a.createdAt)));
   $('#ledger').innerHTML = rows.length ? `<table class="t"><tr><th>${tc('date')}</th><th>${tc('type')}</th><th>${tc('den')}</th><th class="n">${tc('qty')}</th><th>${tc('held')}</th><th>${tc('ref')}</th><th>${tc('exp')}</th><th>${tc('ph')}</th><th></th></tr>` +
-    rows.map(r => `<tr class="clk" data-id="${esc(r.id)}"><td>${esc(r.date)}</td><td><span class="pillt ${esc(r.type)}">${esc(t('ty.s.' + r.type))}</span></td><td>${Number(r.denom) / 1000}k</td><td class="n">${esc(r.qty)}</td><td>${esc(r.custodian)}</td><td>${esc(r.ref)}${r.remarks ? `<div class="hint">${esc(r.remarks)}</div>` : ''}</td><td>${esc(r.expiry)}</td><td>${String(r.photos || '').split(',').filter(Boolean).length ? '📷 ' + String(r.photos).split(',').filter(Boolean).length : ''}</td><td><button class="btn ghost danger sm" data-del="${esc(r.id)}">×</button></td></tr>`).join('') + '</table>' : `<div class="hint">${esc(m('none'))}</div>`;
+    rows.map(r => `<tr class="clk" data-id="${esc(r.id)}"><td>${esc(r.date)}</td><td><span class="pillt ${esc(r.type)}">${esc(t('ty.s.' + r.type))}</span></td><td>${r.type === 'BUY' ? '—' : Number(r.denom) / 1000 + 'k'}</td><td class="n">${r.type === 'BUY' ? IDR(r.qty) : esc(r.qty)}</td><td>${esc(r.custodian)}</td><td>${esc(r.ref)}${r.remarks ? `<div class="hint">${esc(r.remarks)}</div>` : ''}</td><td>${esc(r.expiry)}</td><td>${String(r.photos || '').split(',').filter(Boolean).length ? '📷 ' + String(r.photos).split(',').filter(Boolean).length : ''}</td><td><button class="btn ghost danger sm" data-del="${esc(r.id)}">×</button></td></tr>`).join('') + '</table>' : `<div class="hint">${esc(m('none'))}</div>`;
   $$('#ledger tr.clk').forEach(tr => tr.onclick = e => { if (e.target.dataset.del) return; editStock(tr.dataset.id); });
   $$('#ledger [data-del]').forEach(b => b.onclick = async e => { e.stopPropagation(); if (!confirm(m('delConfirm', {n: 1}))) return; try { await admApi({action:'stDelete', ids:[b.dataset.del]}); await load(); toast(m('deleted', {n: 1})); } catch (er) { toast(er.message, true); } });
 }

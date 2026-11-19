@@ -1,4 +1,4 @@
-// Code.gs v1.2.0 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
+// Code.gs v1.3.0 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
 // Deploy: Extensions > Apps Script (on iggifernandes@gmail.com) > paste this file > run setup() once >
 //   Project Settings > Script properties: add GEMINI_API_KEY (free Google AI Studio key) >
 //   Deploy > New deployment > Web app > Execute as: Me, Who has access: Anyone.
@@ -111,10 +111,13 @@ function rwSaveMany_(r) {
 }
 function stSave_(r) {
   var f = r.row || {}, type = s_(f.type, 6);
-  if (['OPEN', 'IN', 'OUT', 'ADJ'].indexOf(type) < 0) throw new Error('Bad type');
+  if (['OPEN', 'IN', 'OUT', 'ADJ', 'BUY'].indexOf(type) < 0) throw new Error('Bad type');
   var denom = Math.floor(Number(f.denom)), qty = Math.floor(Number(f.qty));
-  if (!(denom >= 1000 && denom <= 9999999)) throw new Error('Bad denomination');
-  if (!qty || (type !== 'ADJ' && qty < 0) || Math.abs(qty) > 100000) throw new Error('Bad quantity');
+  if (type === 'BUY') { denom = 0; if (!(qty > 0 && qty <= 2000000000)) throw new Error('Bad amount'); }
+  else {
+    if (!(denom >= 1000 && denom <= 9999999)) throw new Error('Bad denomination');
+    if (!qty || (type !== 'ADJ' && qty < 0) || Math.abs(qty) > 100000) throw new Error('Bad quantity');
+  }
   var date = isoDate_(f.date), expiry = s_(f.expiry, 10); if (expiry) isoDate_(expiry);
   var lock = LockService.getScriptLock(); lock.waitLock(20000);
   try {
