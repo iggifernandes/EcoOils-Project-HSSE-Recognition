@@ -360,7 +360,7 @@ table.wk td.zero{color:#aaa}table.wk td.cur.zero{background:var(--errbg);color:#
 <script>
 /* ---------- constants (edit here) ---------- */
 const API_URL = 'https://script.google.com/macros/s/AKfycbx2wdQ_TGsu6Kfj8xk8Tjz8vuqvzdKTuKKlLZFb214dai5J32Kw781Z1DOZ9Amd3GNV/exec';
-const VERSION = 'v2.18.0', VERDATE = '2026-11-12';
+const VERSION = 'v2.19.0', VERDATE = '2026-11-19';
 const ICS = ['GSB','WEN','KKS','PBS'];
 const COMPANIES = ['EcoOils', ...ICS];
 const LOCS = ["ADMINISTRATION BUILDING", "BLOCK 6 B SOUTH EAST CORNER", "BLOCK 6B", "BLOCK 6B EAST GATE", "BOILER / CHIMNEY AREA", "CONTROL ROOM, MCC ROOM", "COOLING TOWER", "DDE TREATMENT PLANT (DTP)", "DIESEL TANK", "DIRTY COOLING TOWER", "DRY AND LIQUID CHEMICAL STORAGE", "ECOOILS WARE HOUSE", "EFFLUENT TREATMENT PLANT (ETP)", "ELECTRICAL SUBSTATION (PLN)", "EXTRACTION PLANT", "FA PLANT", "FIRE WATER PUMP HOUSE", "FIRE WATER TANK", "GSB OFFICE", "HEXANE AND DIESEL RECEIVING BAY", "HEXANE TANK", "KKS OFFICE", "LOADING/UNLOADING AREA (PUMP HOUSE)", "MCC BUILDING", "NORTH-WEST CORNER BLOCK 6A", "OFFICE VEHICLE PARKING AREA", "OIL POLISHING PLANT", "PBS OFFICE", "PIPE RACK", "PRE TREATMENT UNIT (PTU)", "RAW WATER PIT", "SCHEDULED & DOMESTIC WASTE SHED", "SECURITY BUILDING", "SECURITY POST", "SILO", "TANK FARM", "TRUCK PARKING AREA", "VAPOR ABSORPTION MACHINE (VAM) SHED", "WAREHOUSE", "WAREHOUSE BLOCK B", "WASTE WATER TREATMENT PLANT (WWTP)", "WATER TANK", "WATER TREATMENT PLANT (WTP) AND WATER TANKS", "WEIGHT BRIDGE", "WEN OFFICE", "WORKSHOP AREA"];
@@ -939,7 +939,7 @@ function renderPreview(){
 async function saveRow(extra){
   const n = readEditor(); if (!n) return null;
   const patch = {aiJson:n.aiJson, name:n.name, nick:n.nick, role:n.role, level:n.level, ic:n.ic, location:n.location, eventDate:n.eventDate, observation:n.observation, action:n.action, outcome:n.outcome, certLang:n.certLang, certDate:n.certDate, certPara:n.certPara, certNo:n.certNo, hseNote:n.hseNote, handNote:n.handNote, ...(extra || {})};
-  const j = await admApi({action:'update', id:n.id, patch}); const i = ROWS.findIndex(r => r.id === n.id); if (i >= 0) ROWS[i] = j.row; cur = JSON.parse(JSON.stringify(j.row)); selectRow(n.id, true); toast(m('saved')); return j.row;
+  const j = await admApi({action:'update', id:n.id, patch}); const i = ROWS.findIndex(r => r.id === n.id); if (i >= 0) ROWS[i] = j.row; cur = JSON.parse(JSON.stringify(j.row)); selectRow(n.id, true); toast(m('saved') + (j.row.rewardAdded ? ' · Rp 100,000 voucher recorded in Rewards' : '')); return j.row;
 }
 async function prepPhotos(rows){ for (const r of rows) for (const id of [String(r.beforePhotos).split(',')[0], String(r.afterPhotos).split(',')[0]].filter(Boolean)) { try { await photoUri(id); } catch (e) {} } }
 async function printRows(rows, kind){
@@ -956,7 +956,7 @@ async function printRows(rows, kind){
 }
 let issuedIds = [];
 function askIssued(ids){ issuedIds = ids; $('#issuedMsg').textContent = m('markIssued') + ' (' + ids.length + ')'; $('#issuedBar').hidden = false; }
-async function markIssued(){ $('#issuedBar').hidden = true; for (const id of issuedIds) { try { const j = await admApi({action:'update', id, patch:{status:'Issued'}}); const i = ROWS.findIndex(r => r.id === id); if (i >= 0) ROWS[i] = j.row; } catch (e) { toast(e.message, true); } } issuedIds = []; renderList(); if (cur) selectRow(cur.id, true); }
+async function markIssued(){ let nRw = 0; $('#issuedBar').hidden = true; for (const id of issuedIds) { try { const j = await admApi({action:'update', id, patch:{status:'Issued'}}); const i = ROWS.findIndex(r => r.id === id); if (i >= 0) ROWS[i] = j.row; if (j.row.rewardAdded) nRw++; } catch (e) { toast(e.message, true); } } if (nRw) toast(nRw + ' × Rp 100,000 vouchers recorded in Rewards'); issuedIds = []; renderList(); if (cur) selectRow(cur.id, true); }
 function renderWeekly(){
   const host = $('#wkTable'); if (!host) return;
   const now = new Date(), weeks = []; for (let i = 0; i < 8; i++) { const d = new Date(now); d.setDate(d.getDate() - 7 * i); weeks.push(isoWeek(d)); }

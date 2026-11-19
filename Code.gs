@@ -1,4 +1,4 @@
-// Code.gs v1.3.0 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
+// Code.gs v1.4.0 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
 // Deploy: Extensions > Apps Script (on iggifernandes@gmail.com) > paste this file > run setup() once >
 //   Project Settings > Script properties: add GEMINI_API_KEY (free Google AI Studio key) >
 //   Deploy > New deployment > Web app > Execute as: Me, Who has access: Anyone.
@@ -10,7 +10,7 @@ var COLS = ['id','createdAt','week','status','certNo','name','nick','role','ic',
 var EDITABLE = ['status','certNo','name','nick','role','ic','location','eventDate','observation','action','outcome',
   'category','certLang','certDate','certPara','hseNote','level','aiJson','handNote'];
 var IC_LIST = ['EcoOils','GSB','WEN','KKS','PBS'];
-var VERSION = 'v1.2.0';
+var VERSION = 'v1.4.0';
 
 /* ---------- Rewards: voucher stock and reward distribution (admin only) ---------- */
 var RW_NAME = 'Rewards';
@@ -333,6 +333,7 @@ function doPost(e) {
       case 'rwSaveMany': req.email = requireAdmin_(req); return out_(rwSaveMany_(req));
       case 'rwDelete': requireAdmin_(req); return out_(rowsDelete_(RW_NAME, RW_COLS, req.ids, ['photos']));
       case 'rwImport': requireAdmin_(req); return out_(rwImport_(req));
+      case 'rwSyncCerts': requireAdmin_(req); return out_(rwSyncCerts_(req));
       case 'stSave': requireAdmin_(req); return out_(stSave_(req));
       case 'stDelete': requireAdmin_(req); return out_(rowsDelete_(ST_NAME, ST_COLS, req.ids, ['photos']));
       default: return out_({ ok: false, error: 'Unknown action' });
@@ -644,6 +645,33 @@ function delete_(r) {
   } finally { lock.releaseLock(); }
 }
 
+/* ---------- certificate issued -> reward of Rp 100,000 recorded automatically ---------- */
+var CERT_REWARD = 100000;
+function certRewardRow_(rec, now) {
+  var o = { id: newId_('RW'), createdAt: now.toISOString(), date: Utilities.formatDate(now, 'Asia/Jakarta', 'yyyy-MM-dd'), ic: s_(rec.ic, 40), name: s_(rec.name, 160),
+    category: 'Best Observation certificate', items: JSON.stringify({ '100000': 1 }), amount: CERT_REWARD, remarks: 'Certificate ' + s_(rec.certNo, 40) + (rec.location ? ' - ' + s_(rec.location, 80) : ''),
+    nominationId: rec.id, serials: '', photos: '', status: 'Issued', issuedBy: 'auto (certificate)', updatedAt: now.toISOString() };
+  return RW_COLS.map(function (k) { return o[k] == null ? '' : o[k]; });
+}
+function isCertAward_(rec) { return rec.source !== 'admin' && rec.category !== 'Leaving appreciation' && rec.status === 'Issued'; }
+function rwHasNom_(id) { return readTab_(RW_NAME, RW_COLS).some(function (x) { return String(x.nominationId) === String(id); }); }
+// one-time catch-up: certificates issued since a date that have no reward yet (admin presses the button in the Rewards app)
+function rwSyncCerts_(r) {
+  var since = s_(r.since, 10); if (!/^\d{4}-\d{2}-\d{2}$/.test(since)) throw new Error('Bad date');
+  var lock = LockService.getScriptLock(); lock.waitLock(30000);
+  try {
+    var have = {}; readTab_(RW_NAME, RW_COLS).forEach(function (x) { if (x.nominationId) have[String(x.nominationId)] = 1; });
+    var now = new Date(), out = [], names = [];
+    readAll_().forEach(function (o) {
+      if (!isCertAward_(o) || have[String(o.id)]) return;
+      if (String(o.updatedAt || o.createdAt).slice(0, 10) < since) return;
+      out.push(certRewardRow_(o, now)); names.push(o.name);
+    });
+    if (out.length) tab_(RW_NAME, RW_COLS).getRange(tab_(RW_NAME, RW_COLS).getLastRow() + 1, 1, out.length, RW_COLS.length).setValues(out);
+    return { ok: true, added: out.length, names: names };
+  } finally { lock.releaseLock(); }
+}
+
 function update_(r) {
   var lock = LockService.getScriptLock(); lock.waitLock(20000);
   try {
@@ -655,6 +683,7 @@ function update_(r) {
     if (row < 0) throw new Error('Not found');
     var cur = sh.getRange(row, 1, 1, COLS.length).getValues()[0], rec = {};
     COLS.forEach(function (c, i) { rec[c] = cur[i]; });
+    var wasIssued = rec.status === 'Issued';
     var patch = r.patch || {};
     EDITABLE.forEach(function (k) { if (patch[k] !== undefined) rec[k] = s_(patch[k], k === 'aiJson' ? 45000 : (k === 'certPara' ? 4000 : (k === 'handNote' ? 140 : 2000))); });
     if (['Pending', 'Approved', 'Issued', 'Rejected'].indexOf(rec.status) < 0) throw new Error('Bad status');
@@ -666,6 +695,7 @@ function update_(r) {
     rec.updatedAt = new Date().toISOString();
     sh.getRange(row, 1, 1, COLS.length).setValues([COLS.map(function (c) { return rec[c] == null ? '' : rec[c]; })]);
     rec.vtok = vtok_(rec.id);
+    if (!wasIssued && isCertAward_(rec) && !rwHasNom_(rec.id)) { var rs = tab_(RW_NAME, RW_COLS); rs.getRange(rs.getLastRow() + 1, 1, 1, RW_COLS.length).setValues([certRewardRow_(rec, new Date())]); rec.rewardAdded = CERT_REWARD; }
     return { ok: true, row: rec };
   } finally { lock.releaseLock(); }
 }
