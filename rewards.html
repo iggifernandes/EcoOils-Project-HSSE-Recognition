@@ -255,7 +255,7 @@ table.t tr.clk{cursor:pointer}table.t tr.clk:hover{background:#f1f7f3}
 
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbx2wdQ_TGsu6Kfj8xk8Tjz8vuqvzdKTuKKlLZFb214dai5J32Kw781Z1DOZ9Amd3GNV/exec';
-const VERSION = 'v1.6.0', VERDATE = '2026-11-19';
+const VERSION = 'v1.6.1', VERDATE = '2026-11-19';
 const COMPANIES = ['EcoOils','GSB','WEN','KKS','PBS'];
 const DENOMS = [100000, 50000];   /* edit here to add a voucher denomination */
 const CATS = ['Best Observation for the Week','PTW Award','Spot quiz','Team or task achievement','Safety Day activity','Management walkthrough'];
@@ -463,7 +463,12 @@ async function dlPng(){
 }
 function loadXlsx(){ return new Promise((res, rej) => { if (window.XLSX) return res(); const s = document.createElement('script'); s.src = 'xlsx.mini.min.js'; s.onload = res; s.onerror = () => rej(new Error('Excel library not loaded')); document.head.appendChild(s); }); }
 async function dlXls(){
-  await loadXlsx(); const S = dlSummary(), R = DATA.rewards.slice().sort((a, b) => String(a.date).localeCompare(String(b.date)) || String(a.createdAt).localeCompare(String(b.createdAt)));
+  const S = dlSummary(), R = DATA.rewards.slice().sort((a, b) => String(a.date).localeCompare(String(b.date)) || String(a.createdAt).localeCompare(String(b.createdAt)));
+  try { await loadXlsx(); } catch (e) {
+    const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"', head = ['Sr', 'Date', 'Project week', 'Company', 'Name', 'Reason', 'Remarks', 'Vouchers', 'Amount (IDR)'];
+    const lines = [head.map(q).join(',')].concat(R.map((r, i) => [i + 1, r.date || '', r.date ? 'W' + projWeek(r.date) : '', icParts(r).map(p => p.ic).filter(Boolean).join(' / '), r.name || '', r.category || '', r.remarks || '', vchText(r), Number(r.amount) || 0].map(q).join(',')));
+    saveBlob(new Blob(['\ufeff' + lines.join('\r\n')], {type: 'text/csv;charset=utf-8'}), 'Reward-Distribution-List-' + todayISO() + '.csv'); toast('Excel library not available: saved as CSV (opens in Excel)', true); return;
+  }
   const wb = XLSX.utils.book_new(), exp = S.bought - S.used;
   const sum1 = [['Reward Voucher Summary'], ['Position as of', dlDate(todayISO()) + ' (Project Week ' + S.wkNow + ')'], [], ['Total bought'], ...S.batches.map(b => ['  ' + b[0], b[1]]), ['Total bought', S.bought], [], ['Utilized (as per distribution list)', S.used], ['Awards given', S.n], [], ['Should be on hand (bought - utilized)', exp], ...S.hand.map(h => ['  Rp ' + fmt(h[0]) + ' x ' + h[1], h[0] * h[1]]), ['Counted on hand', S.handTot], ['Difference (count - should be)', S.handTot - exp], [], ['Utilized by company'], ...S.comp.map(r => ['  ' + r[0], r[1]])];
   const ws1 = XLSX.utils.aoa_to_sheet(sum1); ws1['!cols'] = [{wch: 46}, {wch: 20}]; XLSX.utils.book_append_sheet(wb, ws1, 'Summary');
@@ -475,7 +480,7 @@ async function dlXls(){
   const ws3 = XLSX.utils.aoa_to_sheet([['Project week', 'Report week covered', 'Awards', 'Amount (IDR)'], ...wr]); ws3['!cols'] = [{wch: 14}, {wch: 30}, {wch: 10}, {wch: 16}]; XLSX.utils.book_append_sheet(wb, ws3, 'By week');
   const out = XLSX.write(wb, {bookType: 'xlsx', type: 'array'}); saveBlob(new Blob([out], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}), 'Reward-Distribution-List-' + todayISO() + '.xlsx');
 }
-async function dlRun(which){ const btns = ['dlBoth', 'dlPng', 'dlXls'].map(i => $('#' + i)); btns.forEach(b => b.disabled = true); try { try { localStorage.setItem('rw_topup', $('#dl_req').value); } catch (e) {} if (which !== 'xls') await dlPng(); if (which !== 'png') { await new Promise(r => setTimeout(r, 600)); await dlXls(); } toast(m('saved')); } catch (e) { toast(e.message, true); } btns.forEach(b => b.disabled = false); }
+async function dlRun(which){ const btns = ['dlBoth', 'dlPng', 'dlXls'].map(i => $('#' + i)); btns.forEach(b => b.disabled = true); try { try { localStorage.setItem('rw_topup', $('#dl_req').value); } catch (e) {} if (which !== 'xls') await dlPng(); if (which !== 'png') { await new Promise(r => setTimeout(r, 1500)); await dlXls(); } toast(m('saved')); } catch (e) { toast(e.message, true); } btns.forEach(b => b.disabled = false); }
 
 /* ---------- dashboard ---------- */
 function renderDash(){
