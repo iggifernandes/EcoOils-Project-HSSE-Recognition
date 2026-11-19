@@ -1,4 +1,4 @@
-// Code.gs v1.1.5 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
+// Code.gs v1.2.0 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
 // Deploy: Extensions > Apps Script (on iggifernandes@gmail.com) > paste this file > run setup() once >
 //   Project Settings > Script properties: add GEMINI_API_KEY (free Google AI Studio key) >
 //   Deploy > New deployment > Web app > Execute as: Me, Who has access: Anyone.
@@ -10,7 +10,7 @@ var COLS = ['id','createdAt','week','status','certNo','name','nick','role','ic',
 var EDITABLE = ['status','certNo','name','nick','role','ic','location','eventDate','observation','action','outcome',
   'category','certLang','certDate','certPara','hseNote','level','aiJson','handNote'];
 var IC_LIST = ['EcoOils','GSB','WEN','KKS','PBS'];
-var VERSION = 'v1.1.5';
+var VERSION = 'v1.2.0';
 
 /* ---------- Rewards: voucher stock and reward distribution (admin only) ---------- */
 var RW_NAME = 'Rewards';
@@ -24,7 +24,7 @@ function tab_(name, cols) {
   if (!sh) sh = ss.insertSheet(name);
   if (sh.getLastRow() === 0 || sh.getLastColumn() < cols.length) {
     sh.getRange(1, 1, 1, cols.length).setValues([cols]).setFontWeight('bold'); sh.setFrozenRows(1);
-    cols.forEach(function (k, i) { if (DATE_COLS.indexOf(k) >= 0 || k === 'serials' || k === 'items') sh.getRange(2, i + 1, 2000, 1).setNumberFormat('@'); });
+    cols.forEach(function (k, i) { if (DATE_COLS.indexOf(k) >= 0 || k === 'serials' || k === 'items' || k === 'phone') sh.getRange(2, i + 1, 2000, 1).setNumberFormat('@'); });
   }
   return sh;
 }
@@ -171,6 +171,102 @@ function rwImport_(r) {
   } finally { lock.releaseLock(); }
 }
 
+/* ---------- Weekly nomination reminders to IC HSSE managers ---------- */
+var CT_NAME = 'Contacts', CT_COLS = ['id', 'createdAt', 'ic', 'name', 'email', 'phone', 'updatedAt'];
+var RL_NAME = 'ReminderLog', RL_COLS = ['id', 'sentAt', 'week', 'ic', 'to', 'by', 'kind'];
+var REMIND_ICS = ['GSB', 'WEN', 'KKS', 'PBS'];
+var APP_URL = 'https://iggifernandes.github.io/EcoOils-Project-HSSE-Recognition/';
+
+function ctSave_(r) {
+  var f = r.row || {}, ic = s_(f.ic, 40), name = s_(f.name, 120), email = s_(f.email, 120).toLowerCase(), phone = s_(f.phone, 24).replace(/[^\d+]/g, '');
+  if (REMIND_ICS.indexOf(ic) < 0) throw new Error('Choose a contractor');
+  if (!name) throw new Error('Name required');
+  if (!email && !phone) throw new Error('Email or phone required');
+  if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new Error('Email looks wrong');
+  if (phone && !/^\+\d{8,15}$/.test(phone)) throw new Error('Phone must be like +62812345678');
+  var lock = LockService.getScriptLock(); lock.waitLock(20000);
+  try {
+    var sh = tab_(CT_NAME, CT_COLS), now = new Date().toISOString(), row = f.id ? findRow_(sh, f.id) : -1, created = now;
+    if (row > 0) created = sh.getRange(row, 2).getValue() || now;
+    var id = f.id || newId_('CT');
+    var o = { id: id, createdAt: created, ic: ic, name: name, email: email, phone: phone, updatedAt: now };
+    var vals = CT_COLS.map(function (k) { return o[k]; });
+    if (row > 0) sh.getRange(row, 1, 1, CT_COLS.length).setValues([vals]); else sh.appendRow(vals);
+    return { ok: true, contact: o };
+  } finally { lock.releaseLock(); }
+}
+
+/* this week's picture, worked out here so nobody can fake it from the browser. Leaving-appreciation rows are not nominations. */
+function weeklyStatus_() {
+  var week = weekKey_(new Date()), have = {};
+  REMIND_ICS.forEach(function (ic) { have[ic] = 0; });
+  readAll_().forEach(function (o) {
+    if (o.status === 'Rejected' || o.category === 'Leaving appreciation' || have[o.ic] === undefined) return;
+    var w = o.week || weekKey_(new Date(o.createdAt));
+    if (w === week) have[o.ic]++;
+  });
+  return { week: week, have: have, missing: REMIND_ICS.filter(function (ic) { return !have[ic]; }) };
+}
+
+function contactsList_() {
+  var st = weeklyStatus_(), log = readTab_(RL_NAME, RL_COLS).filter(function (x) { return x.week === st.week; }), last = {};
+  log.forEach(function (x) { last[x.ic] = x.sentAt; });
+  var trig = null; try { trig = ScriptApp.getProjectTriggers().some(function (t) { return t.getHandlerFunction() === 'autoRemind'; }); } catch (e) {}
+  return { ok: true, contacts: readTab_(CT_NAME, CT_COLS), week: st.week, have: st.have, missing: st.missing, last: last,
+    autoDays: prop_('REMIND_DAYS') || 'Thu,Fri', autoOn: trig };
+}
+
+function remindMail_(ic, week, names) {
+  var who = names.join(', ');
+  var subject = 'Reminder / Pengingat: weekly Great Job nomination - ' + ic + ' (' + week + ')';
+  var en = 'Dear ' + who + ',\n\nNo Great Job nomination has been received from ' + ic + ' this week (' + week + '). Each contractor HSSE Manager nominates one crew member every week.\n\nPlease submit it here: ' + APP_URL + '\nA strong nomination needs: the hazard observed, the action the person took, the outcome, and a Before and After photo.\n\nIf you have already submitted, please reply to this email so we can check it arrived.';
+  var id = 'Yth. ' + who + ',\n\nBelum ada nominasi Great Job dari ' + ic + ' minggu ini (' + week + '). Setiap HSSE Manager kontraktor mengajukan satu nominasi kru setiap minggu.\n\nSilakan kirim di sini: ' + APP_URL + '\nNominasi yang kuat memuat: bahaya yang ditemukan, tindakan yang dilakukan, hasilnya, serta foto Sebelum dan Sesudah.\n\nJika sudah mengirim, mohon balas email ini agar kami dapat memeriksanya.';
+  var sig = '\n\nThank you / Terima kasih,\nHSSE - EcoOils Project, Sei Mangkei';
+  return { subject: subject, body: en + '\n\n----------\n\n' + id + sig };
+}
+
+function remind_(ics, opt) {
+  opt = opt || {};
+  var st = weeklyStatus_(), res = [], today = Utilities.formatDate(new Date(), 'Asia/Jakarta', 'yyyy-MM-dd');
+  var list = (ics && ics.length ? ics : st.missing).filter(function (ic) { return REMIND_ICS.indexOf(ic) >= 0; });
+  var contacts = readTab_(CT_NAME, CT_COLS), log = readTab_(RL_NAME, RL_COLS), sh = tab_(RL_NAME, RL_COLS);
+  var replyTo = prop_('REPLY_TO') || (opt.by || '');
+  var cc = opt.by || (prop_('ADMIN_EMAILS') || '').split(',')[0].trim();
+  list.forEach(function (ic) {
+    if (st.have[ic]) { res.push({ ic: ic, status: 'submitted' }); return; }
+    var cs = contacts.filter(function (c) { return c.ic === ic && c.email; });
+    if (!cs.length) { res.push({ ic: ic, status: 'noemail' }); return; }
+    var done = log.some(function (x) { return x.week === st.week && x.ic === ic && x.kind === 'email' && String(x.sentAt).slice(0, 10) === today; });
+    if (done && !opt.force) { res.push({ ic: ic, status: 'already' }); return; }
+    if (MailApp.getRemainingDailyQuota() < cs.length + 1) { res.push({ ic: ic, status: 'quota' }); return; }
+    var mail = remindMail_(ic, st.week, cs.map(function (c) { return c.name; }));
+    var to = cs.map(function (c) { return c.email; }).join(',');
+    var m = { to: to, subject: mail.subject, body: mail.body, name: 'EcoOils Project HSSE' };
+    if (replyTo) m.replyTo = replyTo; if (cc) m.cc = cc;
+    MailApp.sendEmail(m);
+    sh.appendRow([newId_('RL'), today + ' ' + Utilities.formatDate(new Date(), 'Asia/Jakarta', 'HH:mm'), st.week, ic, to, opt.by || 'auto', 'email']);
+    res.push({ ic: ic, status: 'sent', to: cs.length });
+  });
+  return { ok: true, week: st.week, results: res };
+}
+
+/* Automatic reminders: a daily trigger calls this; it only sends on the days in script property REMIND_DAYS (default Thu,Fri) and only to contractors with no nomination this week. */
+function autoRemind() {
+  var days = (prop_('REMIND_DAYS') || 'Thu,Fri').split(',').map(function (x) { return x.trim(); });
+  var d = Utilities.formatDate(new Date(), 'Asia/Jakarta', 'EEE');
+  if (days.indexOf(d) < 0) return;
+  Logger.log(JSON.stringify(remind_(null, { by: '' })));
+}
+/* Run once from the editor (select installReminderTrigger > Run, then Allow). Runs autoRemind every day about 09:00. */
+function installReminderTrigger() {
+  ScriptApp.getProjectTriggers().forEach(function (t) { if (t.getHandlerFunction() === 'autoRemind') ScriptApp.deleteTrigger(t); });
+  ScriptApp.newTrigger('autoRemind').timeBased().everyDays(1).atHour(9).create();
+  Logger.log('Daily reminder trigger installed (about 09:00, sends only on ' + (prop_('REMIND_DAYS') || 'Thu,Fri') + ').');
+}
+function removeReminderTrigger() {
+  ScriptApp.getProjectTriggers().forEach(function (t) { if (t.getHandlerFunction() === 'autoRemind') ScriptApp.deleteTrigger(t); });
+}
+
 /* ---------- one-time setup ---------- */
 function setup() {
   var p = PropertiesService.getScriptProperties();
@@ -182,7 +278,7 @@ function setup() {
     sh.getRange(1, 1, 1, COLS.length).setValues([COLS]).setFontWeight('bold');
     sh.setFrozenRows(1);
   }
-  tab_(RW_NAME, RW_COLS); tab_(ST_NAME, ST_COLS);
+  tab_(RW_NAME, RW_COLS); tab_(ST_NAME, ST_COLS); tab_(CT_NAME, CT_COLS); tab_(RL_NAME, RL_COLS);
   if (!p.getProperty('FOLDER_ID')) {
     p.setProperty('FOLDER_ID', DriveApp.createFolder('EcoOils Project - Recognition photos').getId());
   }
@@ -221,6 +317,10 @@ function doPost(e) {
       case 'logout': CacheService.getScriptCache().remove('sess_' + req.token); return out_({ ok: true });
       case 'adminCreate': requireAdmin_(req); return out_(adminCreate_(req));
       case 'verify': return out_(verify_(req));
+      case 'contactsList': requireAdmin_(req); return out_(contactsList_());
+      case 'ctSave': requireAdmin_(req); return out_(ctSave_(req));
+      case 'ctDelete': requireAdmin_(req); return out_(rowsDelete_(CT_NAME, CT_COLS, req.ids, []));
+      case 'remindSend': req.email = requireAdmin_(req); return out_(remind_(req.ics, { by: req.email, force: !!req.force }));
       case 'list': requireAdmin_(req); return out_({ ok: true, rows: readAll_() });
       case 'photo': requireAdmin_(req); return out_(photo_(req));
       case 'update': requireAdmin_(req); return out_(update_(req));

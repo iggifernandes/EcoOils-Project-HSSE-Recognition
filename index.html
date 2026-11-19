@@ -132,6 +132,7 @@ table.wk td.zero{color:#aaa}table.wk td.cur.zero{background:var(--errbg);color:#
 #printRoot{display:none}
 @page{size:A4 landscape;margin:0}
 @media print{html,body{margin:0!important;background:#fff!important}body>*:not(#printRoot){display:none!important}#printRoot{display:block!important}#printRoot .cert,#printRoot .gj{page-break-after:always;break-after:page;height:209.6mm}#printRoot>*:last-child{page-break-after:auto;break-after:auto}}
+#rmList .rmrow{border:1px solid var(--line,#ddd);border-radius:8px;padding:8px 10px;margin-bottom:8px}#rmList .rmrow.miss{border-left:4px solid #c0392b}#rmList .rmrow.ok{border-left:4px solid #2e8b57}#rmList .rmh{display:flex;gap:8px;align-items:center;flex-wrap:wrap}#rmList .rmp{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px;font-size:13px}#rmList a.btn{text-decoration:none}.pill.okp{background:#e5f4ea;color:#1f6b3f}.pill.errp{background:#fde8e6;color:#a32117}
 #handOpts{margin-top:4px;border:1px solid var(--line,#ddd);border-radius:8px;padding:4px 8px}#handOpts .hopt{display:flex!important;flex-direction:row!important;align-items:flex-start;gap:8px;padding:3px 0;margin:0;font-size:13px;line-height:1.3;cursor:pointer}#handOpts .hopt input{width:auto!important;min-width:0;height:auto;margin:2px 0 0;padding:0;flex:0 0 auto}#handOpts .hopt .hen{display:block;font-size:11.5px;color:#6b7280;font-style:italic;margin-top:1px}#handOpts .hopt span{flex:1 1 auto;display:block;margin:0;font-size:13px}
 </style>
 </head>
@@ -319,6 +320,20 @@ table.wk td.zero{color:#aaa}table.wk td.cur.zero{background:var(--errbg);color:#
 
   <div id="a-weekly" hidden>
    <div class="card"><h2 data-i="a.weeklyTitle"></h2><p class="hint" data-i="a.weeklyHelp"></p><div id="wkTable" style="overflow:auto"></div><div id="wkMissing"></div></div>
+   <div class="card" id="rmCard"><h2 data-i="r.title"></h2><p class="hint" data-i="r.help"></p>
+    <div id="rmList"></div>
+    <div class="row" style="margin-top:8px"><button class="btn pri sm" id="rmAll" data-i="r.sendAll"></button><span class="hint" id="rmAuto"></span></div>
+    <h3 style="margin:16px 0 6px;font-size:14px" data-i="r.contacts"></h3>
+    <div class="grid g6" id="ctForm">
+     <label class="f s2"><span data-i="r.ic"></span><select id="ct_ic"></select></label>
+     <label class="f s2"><span data-i="f.name"></span><input id="ct_name" maxlength="120"></label>
+     <label class="f s2"><span data-i="r.email"></span><input id="ct_email" type="email" maxlength="120"></label>
+     <label class="f s2"><span data-i="r.cc"></span><select id="ct_cc"></select></label>
+     <label class="f s2"><span data-i="r.phone"></span><input id="ct_phone" inputmode="tel" maxlength="16" placeholder="812 3456 7890"></label>
+     <div class="row s2" style="align-items:flex-end"><button class="btn sm" id="ctSave" type="button" data-i="r.add"></button><button class="btn ghost sm" id="ctCancel" type="button" hidden data-i="r.cancel"></button></div>
+    </div>
+    <div id="ctTable" style="overflow:auto;margin-top:8px"></div>
+   </div>
   </div>
  </div>
 </section>
@@ -345,7 +360,7 @@ table.wk td.zero{color:#aaa}table.wk td.cur.zero{background:var(--errbg);color:#
 <script>
 /* ---------- constants (edit here) ---------- */
 const API_URL = 'https://script.google.com/macros/s/AKfycbx2wdQ_TGsu6Kfj8xk8Tjz8vuqvzdKTuKKlLZFb214dai5J32Kw781Z1DOZ9Amd3GNV/exec';
-const VERSION = 'v2.17.8', VERDATE = '2026-11-12';
+const VERSION = 'v2.18.0', VERDATE = '2026-11-12';
 const ICS = ['GSB','WEN','KKS','PBS'];
 const COMPANIES = ['EcoOils', ...ICS];
 const LOCS = ["ADMINISTRATION BUILDING", "BLOCK 6 B SOUTH EAST CORNER", "BLOCK 6B", "BLOCK 6B EAST GATE", "BOILER / CHIMNEY AREA", "CONTROL ROOM, MCC ROOM", "COOLING TOWER", "DDE TREATMENT PLANT (DTP)", "DIESEL TANK", "DIRTY COOLING TOWER", "DRY AND LIQUID CHEMICAL STORAGE", "ECOOILS WARE HOUSE", "EFFLUENT TREATMENT PLANT (ETP)", "ELECTRICAL SUBSTATION (PLN)", "EXTRACTION PLANT", "FA PLANT", "FIRE WATER PUMP HOUSE", "FIRE WATER TANK", "GSB OFFICE", "HEXANE AND DIESEL RECEIVING BAY", "HEXANE TANK", "KKS OFFICE", "LOADING/UNLOADING AREA (PUMP HOUSE)", "MCC BUILDING", "NORTH-WEST CORNER BLOCK 6A", "OFFICE VEHICLE PARKING AREA", "OIL POLISHING PLANT", "PBS OFFICE", "PIPE RACK", "PRE TREATMENT UNIT (PTU)", "RAW WATER PIT", "SCHEDULED & DOMESTIC WASTE SHED", "SECURITY BUILDING", "SECURITY POST", "SILO", "TANK FARM", "TRUCK PARKING AREA", "VAPOR ABSORPTION MACHINE (VAM) SHED", "WAREHOUSE", "WAREHOUSE BLOCK B", "WASTE WATER TREATMENT PLANT (WWTP)", "WATER TANK", "WATER TREATMENT PLANT (WTP) AND WATER TANKS", "WEIGHT BRIDGE", "WEN OFFICE", "WORKSHOP AREA"];
@@ -403,7 +418,7 @@ const D = {
 'a.queue':['Nominations','Nominasi','Pencalonan'],'a.weekly':['Weekly coverage','Cakupan mingguan','Liputan mingguan'],'a.logout':['Sign out','Keluar','Log keluar'],
 'lv.btn':['+ Appreciation certificate (leaving)','+ Sertifikat apresiasi (keluar)','+ Sijil penghargaan (berhenti)'],'lv.title':['Appreciation certificate for a leaving crew member','Sertifikat apresiasi untuk kru yang akan keluar','Sijil penghargaan untuk kru yang akan berhenti'],'lv.hint':['No nomination needed. It is issued straight away and can be edited and printed.','Tidak perlu nominasi. Langsung diterbitkan dan dapat diedit serta dicetak.','Tiada pencalonan diperlukan. Terus dikeluarkan dan boleh disunting serta dicetak.'],'lv.joined':['Joined (optional)','Mulai bekerja (opsional)','Mula bekerja (pilihan)'],'lv.last':['Last day on site','Hari terakhir di lokasi','Hari terakhir di tapak'],'lv.create':['Create certificate','Buat sertifikat','Buat sijil'],'lv.badge':['Leaving appreciation','Apresiasi keluar','Penghargaan berhenti'],'btn.cancel':['Cancel','Batal','Batal'],
 'a.hand':['Handwritten-style message beside the signature (tick one)','Pesan tulisan tangan di samping tanda tangan (pilih satu)','Mesej tulisan tangan di sebelah tandatangan (pilih satu)'],'hand.none':['No message','Tanpa pesan','Tiada mesej'],'hand.custom':['Write my own (max 140 characters)','Tulis sendiri (maks 140 karakter)','Tulis sendiri (maks 140 aksara)'],'hand.ph':['Type your message. Please end with Terima kasih.','Ketik pesan Anda. Akhiri dengan Terima kasih.','Taip mesej anda. Akhiri dengan Terima kasih.'],
-'a.search':['Search name, location…','Cari nama, lokasi…','Cari nama, lokasi…'],'a.selAll':['Select all shown','Pilih semua yang tampil','Pilih semua yang dipaparkan'],'a.printCerts':['Print certificates','Cetak sertifikat','Cetak sijil'],'a.printCards':['Print Great Job cards','Cetak kartu Great Job','Cetak kad Great Job'],'a.csv':['Export CSV','Ekspor CSV','Eksport CSV'],
+'a.search':['Search name, location…','Cari nama, lokasi…','Cari nama, lokasi…'],'r.title':['Weekly nomination reminders','Pengingat nominasi mingguan','Peringatan penamaan mingguan'],'r.help':['Contractors with no nomination this week are shown below. Send an email to their managers, or message or call them yourself with one tap.','Kontraktor tanpa nominasi minggu ini ditampilkan di bawah. Kirim email ke manajernya, atau kirim pesan atau telepon sendiri dengan satu ketukan.','Kontraktor tanpa penamaan minggu ini dipaparkan di bawah. Hantar e-mel kepada pengurus, atau mesej atau telefon sendiri dengan satu ketikan.'],'r.sendAll':['Email all missing contractors','Email semua kontraktor yang belum','E-mel semua kontraktor yang belum'],'r.contacts':['Manager contacts','Kontak manajer','Kenalan pengurus'],'r.ic':['Contractor','Kontraktor','Kontraktor'],'r.email':['Email','Email','E-mel'],'r.cc':['Country code','Kode negara','Kod negara'],'r.phone':['Phone number','Nomor telepon','Nombor telefon'],'r.add':['Save contact','Simpan kontak','Simpan kenalan'],'r.cancel':['Cancel','Batal','Batal'],'a.selAll':['Select all shown','Pilih semua yang tampil','Pilih semua yang dipaparkan'],'a.printCerts':['Print certificates','Cetak sertifikat','Cetak sijil'],'a.printCards':['Print Great Job cards','Cetak kartu Great Job','Cetak kad Great Job'],'a.csv':['Export CSV','Ekspor CSV','Eksport CSV'],
 'a.empty':['No nominations yet.','Belum ada nominasi.','Tiada pencalonan lagi.'],'a.pick':['Select a nomination on the left.','Pilih nominasi di sebelah kiri.','Pilih pencalonan di sebelah kiri.'],
 'a.certSection':['Certificate','Sertifikat','Sijil'],'a.certLang':['Certificate language','Bahasa sertifikat','Bahasa sijil'],'a.certDate':['Certificate date','Tanggal sertifikat','Tarikh sijil'],'a.para':['Personalised wording','Kalimat personal','Ayat peribadi'],'a.regen':['Regenerate from nomination','Buat ulang dari nominasi','Jana semula dari pencalonan'],
 'v.title':['Certificate verification','Verifikasi sertifikat','Pengesahan sijil'],'v.checking':['Checking…','Memeriksa…','Menyemak…'],'v.ok':['Genuine certificate - issued by EcoOils Project HSSE','Sertifikat asli - diterbitkan oleh HSSE EcoOils Project','Sijil tulen - dikeluarkan oleh HSSE EcoOils Project'],'v.bad':['Not verified. This certificate could not be found or is not valid.','Tidak terverifikasi. Sertifikat tidak ditemukan atau tidak valid.','Tidak disahkan. Sijil tidak ditemui atau tidak sah.'],'v.name':['Name','Nama','Nama'],'v.role':['Position','Jabatan','Jawatan'],'v.ic':['Contractor','Kontraktor','Kontraktor'],'v.no':['Certificate no.','No. sertifikat','No. sijil'],'v.date':['Date','Tanggal','Tarikh'],'v.note':['This certificate recognises good safety practice. It is not proof of employment by EcoOils.','Sertifikat ini mengakui praktik keselamatan yang baik. Bukan bukti hubungan kerja dengan EcoOils.','Sijil ini mengiktiraf amalan keselamatan yang baik. Bukan bukti pekerjaan dengan EcoOils.'],
@@ -475,6 +490,7 @@ const M = {
  cc:['Other (HSSE to confirm)','Lainnya (dikonfirmasi HSSE)','Lain-lain (disahkan HSSE)'],
  week:['Week','Minggu','Minggu'],total:['Total','Total','Jumlah'],
  missing:['No nomination yet this week:','Belum ada nominasi minggu ini:','Tiada pencalonan minggu ini:'],
+ rm:{ok:['Submitted this week','Sudah mengirim minggu ini','Sudah hantar minggu ini'],miss:['Not submitted','Belum mengirim','Belum hantar'],none:['No contacts yet. Add a manager below.','Belum ada kontak. Tambahkan manajer di bawah.','Tiada kenalan lagi. Tambah pengurus di bawah.'],sent:['Email sent','Email terkirim','E-mel dihantar'],already:['Already emailed today','Sudah di-email hari ini','Sudah dihantar hari ini'],noemail:['No email on file','Belum ada email','Tiada e-mel'],quota:['Daily email limit reached','Batas email harian tercapai','Had e-mel harian dicapai'],last:['Last emailed','Terakhir di-email','Terakhir dihantar'],emailBtn:['Email managers','Email manajer','E-mel pengurus'],again:['Email again','Email lagi','E-mel lagi'],wa:['WhatsApp','WhatsApp','WhatsApp'],call:['Call','Telepon','Telefon'],edit:['Edit','Ubah','Ubah'],del:['Delete','Hapus','Padam'],saved:['Contact saved','Kontak disimpan','Kenalan disimpan'],confirmDel:['Delete this contact?','Hapus kontak ini?','Padam kenalan ini?'],autoOn:['Automatic reminders are ON (days: ','Pengingat otomatis AKTIF (hari: ','Peringatan automatik AKTIF (hari: '],autoOff:['Automatic reminders are OFF. Run installReminderTrigger once in Apps Script to switch on.','Pengingat otomatis MATI. Jalankan installReminderTrigger sekali di Apps Script untuk mengaktifkan.','Peringatan automatik MATI. Jalankan installReminderTrigger sekali di Apps Script untuk mengaktifkan.'],waText:['Hello {n}, no Great Job nomination from {ic} yet this week ({w}). Please submit one here: ','Halo {n}, belum ada nominasi Great Job dari {ic} minggu ini ({w}). Mohon kirim di sini: ','Hai {n}, belum ada penamaan Great Job daripada {ic} minggu ini ({w}). Sila hantar di sini: ']},
  allIn:['Every contractor has a nomination this week.','Semua kontraktor sudah punya nominasi minggu ini.','Semua kontraktor ada pencalonan minggu ini.'],
  noPhoto:['No photo','Tanpa foto','Tiada gambar'],
  loginNeeded:['Session expired. Sign in again.','Sesi berakhir. Masuk lagi.','Sesi tamat. Log masuk semula.'],
@@ -492,7 +508,7 @@ function applyLang(){
   $$('[data-ph]').forEach(e => e.placeholder = t(e.dataset.ph));
   $('#helpBody').innerHTML = t('help');
   fillSelects(); renderRules(); renderGate(); if (aiState.result) renderAI(); renderPhotoBoxes();
-  if (typeof renderList === 'function') { renderList(); renderWeekly(); if (cur) renderPreview(); }
+  if (typeof renderList === 'function') { renderList(); renderWeekly(); if (typeof renderReminders === 'function') renderReminders(); if (cur) renderPreview(); }
   $('#issYes').textContent = m('yesB'); $('#issNo').textContent = m('noB');
 }
 function fillSelects(){
@@ -827,7 +843,7 @@ async function doLogin(){
   catch (e) { if (e.message === 'NOAPI') $('#noapi').hidden = false; toast(e.message, true); }
 }
 async function enterAdmin(){ $('#loginWrap').hidden = true; $('#admWrap').hidden = false; await loadRows(); }
-async function loadRows(){ try { const j = await admApi({action:'list'}); ROWS = j.rows.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt))); renderList(); renderWeekly(); if (cur) { const c = ROWS.find(r => r.id === cur.id); if (c) selectRow(c.id, true); } } catch (e) { toast(e.message, true); } }
+async function loadRows(){ try { const j = await admApi({action:'list'}); ROWS = j.rows.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt))); renderList(); renderWeekly(); loadReminders(); if (cur) { const c = ROWS.find(r => r.id === cur.id); if (c) selectRow(c.id, true); } } catch (e) { toast(e.message, true); } }
 function filtered(){ const q = $('#q_s').value.toLowerCase(), st = $('#q_st').value, ic = $('#q_ic').value;
   return ROWS.filter(r => (!st || r.status === st) && (!ic || r.ic === ic) && (!q || (r.name + ' ' + r.location + ' ' + r.role + ' ' + r.nick).toLowerCase().includes(q))); }
 function syncSelAll(){ const a = $('#selAll'); if (!a) return; const f = filtered(); a.checked = f.length > 0 && f.every(r => SEL.has(r.id)); }
@@ -944,11 +960,46 @@ async function markIssued(){ $('#issuedBar').hidden = true; for (const id of iss
 function renderWeekly(){
   const host = $('#wkTable'); if (!host) return;
   const now = new Date(), weeks = []; for (let i = 0; i < 8; i++) { const d = new Date(now); d.setDate(d.getDate() - 7 * i); weeks.push(isoWeek(d)); }
-  const cnt = {}; ROWS.filter(r => r.status !== 'Rejected').forEach(r => { const k = r.ic + '|' + (r.week || isoWeek(new Date(r.createdAt))); cnt[k] = (cnt[k] || 0) + 1; });
+  const cnt = {}; ROWS.filter(r => r.status !== 'Rejected' && r.category !== LV_CAT).forEach(r => { const k = r.ic + '|' + (r.week || isoWeek(new Date(r.createdAt))); cnt[k] = (cnt[k] || 0) + 1; });
   host.innerHTML = `<table class="wk"><tr><th>IC</th>${weeks.map((w, i) => `<th>${w.slice(5)}${i === 0 ? ' •' : ''}</th>`).join('')}<th>${esc(m('total'))}</th></tr>` +
     COMPANIES.map(ic => { let tot = 0; const cells = weeks.map((w, i) => { const c = cnt[ic + '|' + w] || 0; tot += c; return `<td class="${c ? '' : 'zero'} ${i === 0 ? 'cur' : ''}">${c}</td>`; }).join(''); return `<tr><th>${ic}</th>${cells}<td>${tot}</td></tr>`; }).join('') + '</table>';
   const miss = COMPANIES.filter(ic => !cnt[ic + '|' + weeks[0]]);
   $('#wkMissing').innerHTML = miss.length ? `<div class="box err"><b>${esc(m('missing'))}</b> ${miss.join(', ')}</div>` : `<div class="box ok">${esc(m('allIn'))}</div>`;
+}
+/* ---------- weekly reminders (admin) ---------- */
+const RM_CC = [['+62','Indonesia +62'],['+60','Malaysia +60'],['+65','Singapore +65'],['+91','India +91'],['+63','Philippines +63'],['+66','Thailand +66'],['+84','Vietnam +84'],['+86','China +86'],['+81','Japan +81'],['+82','Korea +82'],['+880','Bangladesh +880'],['+94','Sri Lanka +94'],['+92','Pakistan +92']];
+let RM = { contacts: [], week: '', have: {}, missing: [], last: {}, autoOn: null, autoDays: 'Thu,Fri' }, ctEdit = '';
+const waLink = (c, ic) => { const d = String(c.phone).replace(/\D/g, ''); const txt = M.rm.waText[LI()].replace('{n}', c.name).replace('{ic}', ic).replace('{w}', RM.week) + VERIFY_BASE; return 'https://wa.me/' + d + '?text=' + encodeURIComponent(txt); };
+async function loadReminders(){ try { const j = await admApi({action:'contactsList'}); RM = Object.assign(RM, j); renderReminders(); } catch (e) { if (e.message !== 'SESSION') { const h = $('#rmList'); if (h) h.innerHTML = '<div class="hint">' + esc(e.message) + '</div>'; } } }
+function renderReminders(){
+  const host = $('#rmList'); if (!host) return; const R = k => M.rm[k][LI()];
+  const ccs = $('#ct_cc'); if (ccs && !ccs.options.length) ccs.innerHTML = RM_CC.map(c => `<option value="${c[0]}">${esc(c[1])}</option>`).join('');
+  const sel = $('#ct_ic'); if (sel && !sel.options.length) sel.innerHTML = ICS.map(x => `<option>${x}</option>`).join('');
+  host.innerHTML = ICS.map(ic => {
+    const have = RM.have[ic] || 0, cs = RM.contacts.filter(c => c.ic === ic);
+    const people = cs.length ? cs.map(c => `<div class="rmp"><b>${esc(c.name)}</b> ${c.email ? '<span class="hint">' + esc(c.email) + '</span>' : ''} ${c.phone ? `<a class="btn sm" target="_blank" rel="noopener" href="${waLink(c, ic)}">${esc(R('wa'))}</a> <a class="btn sm" href="tel:${esc(c.phone)}">${esc(R('call'))}</a> <span class="hint">${esc(c.phone)}</span>` : ''}</div>`).join('') : `<div class="hint">${esc(R('none'))}</div>`;
+    const last = RM.last[ic] ? `<span class="hint">${esc(R('last'))}: ${esc(RM.last[ic])}</span>` : '';
+    return `<div class="rmrow ${have ? 'ok' : 'miss'}"><div class="rmh"><b>${ic}</b> <span class="pill ${have ? 'okp' : 'errp'}">${esc(have ? R('ok') + ' (' + have + ')' : R('miss'))}</span> ${last}${have ? '' : ` <button class="btn sm" data-rm="${ic}">${esc(RM.last[ic] ? R('again') : R('emailBtn'))}</button>`}</div>${have ? '' : people}</div>`;
+  }).join('');
+  host.querySelectorAll('[data-rm]').forEach(b => b.onclick = () => sendReminders([b.dataset.rm], !!RM.last[b.dataset.rm]));
+  $('#rmAll').disabled = !RM.missing.length;
+  $('#rmAuto').textContent = RM.autoOn === true ? R('autoOn') + RM.autoDays + ')' : (RM.autoOn === false ? R('autoOff') : '');
+  const t = $('#ctTable'); if (t) t.innerHTML = RM.contacts.length ? `<table class="wk"><tr><th>${esc(t0('r.ic'))}</th><th>${esc(t0('f.name'))}</th><th>${esc(t0('r.email'))}</th><th>${esc(t0('r.phone'))}</th><th></th></tr>` + RM.contacts.map(c => `<tr><td>${esc(c.ic)}</td><td>${esc(c.name)}</td><td>${esc(c.email)}</td><td>${esc(c.phone)}</td><td style="white-space:nowrap"><button class="btn ghost sm" data-ce="${esc(c.id)}">${esc(R('edit'))}</button> <button class="btn ghost danger sm" data-cd="${esc(c.id)}">${esc(R('del'))}</button></td></tr>`).join('') + '</table>' : '';
+  $$('[data-ce]').forEach(b => b.onclick = () => ctFill(b.dataset.ce)); $$('[data-cd]').forEach(b => b.onclick = () => ctDel(b.dataset.cd));
+}
+const t0 = k => t(k);
+function ctFill(id){ const c = RM.contacts.find(x => x.id === id); if (!c) return; ctEdit = id; $('#ct_ic').value = c.ic; $('#ct_name').value = c.name; $('#ct_email').value = c.email || '';
+  const ph = String(c.phone || ''), cc = RM_CC.map(x => x[0]).sort((a, b) => b.length - a.length).find(x => ph.startsWith(x)) || '+62'; $('#ct_cc').value = cc; $('#ct_phone').value = ph.slice(cc.length); $('#ctCancel').hidden = false; $('#ct_name').focus(); }
+function ctClear(){ ctEdit = ''; ['#ct_name', '#ct_email', '#ct_phone'].forEach(x => $(x).value = ''); $('#ctCancel').hidden = true; }
+async function ctSaveBtn(){
+  let d = $('#ct_phone').value.replace(/\D/g, ''); const cc = $('#ct_cc').value; if (d.startsWith('0')) d = d.replace(/^0+/, ''); if (d.startsWith(cc.slice(1)) && d.length > 10) d = d.slice(cc.length - 1);
+  const row = { id: ctEdit, ic: $('#ct_ic').value, name: $('#ct_name').value, email: $('#ct_email').value, phone: d ? cc + d : '' };
+  try { await admApi({action:'ctSave', row}); toast(M.rm.saved[LI()]); ctClear(); await loadReminders(); } catch (e) { toast(e.message, true); }
+}
+async function ctDel(id){ if (!confirm(M.rm.confirmDel[LI()])) return; try { await admApi({action:'ctDelete', ids:[id]}); await loadReminders(); } catch (e) { toast(e.message, true); } }
+async function sendReminders(ics, force){
+  try { const j = await admApi({action:'remindSend', ics, force}); const R = M.rm;
+    toast(j.results.map(r => r.ic + ': ' + (R[r.status] ? R[r.status][LI()] : (r.status === 'submitted' ? R.ok[LI()] : r.status))).join('  |  '), j.results.some(r => r.status === 'noemail' || r.status === 'quota')); await loadReminders(); } catch (e) { toast(e.message, true); }
 }
 function exportCsv(){
   const cols = ['id','createdAt','status','certNo','name','role','ic','location','eventDate','observation','action','outcome','nomName','nomRole','nomIC','nomPhone','aiScore','aiVerdict'];
@@ -1023,6 +1074,7 @@ document.addEventListener('DOMContentLoaded', () => {
     b.disabled = false;
   };
   $('#btnPrintCerts').onclick = () => printRows(printTargets(), 'cert');
+  $('#rmAll').onclick = () => sendReminders(RM.missing, false); $('#ctSave').onclick = ctSaveBtn; $('#ctCancel').onclick = ctClear;
   $('#selAll').onchange = e => { filtered().forEach(r => e.target.checked ? SEL.add(r.id) : SEL.delete(r.id)); renderList(); };
   $('#btnPrintCards').onclick = () => printRows(printTargets().filter(r => r.category !== LV_CAT), 'card');
   $('#btnCsv').onclick = exportCsv;
