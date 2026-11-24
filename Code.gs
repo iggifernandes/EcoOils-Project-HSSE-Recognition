@@ -1,4 +1,4 @@
-// Code.gs v1.5.0 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
+// Code.gs v1.5.1 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
 // Deploy: Extensions > Apps Script (on iggifernandes@gmail.com) > paste this file > run setup() once >
 //   Project Settings > Script properties: add GEMINI_API_KEY (free Google AI Studio key) >
 //   Deploy > New deployment > Web app > Execute as: Me, Who has access: Anyone.
@@ -10,7 +10,7 @@ var COLS = ['id','createdAt','week','status','certNo','name','nick','role','ic',
 var EDITABLE = ['status','certNo','name','nick','role','ic','location','eventDate','observation','action','outcome',
   'category','certLang','certDate','certPara','hseNote','level','aiJson','handNote'];
 var IC_LIST = ['EcoOils','GSB','WEN','KKS','PBS'];
-var VERSION = 'v1.5.0';
+var VERSION = 'v1.5.1';
 
 /* ---------- Rewards: voucher stock and reward distribution (admin only) ---------- */
 var RW_NAME = 'Rewards';
@@ -516,7 +516,7 @@ function hash_(s) {
     .map(function (b) { return ('0' + (b & 255).toString(16)).slice(-2); }).join('');
 }
 /* Roles: ADMIN_EMAILS = everything incl. Rewards and vouchers. STAFF_EMAILS (property) + STAFF_DEFAULT = HSSE staff: nominations, certificates, reminders and contacts, but NOT rewards or vouchers. */
-var STAFF_DEFAULT = [];
+var STAFF_DEFAULT = ['agung.muliawan@ecooils.co.id']; // Agung Tri Muliawan, HSSE Supervisor
 function isStaffEmail_(e) {
   var l = (prop_('STAFF_EMAILS') || '').toLowerCase().split(',').concat(STAFF_DEFAULT.map(function (x) { return String(x).toLowerCase(); })).map(function (x) { return x.trim(); });
   return !!String(e).trim() && l.indexOf(String(e).toLowerCase().trim()) >= 0;
