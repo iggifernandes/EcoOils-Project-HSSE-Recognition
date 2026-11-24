@@ -257,7 +257,7 @@ table.t tr.clk{cursor:pointer}table.t tr.clk:hover{background:#f1f7f3}
 
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbx2wdQ_TGsu6Kfj8xk8Tjz8vuqvzdKTuKKlLZFb214dai5J32Kw781Z1DOZ9Amd3GNV/exec';
-const VERSION = 'v1.7.0', VERDATE = '2026-11-19';
+const VERSION = 'v1.7.1', VERDATE = '2026-11-19';
 const COMPANIES = ['EcoOils','GSB','WEN','KKS','PBS'];
 const DENOMS = [100000, 50000];   /* edit here to add a voucher denomination */
 const CATS = ['Best Observation for the Week','PTW Award','Spot quiz','Team or task achievement','Safety Day activity','Management walkthrough'];
@@ -702,10 +702,10 @@ function applyLang(){
   if (gPB) { gPB.render(); sPB.render(); } if (!$('#app').hidden) renderAll(); else fillSelects();
 }
 async function doLogin(){
-  try { const j = await api({action:'login', email:$('#l_email').value, pin:$('#l_pin').value}); TOKEN = j.token; sessionStorage.setItem('rec_tok', TOKEN); localStorage.setItem('rec_email', j.email); $('#l_pin').value = ''; await enter(); }
+  try { const j = await api({action:'login', email:$('#l_email').value, pin:$('#l_pin').value}); TOKEN = j.token; sessionStorage.setItem('rec_tok', TOKEN); sessionStorage.setItem('rec_role', j.role || 'admin'); localStorage.setItem('rec_email', j.email); $('#l_pin').value = ''; await enter(); }
   catch (e) { if (e.message === 'NOAPI') $('#noapi').hidden = false; toast(e.message, true); }
 }
-async function enter(){ $('#loginWrap').hidden = true; $('#app').hidden = false; try { await load(); } catch (e) { if (e.message !== 'SESSION') toast(e.message, true); } }
+async function enter(){ if (sessionStorage.getItem('rec_role') === 'staff') { logoutUI(); toast('Rewards and vouchers are admin only', true); return; } $('#loginWrap').hidden = true; $('#app').hidden = false; try { await load(); } catch (e) { if (e.message !== 'SESSION') toast(e.message, true); } }
 function init(){
   document.title = 'EcoOils Rewards'; $('#l_email').value = localStorage.getItem('rec_email') || '';
   gPB = makePhotoBox($('#pb_give')); sPB = makePhotoBox($('#pb_stock')); fillSelects(); applyLang(); resetGive(); resetStock();

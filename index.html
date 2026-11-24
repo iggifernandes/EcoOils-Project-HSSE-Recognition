@@ -360,7 +360,7 @@ table.wk td.zero{color:#aaa}table.wk td.cur.zero{background:var(--errbg);color:#
 <script>
 /* ---------- constants (edit here) ---------- */
 const API_URL = 'https://script.google.com/macros/s/AKfycbx2wdQ_TGsu6Kfj8xk8Tjz8vuqvzdKTuKKlLZFb214dai5J32Kw781Z1DOZ9Amd3GNV/exec';
-const VERSION = 'v2.19.0', VERDATE = '2026-11-19';
+const VERSION = 'v2.20.0', VERDATE = '2026-11-24';
 const ICS = ['GSB','WEN','KKS','PBS'];
 const COMPANIES = ['EcoOils', ...ICS];
 const LOCS = ["ADMINISTRATION BUILDING", "BLOCK 6 B SOUTH EAST CORNER", "BLOCK 6B", "BLOCK 6B EAST GATE", "BOILER / CHIMNEY AREA", "CONTROL ROOM, MCC ROOM", "COOLING TOWER", "DDE TREATMENT PLANT (DTP)", "DIESEL TANK", "DIRTY COOLING TOWER", "DRY AND LIQUID CHEMICAL STORAGE", "ECOOILS WARE HOUSE", "EFFLUENT TREATMENT PLANT (ETP)", "ELECTRICAL SUBSTATION (PLN)", "EXTRACTION PLANT", "FA PLANT", "FIRE WATER PUMP HOUSE", "FIRE WATER TANK", "GSB OFFICE", "HEXANE AND DIESEL RECEIVING BAY", "HEXANE TANK", "KKS OFFICE", "LOADING/UNLOADING AREA (PUMP HOUSE)", "MCC BUILDING", "NORTH-WEST CORNER BLOCK 6A", "OFFICE VEHICLE PARKING AREA", "OIL POLISHING PLANT", "PBS OFFICE", "PIPE RACK", "PRE TREATMENT UNIT (PTU)", "RAW WATER PIT", "SCHEDULED & DOMESTIC WASTE SHED", "SECURITY BUILDING", "SECURITY POST", "SILO", "TANK FARM", "TRUCK PARKING AREA", "VAPOR ABSORPTION MACHINE (VAM) SHED", "WAREHOUSE", "WAREHOUSE BLOCK B", "WASTE WATER TREATMENT PLANT (WWTP)", "WATER TANK", "WATER TREATMENT PLANT (WTP) AND WATER TANKS", "WEIGHT BRIDGE", "WEN OFFICE", "WORKSHOP AREA"];
@@ -839,10 +839,10 @@ let TOKEN = sessionStorage.getItem('rec_tok') || '', ROWS = [], cur = null, PVMO
 function admApi(body){ body.token = TOKEN; return api(body).catch(e => { if (e.message === 'SESSION') { logoutUI(); toast(m('loginNeeded'), true); } throw e; }); }
 function logoutUI(){ TOKEN = ''; sessionStorage.removeItem('rec_tok'); $('#loginWrap').hidden = false; $('#admWrap').hidden = true; }
 async function doLogin(){
-  try { const j = await api({action:'login', email:$('#l_email').value, pin:$('#l_pin').value}); TOKEN = j.token; sessionStorage.setItem('rec_tok', TOKEN); localStorage.setItem('rec_email', j.email); $('#l_pin').value = ''; await enterAdmin(); }
+  try { const j = await api({action:'login', email:$('#l_email').value, pin:$('#l_pin').value}); TOKEN = j.token; sessionStorage.setItem('rec_tok', TOKEN); sessionStorage.setItem('rec_role', j.role || 'admin'); localStorage.setItem('rec_email', j.email); $('#l_pin').value = ''; await enterAdmin(); }
   catch (e) { if (e.message === 'NOAPI') $('#noapi').hidden = false; toast(e.message, true); }
 }
-async function enterAdmin(){ $('#loginWrap').hidden = true; $('#admWrap').hidden = false; await loadRows(); }
+async function enterAdmin(){ $('#loginWrap').hidden = true; $('#admWrap').hidden = false; { const lr = $('#lnkRewards'); if (lr) lr.hidden = sessionStorage.getItem('rec_role') === 'staff'; } await loadRows(); }
 async function loadRows(){ try { const j = await admApi({action:'list'}); ROWS = j.rows.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt))); renderList(); renderWeekly(); loadReminders(); if (cur) { const c = ROWS.find(r => r.id === cur.id); if (c) selectRow(c.id, true); } } catch (e) { toast(e.message, true); } }
 function filtered(){ const q = $('#q_s').value.toLowerCase(), st = $('#q_st').value, ic = $('#q_ic').value;
   return ROWS.filter(r => (!st || r.status === st) && (!ic || r.ic === ic) && (!q || (r.name + ' ' + r.location + ' ' + r.role + ' ' + r.nick).toLowerCase().includes(q))); }

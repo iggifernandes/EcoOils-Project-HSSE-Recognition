@@ -1,4 +1,4 @@
-// Code.gs v1.4.0 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
+// Code.gs v1.5.0 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
 // Deploy: Extensions > Apps Script (on iggifernandes@gmail.com) > paste this file > run setup() once >
 //   Project Settings > Script properties: add GEMINI_API_KEY (free Google AI Studio key) >
 //   Deploy > New deployment > Web app > Execute as: Me, Who has access: Anyone.
@@ -10,7 +10,7 @@ var COLS = ['id','createdAt','week','status','certNo','name','nick','role','ic',
 var EDITABLE = ['status','certNo','name','nick','role','ic','location','eventDate','observation','action','outcome',
   'category','certLang','certDate','certPara','hseNote','level','aiJson','handNote'];
 var IC_LIST = ['EcoOils','GSB','WEN','KKS','PBS'];
-var VERSION = 'v1.4.0';
+var VERSION = 'v1.5.0';
 
 /* ---------- Rewards: voucher stock and reward distribution (admin only) ---------- */
 var RW_NAME = 'Rewards';
@@ -318,16 +318,16 @@ function doPost(e) {
       case 'setPin': return out_(setPin_(req));
       case 'login': return out_(login_(req));
       case 'logout': CacheService.getScriptCache().remove('sess_' + req.token); return out_({ ok: true });
-      case 'adminCreate': requireAdmin_(req); return out_(adminCreate_(req));
+      case 'adminCreate': requireStaff_(req); return out_(adminCreate_(req));
       case 'verify': return out_(verify_(req));
-      case 'contactsList': requireAdmin_(req); return out_(contactsList_());
-      case 'ctSave': requireAdmin_(req); return out_(ctSave_(req));
-      case 'ctDelete': requireAdmin_(req); return out_(rowsDelete_(CT_NAME, CT_COLS, req.ids, []));
-      case 'remindSend': req.email = requireAdmin_(req); return out_(remind_(req.ics, { by: req.email, force: !!req.force }));
-      case 'list': requireAdmin_(req); return out_({ ok: true, rows: readAll_() });
-      case 'photo': requireAdmin_(req); return out_(photo_(req));
-      case 'update': requireAdmin_(req); return out_(update_(req));
-      case 'delete': requireAdmin_(req); return out_(delete_(req));
+      case 'contactsList': requireStaff_(req); return out_(contactsList_());
+      case 'ctSave': requireStaff_(req); return out_(ctSave_(req));
+      case 'ctDelete': requireStaff_(req); return out_(rowsDelete_(CT_NAME, CT_COLS, req.ids, []));
+      case 'remindSend': req.email = requireStaff_(req); return out_(remind_(req.ics, { by: req.email, force: !!req.force }));
+      case 'list': requireStaff_(req); return out_({ ok: true, rows: readAll_() });
+      case 'photo': requireStaff_(req); return out_(photo_(req));
+      case 'update': requireStaff_(req); return out_(update_(req));
+      case 'delete': requireStaff_(req); return out_(delete_(req));
       case 'rwList': requireAdmin_(req); return out_(rwList_());
       case 'rwSave': req.email = requireAdmin_(req); return out_(rwSave_(req));
       case 'rwSaveMany': req.email = requireAdmin_(req); return out_(rwSaveMany_(req));
@@ -515,6 +515,13 @@ function hash_(s) {
   return Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, prop_('PIN_SALT') + '|' + s)
     .map(function (b) { return ('0' + (b & 255).toString(16)).slice(-2); }).join('');
 }
+/* Roles: ADMIN_EMAILS = everything incl. Rewards and vouchers. STAFF_EMAILS (property) + STAFF_DEFAULT = HSSE staff: nominations, certificates, reminders and contacts, but NOT rewards or vouchers. */
+var STAFF_DEFAULT = [];
+function isStaffEmail_(e) {
+  var l = (prop_('STAFF_EMAILS') || '').toLowerCase().split(',').concat(STAFF_DEFAULT.map(function (x) { return String(x).toLowerCase(); })).map(function (x) { return x.trim(); });
+  return !!String(e).trim() && l.indexOf(String(e).toLowerCase().trim()) >= 0;
+}
+function isLoginEmail_(e) { return isAdminEmail_(e) || isStaffEmail_(e); }
 function isAdminEmail_(e) {
   return (prop_('ADMIN_EMAILS') || '').toLowerCase().split(',').map(function (x) { return x.trim(); }).indexOf(String(e).toLowerCase().trim()) >= 0;
 }
@@ -524,7 +531,7 @@ function requestReset_(r) {
   var rk = 'resetrate_' + email, n = Number(cache.get(rk) || 0);
   if (n >= 5) return { ok: true };
   cache.put(rk, String(n + 1), 3600);
-  if (isAdminEmail_(email)) {
+  if (isLoginEmail_(email)) {
     var code = ('' + Math.floor(100000 + Math.random() * 900000));
     cache.put('reset_' + email, hash_('code|' + email + '|' + code), 900);
     MailApp.sendEmail(email, 'EcoOils Project Recognition - PIN reset code',
@@ -552,17 +559,22 @@ function login_(r) {
   var fk = 'fail_' + email, fails = Number(cache.get(fk) || 0);
   if (fails >= 5) throw new Error('Too many attempts. Wait 15 minutes.');
   var stored = prop_('PIN_' + email);
-  if (!isAdminEmail_(email) || !stored) { cache.put(fk, String(fails + 1), 900); throw new Error('No PIN set yet or wrong details. Use "Forgot PIN / set PIN".'); }
+  if (!isLoginEmail_(email) || !stored) { cache.put(fk, String(fails + 1), 900); throw new Error('No PIN set yet or wrong details. Use "Forgot PIN / set PIN".'); }
   if (stored !== hash_('pin|' + email + '|' + r.pin)) { cache.put(fk, String(fails + 1), 900); throw new Error('Wrong PIN'); }
   cache.remove(fk);
   var token = Utilities.getUuid() + Utilities.getUuid();
   cache.put('sess_' + token, email, 21600);
-  return { ok: true, token: token, email: email };
+  return { ok: true, token: token, email: email, role: isAdminEmail_(email) ? 'admin' : 'staff' };
 }
 
-function requireAdmin_(r) {
+function requireStaff_(r) {
   var e = r.token && CacheService.getScriptCache().get('sess_' + r.token);
-  if (!e) throw new Error('SESSION');
+  if (!e || !isLoginEmail_(e)) throw new Error('SESSION');
+  return e;
+}
+function requireAdmin_(r) {
+  var e = requireStaff_(r);
+  if (!isAdminEmail_(e)) throw new Error('Admin only: rewards and vouchers are not available to this login');
   return e;
 }
 
