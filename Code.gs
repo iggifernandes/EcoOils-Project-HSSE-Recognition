@@ -1,4 +1,4 @@
-// Code.gs v1.5.1 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
+// Code.gs v1.6.0 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
 // Deploy: Extensions > Apps Script (on iggifernandes@gmail.com) > paste this file > run setup() once >
 //   Project Settings > Script properties: add GEMINI_API_KEY (free Google AI Studio key) >
 //   Deploy > New deployment > Web app > Execute as: Me, Who has access: Anyone.
@@ -10,7 +10,7 @@ var COLS = ['id','createdAt','week','status','certNo','name','nick','role','ic',
 var EDITABLE = ['status','certNo','name','nick','role','ic','location','eventDate','observation','action','outcome',
   'category','certLang','certDate','certPara','hseNote','level','aiJson','handNote'];
 var IC_LIST = ['EcoOils','GSB','WEN','KKS','PBS'];
-var VERSION = 'v1.5.1';
+var VERSION = 'v1.6.0';
 
 /* ---------- Rewards: voucher stock and reward distribution (admin only) ---------- */
 var RW_NAME = 'Rewards';
@@ -317,7 +317,7 @@ function doPost(e) {
       case 'requestReset': return out_(requestReset_(req));
       case 'setPin': return out_(setPin_(req));
       case 'login': return out_(login_(req));
-      case 'logout': CacheService.getScriptCache().remove('sess_' + req.token); return out_({ ok: true });
+      case 'logout': return out_({ ok: true });
       case 'adminCreate': requireStaff_(req); return out_(adminCreate_(req));
       case 'verify': return out_(verify_(req));
       case 'contactsList': requireStaff_(req); return out_(contactsList_());
@@ -551,6 +551,7 @@ function setPin_(r) {
   }
   cache.remove('reset_' + email);
   PropertiesService.getScriptProperties().setProperty('PIN_' + email, hash_('pin|' + email + '|' + r.pin));
+  PropertiesService.getScriptProperties().setProperty('EPOCH_' + email, String(new Date().getTime())); // signs out older sessions
   return { ok: true };
 }
 
@@ -562,13 +563,39 @@ function login_(r) {
   if (!isLoginEmail_(email) || !stored) { cache.put(fk, String(fails + 1), 900); throw new Error('No PIN set yet or wrong details. Use "Forgot PIN / set PIN".'); }
   if (stored !== hash_('pin|' + email + '|' + r.pin)) { cache.put(fk, String(fails + 1), 900); throw new Error('Wrong PIN'); }
   cache.remove(fk);
-  var token = Utilities.getUuid() + Utilities.getUuid();
-  cache.put('sess_' + token, email, 21600);
-  return { ok: true, token: token, email: email, role: isAdminEmail_(email) ? 'admin' : 'staff' };
+  var exp = new Date().getTime() + SESSION_DAYS * 86400000;
+  return { ok: true, token: makeToken_(email, exp), exp: exp, email: email, role: isAdminEmail_(email) ? 'admin' : 'staff' };
 }
 
+/* Signed session token (v1.6.0): stays valid for SESSION_DAYS without server storage (CacheService caps at 6 hours).
+   Token = base64url(email|expiry|epoch).signature. Setting a new PIN bumps the epoch, which signs the user out everywhere. */
+var SESSION_DAYS = 60;
+function sessSecret_() {
+  var p = PropertiesService.getScriptProperties(), k = p.getProperty('SESSION_SECRET');
+  if (!k) { k = Utilities.getUuid() + Utilities.getUuid() + Utilities.getUuid(); p.setProperty('SESSION_SECRET', k); }
+  return k;
+}
+function sessSig_(body) {
+  return Utilities.base64EncodeWebSafe(Utilities.computeHmacSha256Signature(body, sessSecret_())).replace(/=+$/, '');
+}
+function makeToken_(email, exp) {
+  var body = Utilities.base64EncodeWebSafe(email + '|' + exp + '|' + (prop_('EPOCH_' + email) || '0')).replace(/=+$/, '');
+  return body + '.' + sessSig_(body);
+}
+function tokenEmail_(tok) {
+  var t = String(tok || ''), i = t.indexOf('.');
+  if (i < 1) return '';
+  var body = t.slice(0, i), sig = t.slice(i + 1);
+  if (sig !== sessSig_(body)) return '';
+  var pad = body + '===='.slice(body.length % 4 || 4);
+  var parts;
+  try { parts = Utilities.newBlob(Utilities.base64DecodeWebSafe(pad)).getDataAsString().split('|'); } catch (e) { return ''; }
+  if (parts.length !== 3 || Number(parts[1]) < new Date().getTime()) return '';
+  if (parts[2] !== (prop_('EPOCH_' + parts[0]) || '0')) return '';
+  return parts[0];
+}
 function requireStaff_(r) {
-  var e = r.token && CacheService.getScriptCache().get('sess_' + r.token);
+  var e = tokenEmail_(r.token);
   if (!e || !isLoginEmail_(e)) throw new Error('SESSION');
   return e;
 }
