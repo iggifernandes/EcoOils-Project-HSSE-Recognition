@@ -1,4 +1,4 @@
-// Code.gs v1.6.0 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
+// Code.gs v1.7.0 — EcoOils Project HSSE Recognition backend (Google Apps Script web app)
 // Deploy: Extensions > Apps Script (on iggifernandes@gmail.com) > paste this file > run setup() once >
 //   Project Settings > Script properties: add GEMINI_API_KEY (free Google AI Studio key) >
 //   Deploy > New deployment > Web app > Execute as: Me, Who has access: Anyone.
@@ -10,7 +10,7 @@ var COLS = ['id','createdAt','week','status','certNo','name','nick','role','ic',
 var EDITABLE = ['status','certNo','name','nick','role','ic','location','eventDate','observation','action','outcome',
   'category','certLang','certDate','certPara','hseNote','level','aiJson','handNote'];
 var IC_LIST = ['EcoOils','GSB','WEN','KKS','PBS'];
-var VERSION = 'v1.6.0';
+var VERSION = 'v1.7.0';
 
 /* ---------- Rewards: voucher stock and reward distribution (admin only) ---------- */
 var RW_NAME = 'Rewards';
@@ -686,9 +686,13 @@ function delete_(r) {
 
 /* ---------- certificate issued -> reward of Rp 100,000 recorded automatically ---------- */
 var CERT_REWARD = 100000;
-function certRewardRow_(rec, now) {
+function rewardAmt_(v) { var n = Math.round(Number(v)); return (n >= 50000 && n <= 500000 && n % 50000 === 0) ? n : CERT_REWARD; }
+function certRewardRow_(rec, now, amt) {
+  amt = rewardAmt_(amt);
+  var n100 = Math.floor(amt / 100000), n50 = (amt % 100000) / 50000, items = {};
+  if (n100) items['100000'] = n100; if (n50) items['50000'] = n50;
   var o = { id: newId_('RW'), createdAt: now.toISOString(), date: Utilities.formatDate(now, 'Asia/Jakarta', 'yyyy-MM-dd'), ic: s_(rec.ic, 40), name: s_(rec.name, 160),
-    category: 'Best Observation certificate', items: JSON.stringify({ '100000': 1 }), amount: CERT_REWARD, remarks: 'Certificate ' + s_(rec.certNo, 40) + (rec.location ? ' - ' + s_(rec.location, 80) : ''),
+    category: 'Best Observation certificate', items: JSON.stringify(items), amount: amt, remarks: 'Certificate ' + s_(rec.certNo, 40) + (rec.location ? ' - ' + s_(rec.location, 80) : ''),
     nominationId: rec.id, serials: '', photos: '', status: 'Issued', issuedBy: 'auto (certificate)', updatedAt: now.toISOString() };
   return RW_COLS.map(function (k) { return o[k] == null ? '' : o[k]; });
 }
@@ -734,7 +738,7 @@ function update_(r) {
     rec.updatedAt = new Date().toISOString();
     sh.getRange(row, 1, 1, COLS.length).setValues([COLS.map(function (c) { return rec[c] == null ? '' : rec[c]; })]);
     rec.vtok = vtok_(rec.id);
-    if (!wasIssued && isCertAward_(rec) && !rwHasNom_(rec.id)) { var rs = tab_(RW_NAME, RW_COLS); rs.getRange(rs.getLastRow() + 1, 1, 1, RW_COLS.length).setValues([certRewardRow_(rec, new Date())]); rec.rewardAdded = CERT_REWARD; }
+    if (!wasIssued && isCertAward_(rec) && !rwHasNom_(rec.id)) { var rs = tab_(RW_NAME, RW_COLS); rs.getRange(rs.getLastRow() + 1, 1, 1, RW_COLS.length).setValues([certRewardRow_(rec, new Date(), patch.rewardAmt)]); rec.rewardAdded = rewardAmt_(patch.rewardAmt); }
     return { ok: true, row: rec };
   } finally { lock.releaseLock(); }
 }
